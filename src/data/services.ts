@@ -17,7 +17,7 @@ Deep Cleaning is recommended for periodic maintenance, pre- or post-renovation, 
         price: 45,
         category: 'Home Cleaning',
         rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1528459801416-a9e53bbf4e17?auto=format&fit=crop&q=80&w=800',
+        image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=800',
         offerTag: 'Recommended',
         soldCount: 200,
         icon: 'sparkles'
@@ -34,10 +34,10 @@ Bathroom & Kitchen Upkeep: Cleaning sinks, countertops, and fixtures; replenishi
 Trash Removal: Collection and disposal of garbage and recyclables.
 
 This service helps maintain a consistently clean, welcoming, and safe environment, reducing buildup of dirt, allergens, and germs over time. It is ideal for busy households and professional workspaces seeking ongoing hygiene and organization.`,
-        price: 33.5,
+        price: 35,
         category: 'Home Cleaning',
         rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1527515545081-5db817172677?auto=format&fit=crop&q=80&w=800',
+        image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800',
         soldCount: 600,
         icon: 'home'
     },
@@ -100,7 +100,7 @@ Regular mattress cleaning improves sleep quality, reduces allergy symptoms, and 
 The service starts with fabric inspection and testing, followed by deep vacuuming. Specialized cleaning solutions are applied to break down dirt, then extracted using professional equipment. Leather sofas receive conditioning treatments to prevent cracking and dryness.
 
 This service revitalizes furniture, enhances comfort, and helps maintain a clean and presentable living or office space.`,
-        price: 33.5,
+        price: 35,
         originalPrice: 180,
         category: 'Furniture',
         rating: 4.7,
@@ -151,7 +151,7 @@ A clean office enhances company image, reduces illness-related absences, and cre
 Services may include sweeping, mopping, dusting, kitchen and bathroom cleaning, dishwashing, laundry assistance, bed making, and general home organization. The service can be scheduled hourly, daily, weekly, or monthly, depending on client needs.
 
 All staff are trained to follow hygiene standards, respect privacy, and handle household items with care. This service is ideal for busy families, working professionals, and elderly households seeking consistent home support.`,
-        price: 33.5,
+        price: 35,
         category: 'Home Cleaning',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=800',
@@ -192,7 +192,7 @@ Walls & Fixtures: Spot cleaning, dusting light fixtures, switches, doors, and wi
 Odor Removal: Deodorizing rooms and closets to ensure a fresh environment.
 
 Move In/Out Cleaning guarantees the space is pristine, hygienic, and welcoming, helping landlords impress tenants and ensuring renters move into a clean, healthy home.`,
-        price: 33.5,
+        price: 35,
         category: 'Home Cleaning',
         rating: 4.8,
         image: 'https://images.unsplash.com/photo-1560448075-bb485b067938?auto=format&fit=crop&q=80&w=800',
@@ -210,7 +210,7 @@ Post-Party Cleanup: Garbage disposal, leftover food removal, wiping surfaces, va
 Special Treatments: Carpet shampooing, furniture spot cleaning, and stain removal for spills.
 
 This service is perfect for birthday parties, corporate events, weddings, or social gatherings, saving you time and ensuring a safe, hygienic, and presentable environment for everyone.`,
-        price: 33.5,
+        price: 35,
         category: 'Home Cleaning',
         rating: 4.7,
         image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800',
@@ -229,7 +229,7 @@ Ironing & Folding: Precision ironing to ensure garments are wrinkle-free; carefu
 Optional Delivery: Cleaned items can be picked up and delivered to your home or office.
 
 This service helps you maintain a fresh, neat, and polished wardrobe while saving time and effort for busy professionals and families.`,
-        price: 33.5,
+        price: 35,
         category: 'Laundry',
         rating: 4.8,
         image: 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=800',
@@ -249,7 +249,7 @@ Administering medication if needed and monitoring health signs.
 Flexible schedules including short-term, overnight, or extended stays.
 
 All pet sitters are experienced with animals, trained in safety protocols, and committed to providing love and attention. This service ensures your pet experiences minimal stress and maximum care in your absence.`,
-        price: 33.5,
+        price: 35,
         category: 'Care',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800',

@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import type { User } from '@supabase/supabase-js';
+
+interface User {
+    email: string;
+    id: string;
+}
 
 interface AuthContextType {
     user: User | null;
@@ -20,65 +23,59 @@ export const useAuth = () => {
     return context;
 };
 
+// بيانات Admin المؤقتة
+const ADMIN_CREDENTIALS = {
+    email: 'admin@purity.com',
+    password: 'Admin@2025!',
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // تحميل المستخدم الحالي عند بدء التطبيق
+    // تحميل المستخدم من localStorage
     useEffect(() => {
-        // التحقق من الجلسة الحالية
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setUser(session?.user ?? null);
-            setIsLoading(false);
-        });
-
-        // الاستماع لتغييرات المصادقة
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user ?? null);
-            setIsLoading(false);
-        });
-
-        return () => subscription.unsubscribe();
+        const savedUser = localStorage.getItem('purity_user');
+        if (savedUser) {
+            try {
+                setUser(JSON.parse(savedUser));
+            } catch (e) {
+                localStorage.removeItem('purity_user');
+            }
+        }
     }, []);
 
     // تسجيل الدخول
     const login = async (email: string, password: string) => {
-        try {
-            setIsLoading(true);
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
+        setIsLoading(true);
 
-            if (error) {
-                return {
-                    success: false,
-                    message: error.message,
-                };
-            }
+        // محاكاة تأخير API
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-            setUser(data.user);
-            return { success: true };
-        } catch (error: any) {
-            return {
-                success: false,
-                message: error.message || 'فشل تسجيل الدخول',
+        if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+            const userData = {
+                email: ADMIN_CREDENTIALS.email,
+                id: '1',
             };
-        } finally {
+
+            setUser(userData);
+            localStorage.setItem('purity_user', JSON.stringify(userData));
             setIsLoading(false);
+
+            return { success: true };
         }
+
+        setIsLoading(false);
+        return {
+            success: false,
+            message: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+        };
     };
 
     // تسجيل الخروج
     const logout = async () => {
-        try {
-            await supabase.auth.signOut();
-            setUser(null);
-        } catch (error) {
-            console.error('Logout error:', error);
-        }
+        setUser(null);
+        localStorage.removeItem('purity_user');
     };
 
     const value = {

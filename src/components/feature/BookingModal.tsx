@@ -85,7 +85,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             calculatedPrice = (150 * formData.numberOfSingleMattresses) + (200 * formData.numberOfLargeMattresses);
             if (calculatedPrice === 0) calculatedPrice = 150; // Fallback
         } else if (service.name === 'Sofa Cleaning') {
-            calculatedPrice = 33.5 * formData.numberOfSofaSeats;
+            calculatedPrice = 35 * formData.numberOfSofaSeats;
         } else if (service.name === 'Curtain Cleaning') {
             calculatedPrice = 200 * formData.numberOfCurtains;
         } else {
@@ -482,7 +482,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                             {service.name === 'Sofa Cleaning' && (
                                                 <div className="space-y-4">
                                                     <div className="space-y-2">
-                                                        <span className="text-xs font-bold text-gray-700">Number of Seats (33.5 AED/seat)</span>
+                                                        <span className="text-xs font-bold text-gray-700">Number of Seats (35 AED/seat)</span>
                                                         <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
                                                             {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
                                                                 <button
@@ -625,7 +625,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                                             if (basePrice === 0) basePrice = 150;
                                                             breakdown = `${formData.numberOfSingleMattresses} Single, ${formData.numberOfLargeMattresses} Large`;
                                                         } else if (service.name === 'Sofa Cleaning') {
-                                                            basePrice = 33.5 * formData.numberOfSofaSeats;
+                                                            basePrice = 35 * formData.numberOfSofaSeats;
                                                             breakdown = `Sanitizing ${formData.numberOfSofaSeats} Seat(s)`;
                                                         } else if (service.name === 'Curtain Cleaning') {
                                                             basePrice = 200 * formData.numberOfCurtains;
