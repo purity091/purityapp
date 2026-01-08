@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import logo from '../../assets/logo.png';
 
+const MotionDiv = motion.div as any;
+
 interface LayoutProps {
     children: React.ReactNode;
     hideFooter?: boolean;
@@ -39,7 +41,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
             {/* Mobile Overlay Menu */}
             <AnimatePresence>
                 {isMenuOpen && (
-                    <motion.div
+                    <MotionDiv
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -86,7 +88,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
                                 </div>
                             </div>
                         </div>
-                    </motion.div>
+                    </MotionDiv>
                 )}
             </AnimatePresence>
 

@@ -2,6 +2,8 @@ import React from 'react';
 import { ShieldCheck, Users, Star, Award, CheckCircle2, Trophy, Verified } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const MotionDiv = motion.div as any;
+
 export const TrustSection = () => (
     <section className="py-20 md:py-32 relative bg-gray-50/50">
         {/* Background Depth & Smooth Transitions */}
@@ -24,7 +26,7 @@ export const TrustSection = () => (
                     <div className="flex-1 space-y-6 md:space-y-8 text-center lg:text-left">
                         <div className="space-y-3 md:space-y-4">
                             {/* @ts-ignore */}
-                            <motion.div
+                            <MotionDiv
                                 initial={{ opacity: 0, y: 10 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.6 }}
@@ -32,7 +34,7 @@ export const TrustSection = () => (
                             >
                                 <Trophy size={14} className="text-primary-600 md:w-4 md:h-4" />
                                 <span className="text-[9px] md:text-[11px] font-black text-primary-700 uppercase tracking-[0.2em] md:tracking-[0.25em]">The Purity Gold Standard</span>
-                            </motion.div>
+                            </MotionDiv>
 
                             <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-gray-900 tracking-tighter leading-[0.95] md:leading-[1]">
                                 Pure Excellence. <br className="hidden sm:block" />
@@ -62,7 +64,7 @@ export const TrustSection = () => (
 
                             {/* Stat 1: Floating Vertical */}
                             {/* @ts-ignore */}
-                            <motion.div
+                            <MotionDiv
                                 whileHover={{ y: -8, scale: 1.02 }}
                                 className="bg-white p-6 md:p-8 rounded-xl shadow-2xl shadow-gray-200/50 border border-gray-50 flex flex-row sm:flex-col justify-between items-center sm:items-start h-auto sm:h-56 group/card transition-all duration-500"
                             >
@@ -73,11 +75,11 @@ export const TrustSection = () => (
                                     <div className="text-3xl md:text-4xl font-black text-gray-900 tracking-tighter">50,000+</div>
                                     <div className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest mt-1">Happy Clients</div>
                                 </div>
-                            </motion.div>
+                            </MotionDiv>
 
                             {/* Stat 2: Large Floating */}
                             {/* @ts-ignore */}
-                            <motion.div
+                            <MotionDiv
                                 whileHover={{ y: -8, scale: 1.02 }}
                                 className="bg-gradient-to-br from-primary-600 to-primary-400 p-6 md:p-8 rounded-xl shadow-2xl shadow-primary-500/40 text-white flex flex-row sm:flex-col justify-between items-center sm:items-start h-auto sm:h-56 sm:translate-y-8 transition-all duration-500"
                             >
@@ -88,11 +90,11 @@ export const TrustSection = () => (
                                     <div className="text-3xl md:text-5xl font-black tracking-tighter">4.9/5</div>
                                     <div className="text-[10px] md:text-xs font-bold text-white/80 uppercase tracking-widest mt-1">Elite Rating</div>
                                 </div>
-                            </motion.div>
+                            </MotionDiv>
 
                             {/* Stat 3: Wide Horizontal */}
                             {/* @ts-ignore */}
-                            <motion.div
+                            <MotionDiv
                                 whileHover={{ y: -8, scale: 1.02 }}
                                 className="sm:col-span-2 bg-gray-900 p-6 md:p-8 rounded-xl shadow-2xl shadow-black/10 text-white flex items-center justify-between sm:mt-8 group/card transition-all duration-500"
                             >
@@ -106,7 +108,7 @@ export const TrustSection = () => (
                                     </div>
                                 </div>
                                 <CheckCircle2 className="text-primary-500 opacity-20 group-hover/card:opacity-100 group-hover/card:scale-110 transition-all duration-500 w-8 h-8 md:w-10 md:h-10" />
-                            </motion.div>
+                            </MotionDiv>
                         </div>
                     </div>
                 </div>

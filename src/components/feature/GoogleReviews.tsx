@@ -2,6 +2,8 @@ import React from 'react';
 import { Star, CheckCircle2, MessageSquare, Quote } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const MotionDiv = motion.div as any;
+
 const REVIEWS = [
     {
         id: 1,
@@ -91,7 +93,7 @@ export const GoogleReviews = () => {
                 <header className="flex flex-col items-center text-center mb-20 space-y-6">
                     {/* Trust Badge */}
                     {/* @ts-ignore */}
-                    <motion.div
+                    <MotionDiv
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         className="flex items-center gap-3 bg-white/80 backdrop-blur-md px-5 py-2.5 rounded-2xl shadow-xl shadow-gray-200/50 border border-white"
@@ -107,7 +109,7 @@ export const GoogleReviews = () => {
                             </div>
                             <span className="text-[10px] font-black text-gray-900 uppercase tracking-widest mt-0.5">4.9/5 Rating</span>
                         </div>
-                    </motion.div>
+                    </MotionDiv>
 
                     <div className="space-y-4 max-w-2xl">
                         <h2 className="text-5xl md:text-7xl font-black text-gray-900 tracking-tighter leading-none">
@@ -116,7 +118,7 @@ export const GoogleReviews = () => {
                                 <span className="relative z-10 text-primary-500 italic">Loves Us.</span>
                                 {/* Stylistic underline */}
                                 {/* @ts-ignore */}
-                                <motion.div
+                                <MotionDiv
                                     initial={{ width: 0 }}
                                     whileInView={{ width: '100%' }}
                                     transition={{ duration: 1, delay: 0.5 }}
@@ -175,7 +177,7 @@ export const GoogleReviews = () => {
 
 const ReviewCard = ({ review }: { review: any }) => (
     /* @ts-ignore */
-    <motion.div
+    <MotionDiv
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, delay: review.delay }}
@@ -239,5 +241,5 @@ const ReviewCard = ({ review }: { review: any }) => (
                 </div>
             </div>
         </div>
-    </motion.div>
+    </MotionDiv>
 );
