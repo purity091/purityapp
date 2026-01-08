@@ -3,6 +3,9 @@ import React, { useRef } from 'react';
 import { Flame, Zap, Star, ShieldCheck, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Service } from '../../types';
+import timeSavingDealImage from '../../assets/images/time-saving-deal.jpg';
+import familyComfortImage from '../../assets/images/family-comfort-deluxe.jpg';
+import villaCompleteImage from '../../assets/images/villa-cleaning-complete.jpg';
 
 interface FlashDealsProps {
     onSelect: (service: Service) => void;
@@ -38,7 +41,7 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
             name: 'Ultimate Time-Saving Deal',
             price: 299,
             originalPrice: 600,
-            image: 'https://images.unsplash.com/photo-1527515545081-5db817172677?auto=format&fit=crop&q=80&w=800',
+            image: timeSavingDealImage,
             category: 'Value Pack',
             rating: 4.9,
             offerTag: 'Best Value',
@@ -74,7 +77,7 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
             name: 'Family Comfort Deluxe',
             price: 999,
             originalPrice: 1400,
-            image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800',
+            image: familyComfortImage,
             category: 'Package',
             rating: 4.9,
             offerTag: 'Popular',
@@ -104,6 +107,18 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
             offerTag: 'Villa Special',
             features: ['Large Villa Interior', 'Patio Sanitation', '4 Professional Team', 'Sanitization Shield'],
             description: 'Complete villa restoration. Every corner, every surface, handled with precision.'
+        },
+        {
+            id: 'offer-villa-complete',
+            name: 'Complete Inside & Outside Villa Cleaning',
+            price: 2500,
+            originalPrice: 4000,
+            image: villaCompleteImage,
+            category: 'Premium Villa Package',
+            rating: 5.0,
+            offerTag: 'Exclusive',
+            features: ['3 Men (Exterior)', '5 Ladies (Interior)', 'Full Deep Clean', 'Same-Day Service'],
+            description: 'Your Villa. Completely Renewed. Total cleanliness inside and out with two specialized teams working simultaneously.'
         }
     ];
 

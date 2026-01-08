@@ -54,7 +54,7 @@ Materials: ${booking.includeChemicals ? 'Yes' : 'No'}
 Date: ${booking.date} - ${booking.time}
 We would like to confirm your booking.`;
 
-        return `https://wa.me/966${phone}?text=${encodeURIComponent(message)}`;
+        return `https://wa.me/971${phone}?text=${encodeURIComponent(message)}`;
     };
 
     const stats = {

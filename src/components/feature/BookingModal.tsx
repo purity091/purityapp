@@ -119,7 +119,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             `Hours: ${formData.hours}%0A` +
             `Materials: ${formData.includeChemicals ? 'Yes' : 'No'}%0A` +
             `Date: ${formData.date} at ${formData.time}`;
-        window.open(`https://wa.me/966500000000?text=${message}`, '_blank');
+        window.open(`https://wa.me/971544556106?text=${message}`, '_blank');
         onClose();
     };
 

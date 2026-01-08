@@ -1,8 +1,15 @@
 import { Service } from '../types';
+import partyCleaningImage from '../assets/images/party-cleaning.jpg';
+import moveInOutImage from '../assets/images/move-in-out-cleaning.jpg';
+import curtainCleaningImage from '../assets/images/curtain-cleaning.jpg';
+import carpetCleaningImage from '../assets/images/carpet-cleaning.jpg';
+import deepCleaningImage from '../assets/images/deep-cleaning.jpg';
+import mattressCleaningImage from '../assets/images/mattress-cleaning.jpg';
+import floorCleaningImage from '../assets/images/floor-cleaning.jpg';
 
 export const services: Service[] = [
     {
-        id: '9',
+        id: 'deep-clean',
         name: 'Deep Cleaning',
         description: `Our Deep Cleaning service is an intensive, top-to-bottom cleaning solution designed to reach areas often missed in routine cleaning. It is ideal for homes, offices, or commercial spaces requiring complete sanitation and restoration.
 
@@ -17,7 +24,7 @@ Deep Cleaning is recommended for periodic maintenance, pre- or post-renovation, 
         price: 45,
         category: 'Home Cleaning',
         rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=800',
+        image: deepCleaningImage,
         offerTag: 'Recommended',
         soldCount: 200,
         icon: 'sparkles'
@@ -53,7 +60,7 @@ This service not only improves appearance but also extends the lifespan of floor
         originalPrice: 300,
         category: 'Flooring',
         rating: 4.9,
-        image: 'https://images.unsplash.com/photo-1584622781564-1d987f7333c1?auto=format&fit=crop&q=80&w=800',
+        image: floorCleaningImage,
         offerTag: 'Popular',
         isPopular: true,
         soldCount: 320,
@@ -71,7 +78,7 @@ This service is ideal for homes, offices, hotels, and commercial spaces, helping
         originalPrice: 250,
         category: 'Home Cleaning',
         rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800',
+        image: carpetCleaningImage,
         soldCount: 210,
         icon: 'home'
     },
@@ -87,7 +94,7 @@ Regular mattress cleaning improves sleep quality, reduces allergy symptoms, and 
         originalPrice: 200,
         category: 'Furniture',
         rating: 5.0,
-        image: 'https://images.unsplash.com/photo-1631049552057-403cdb8f0658?auto=format&fit=crop&q=80&w=800',
+        image: mattressCleaningImage,
         offerTag: 'Best Seller',
         soldCount: 540,
         icon: 'bed'
@@ -109,18 +116,13 @@ This service revitalizes furniture, enhances comfort, and helps maintain a clean
         icon: 'sofa'
     },
     {
-        id: '5',
+        id: 'curtain-cleaning',
         name: 'Curtain Cleaning',
-        description: `Curtains trap dust, smoke particles, allergens, and odors while often being overlooked. Our Curtain Cleaning service restores freshness and cleanliness without damaging fabric or structure.
-
-Depending on fabric type, we use on-site steam cleaning, low-moisture cleaning, or controlled dry-cleaning methods. This ensures minimal shrinkage, color protection, and effective dust removal.
-
-Clean curtains improve indoor air quality, enhance natural light, and refresh the overall look of the room.`,
+        description: 'Professional cleaning for all types of curtains. We remove dust, allergens, and stains while protecting the fabric.',
         price: 200,
-        originalPrice: 150,
-        category: 'Home Cleaning',
-        rating: 4.6,
-        image: 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800',
+        category: 'Upholstery Cleaning',
+        rating: 4.8,
+        image: curtainCleaningImage,
         soldCount: 150,
         icon: 'wind'
     },
@@ -181,39 +183,24 @@ All babysitters are background-checked, trained in first aid, and equipped to ha
         icon: 'heart'
     },
     {
-        id: '12',
+        id: 'move-in-out',
         name: 'Move In/Out Cleaning',
-        description: `Our Move In/Out Cleaning service ensures properties are spotless and ready for occupancy or handover. This specialized service is ideal for tenants, landlords, or homeowners transitioning between properties.
-
-Key tasks include:
-Kitchen & Bathroom: Degreasing, deep scrubbing, disinfecting surfaces, cabinets, appliances, sinks, toilets, bathtubs, and tiles.
-Floors & Carpets: Dust, stain, and debris removal; steam cleaning for carpets; polishing or waxing for hardwood and tiles.
-Walls & Fixtures: Spot cleaning, dusting light fixtures, switches, doors, and window sills.
-Odor Removal: Deodorizing rooms and closets to ensure a fresh environment.
-
-Move In/Out Cleaning guarantees the space is pristine, hygienic, and welcoming, helping landlords impress tenants and ensuring renters move into a clean, healthy home.`,
+        description: 'Comprehensive cleaning for empty homes to ensure they are ready for new occupants. We cover every corner.',
         price: 35,
         category: 'Home Cleaning',
-        rating: 4.8,
-        image: 'https://images.unsplash.com/photo-1560448075-bb485b067938?auto=format&fit=crop&q=80&w=800',
+        rating: 4.9,
+        image: moveInOutImage,
         soldCount: 150,
         icon: 'sparkles'
     },
     {
         id: '13',
         name: 'Party Cleaning',
-        description: `Our Party Cleaning service handles all pre- and post-event cleaning to keep your venue spotless, stress-free, and ready for guests.
-
-Services include:
-Pre-Party Preparation: Floor cleaning, surface dusting, table setup, and sanitization of kitchens and bathrooms.
-Post-Party Cleanup: Garbage disposal, leftover food removal, wiping surfaces, vacuuming or mopping floors, and sanitizing restrooms.
-Special Treatments: Carpet shampooing, furniture spot cleaning, and stain removal for spills.
-
-This service is perfect for birthday parties, corporate events, weddings, or social gatherings, saving you time and ensuring a safe, hygienic, and presentable environment for everyone.`,
+        description: 'Pre and post-party cleaning to bring your venue back to life. We handle the mess so you can enjoy the event.',
         price: 35,
-        category: 'Home Cleaning',
-        rating: 4.7,
-        image: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&q=80&w=800',
+        category: 'Event Services',
+        rating: 4.8,
+        image: partyCleaningImage,
         soldCount: 80,
         icon: 'sparkles'
     },
