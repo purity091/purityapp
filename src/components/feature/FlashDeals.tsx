@@ -123,9 +123,9 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
     ];
 
     return (
-        <section id="offers" className="space-y-8 py-10 mb-12 group relative scroll-mt-24">
+        <section id="offers" className="w-full space-y-8 py-10 mb-12 group relative scroll-mt-24 overflow-x-hidden lg:overflow-x-visible">
             {/* Header with Luxury Styling */}
-            <div className="flex justify-between items-end px-0">
+            <div className="flex justify-between items-end px-1">
                 <div className="space-y-2">
                     <motion.div
                         initial={{ opacity: 0, x: -10 }}
@@ -175,7 +175,7 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
 
             <div
                 ref={scrollRef}
-                className="flex overflow-x-auto gap-6 px-0 snap-x snap-mandatory no-scrollbar pb-10"
+                className="flex w-full overflow-x-auto overscroll-x-contain gap-6 px-1 snap-x snap-mandatory no-scrollbar pb-10 touch-pan-y"
             >
                 {packages.map((deal) => {
                     const discount = Math.round(((deal.originalPrice - deal.price) / deal.originalPrice) * 100);

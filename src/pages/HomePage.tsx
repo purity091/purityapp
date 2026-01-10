@@ -18,7 +18,7 @@ export const HomePage: React.FC = () => {
     const [selectedService, setSelectedService] = useState<Service | null>(null);
 
     return (
-        <div className="bg-gray-50/50 min-h-screen pb-20">
+        <div className="bg-gray-50/50 min-h-screen pb-20 w-full">
             <HomeHeader />
             <main className="w-full">
                 {/* Catalog & Feed Section with Containment */}

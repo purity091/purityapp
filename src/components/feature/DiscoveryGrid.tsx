@@ -111,9 +111,14 @@ export const DiscoveryGrid: React.FC<DiscoveryGridProps> = ({ services, onSelect
                             <div className="pt-2 flex items-center justify-between">
                                 <div className="flex flex-col">
                                     <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Starting</span>
-                                    <div className="flex items-baseline gap-1.5">
+                                    <div className="flex items-baseline gap-1">
                                         <span className="text-2xl font-black text-primary-600 tracking-tight">{service.price}</span>
                                         <span className="text-[10px] text-primary-600 font-bold uppercase">AED</span>
+                                        {service.priceUnit && (
+                                            <span className="text-[10px] text-gray-400 font-bold ml-0.5 whitespace-nowrap">
+                                                / {service.priceUnit.replace('per ', '')}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 <button className="bg-primary-600 text-white px-5 py-3 rounded-xl font-black text-[11px] shadow-lg shadow-primary-600/20 active:bg-primary-700 active:scale-95 transition-all hover:bg-primary-700 uppercase tracking-tighter">

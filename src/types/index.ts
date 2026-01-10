@@ -14,6 +14,7 @@ export interface Service {
     soldCount?: number;
     icon?: string;
     features?: string[];
+    priceUnit?: string;
 }
 
 export interface Booking {

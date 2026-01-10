@@ -22,6 +22,7 @@ High-touch Areas: Door handles, switches, remote controls, railings, and air ven
 
 Deep Cleaning is recommended for periodic maintenance, pre- or post-renovation, and situations requiring the highest level of hygiene. This service improves air quality, enhances the appearance of your space, and promotes a healthier living or working environment.`,
         price: 45,
+        priceUnit: 'per hour',
         category: 'Home Cleaning',
         rating: 5.0,
         image: deepCleaningImage,
@@ -42,6 +43,7 @@ Trash Removal: Collection and disposal of garbage and recyclables.
 
 This service helps maintain a consistently clean, welcoming, and safe environment, reducing buildup of dirt, allergens, and germs over time. It is ideal for busy households and professional workspaces seeking ongoing hygiene and organization.`,
         price: 35,
+        priceUnit: 'per hour',
         category: 'Home Cleaning',
         rating: 4.8,
         image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800',
@@ -57,6 +59,7 @@ The process begins with dust and debris removal to prevent scratches, followed b
 
 This service not only improves appearance but also extends the lifespan of flooring, reduces slip hazards, and ensures a healthier indoor environment.`,
         price: 200,
+        priceUnit: 'starts from',
         originalPrice: 300,
         category: 'Flooring',
         rating: 4.9,
@@ -75,6 +78,7 @@ We use advanced methods such as hot water extraction (steam cleaning) or low-moi
 
 This service is ideal for homes, offices, hotels, and commercial spaces, helping improve air quality, restore carpet texture, and maintain a fresh, clean appearance.`,
         price: 200,
+        priceUnit: 'per carpet',
         originalPrice: 250,
         category: 'Home Cleaning',
         rating: 4.8,
@@ -91,6 +95,7 @@ The process includes vacuum extraction with HEPA filtration, targeted stain trea
 
 Regular mattress cleaning improves sleep quality, reduces allergy symptoms, and extends the mattress lifespan while maintaining a healthier sleeping environment.`,
         price: 150,
+        priceUnit: 'per mattress',
         originalPrice: 200,
         category: 'Furniture',
         rating: 5.0,
@@ -108,6 +113,7 @@ The service starts with fabric inspection and testing, followed by deep vacuumin
 
 This service revitalizes furniture, enhances comfort, and helps maintain a clean and presentable living or office space.`,
         price: 35,
+        priceUnit: 'per seat',
         originalPrice: 180,
         category: 'Furniture',
         rating: 4.7,
@@ -120,6 +126,7 @@ This service revitalizes furniture, enhances comfort, and helps maintain a clean
         name: 'Curtain Cleaning',
         description: 'Professional cleaning for all types of curtains. We remove dust, allergens, and stains while protecting the fabric.',
         price: 200,
+        priceUnit: 'per curtain',
         category: 'Upholstery Cleaning',
         rating: 4.8,
         image: curtainCleaningImage,
@@ -136,8 +143,9 @@ Services include desk and workstation cleaning, floor care, carpet vacuuming, tr
 We follow structured cleaning checklists and can operate daily, weekly, or on a custom schedule, using safe disinfectants that meet workplace hygiene standards.
 
 A clean office enhances company image, reduces illness-related absences, and creates a professional atmosphere for staff and visitors.`,
-        price: 499,
-        originalPrice: 650,
+        price: 35,
+        priceUnit: 'per hour',
+        originalPrice: 70,
         category: 'Commercial',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800',
@@ -154,6 +162,7 @@ Services may include sweeping, mopping, dusting, kitchen and bathroom cleaning, 
 
 All staff are trained to follow hygiene standards, respect privacy, and handle household items with care. This service is ideal for busy families, working professionals, and elderly households seeking consistent home support.`,
         price: 35,
+        priceUnit: 'per hour',
         category: 'Home Cleaning',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=800',
@@ -175,6 +184,7 @@ Flexible hours, including part-time, full-time, or on-demand support.
 
 All babysitters are background-checked, trained in first aid, and equipped to handle emergencies. This service provides parents peace of mind while promoting safe, engaging, and structured care for children at home.`,
         price: 250,
+        priceUnit: 'per day',
         category: 'Care',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80&w=800',
@@ -187,6 +197,7 @@ All babysitters are background-checked, trained in first aid, and equipped to ha
         name: 'Move In/Out Cleaning',
         description: 'Comprehensive cleaning for empty homes to ensure they are ready for new occupants. We cover every corner.',
         price: 35,
+        priceUnit: 'per hour',
         category: 'Home Cleaning',
         rating: 4.9,
         image: moveInOutImage,
@@ -198,6 +209,7 @@ All babysitters are background-checked, trained in first aid, and equipped to ha
         name: 'Party Cleaning',
         description: 'Pre and post-party cleaning to bring your venue back to life. We handle the mess so you can enjoy the event.',
         price: 35,
+        priceUnit: 'per hour',
         category: 'Event Services',
         rating: 4.8,
         image: partyCleaningImage,
@@ -217,6 +229,7 @@ Optional Delivery: Cleaned items can be picked up and delivered to your home or 
 
 This service helps you maintain a fresh, neat, and polished wardrobe while saving time and effort for busy professionals and families.`,
         price: 35,
+        priceUnit: 'per hour',
         category: 'Laundry',
         rating: 4.8,
         image: 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=800',
@@ -237,6 +250,7 @@ Flexible schedules including short-term, overnight, or extended stays.
 
 All pet sitters are experienced with animals, trained in safety protocols, and committed to providing love and attention. This service ensures your pet experiences minimal stress and maximum care in your absence.`,
         price: 35,
+        priceUnit: 'per hour',
         category: 'Care',
         rating: 4.9,
         image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800',
