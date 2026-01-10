@@ -123,7 +123,7 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
     ];
 
     return (
-        <section id="offers" className="w-full space-y-8 py-10 mb-12 group relative scroll-mt-24 overflow-x-hidden lg:overflow-x-visible">
+        <section id="offers" className="w-full relative space-y-8 py-10 mb-12 group scroll-mt-24 overflow-hidden">
             {/* Header with Luxury Styling */}
             <div className="flex justify-between items-end px-1">
                 <div className="space-y-2">

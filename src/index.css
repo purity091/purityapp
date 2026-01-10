@@ -4,6 +4,11 @@
 @tailwind utilities;
 
 @layer base {
+  html, body {
+    @apply overflow-x-hidden max-w-[100vw];
+    overscroll-behavior-y: none; /* Optional: prevents standard pull-to-refresh on mobile if not desired, good for apps */
+  }
+  
   body {
     @apply font-sans antialiased text-gray-900 bg-gray-50;
   }
