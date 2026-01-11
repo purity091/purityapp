@@ -6,12 +6,12 @@ import { Sparkles, Star, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-r
 const OFFERS = [
     {
         id: 1,
-        title: "Royal Summer \nPackages ☀️",
-        desc: "Strongest offers on AC cleaning and sterilization available for a limited time.",
-        badge: "Save up to 70%",
+        title: "Purity: Your Trusted \nCleaning Partner 💎",
+        desc: "Experience the gold standard in home and office hygiene. We don't just clean; we care for your space.",
+        badge: "Purity Quality",
         gradient: "from-primary-600 via-primary-500 to-primary-400",
-        image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=600",
-        icon: <Sparkles size={16} className="text-accent-500" />
+        image: "https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&q=80&w=600",
+        icon: <Sparkles size={16} className="text-white" />
     },
     {
         id: 2,
@@ -45,7 +45,7 @@ export const DealsSlider: React.FC = () => {
     };
 
     return (
-        <section id="offers" className="pb-4 group relative px-0">
+        <section id="hero-slider" className="pb-4 group relative px-0">
             {/* Desktop Navigation Arrows */}
             <div className="hidden lg:block">
                 <button
@@ -75,7 +75,7 @@ export const DealsSlider: React.FC = () => {
                         className={`flex-none w-[85vw] sm:w-[500px] snap-center bg-gradient-to-br ${offer.gradient} rounded-xl p-6 text-white relative overflow-hidden shadow-lg border border-white/10`}
                     >
                         {/* Content */}
-                        <div className="relative z-10 space-y-3 h-full flex flex-col justify-between">
+                        <div className="relative z-10 space-y-3 h-full flex flex-col justify-center">
                             <div className="space-y-3">
                                 <div className="flex items-center gap-2">
                                     {offer.icon}
@@ -90,9 +90,6 @@ export const DealsSlider: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
-                            <button className="w-fit bg-white text-gray-900 px-5 py-2.5 rounded-xl text-xs font-bold shadow-sm hover:shadow-md active:scale-95 transition-all">
-                                View Deal
-                            </button>
                         </div>
 
                         {/* Image Overlay */}

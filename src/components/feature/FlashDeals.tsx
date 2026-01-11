@@ -28,7 +28,7 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
             id: 'offer-welcome',
             name: 'New Customer Welcome Deal',
             price: 99,
-            originalPrice: 400,
+            originalPrice: 200,
             image: 'https://images.unsplash.com/photo-1550963295-019d8a8a61c5?auto=format&fit=crop&q=80&w=800',
             category: 'Deep Cleaning',
             rating: 5.0,
@@ -175,10 +175,12 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
 
             <div
                 ref={scrollRef}
-                className="flex w-full overflow-x-auto overscroll-x-contain gap-6 px-1 snap-x snap-mandatory no-scrollbar pb-10 touch-pan-y"
+                className="flex w-full overflow-x-auto overscroll-x-contain gap-6 px-1 snap-x snap-mandatory no-scrollbar pb-10"
             >
                 {packages.map((deal) => {
-                    const discount = Math.round(((deal.originalPrice - deal.price) / deal.originalPrice) * 100);
+                    const discount = deal.originalPrice && deal.originalPrice > 0
+                        ? Math.round(((deal.originalPrice - deal.price) / deal.originalPrice) * 100)
+                        : 0;
 
                     return (
                         <div
@@ -190,10 +192,12 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
                             <div className="absolute inset-0 bg-primary-500/0 group-hover/card:bg-primary-500/[0.02] transition-colors duration-500 pointer-events-none" />
 
                             {/* Prominent Discount Badge */}
-                            <div className="absolute top-5 right-5 z-20 w-14 h-14 bg-accent-500 rounded-full flex flex-col items-center justify-center shadow-lg shadow-accent-500/40 rotate-12 group-hover/card:rotate-0 transition-transform duration-500 border-2 border-white">
-                                <span className="text-[10px] font-black text-black leading-none uppercase">Off</span>
-                                <span className="text-base font-black text-black leading-none">{discount}%</span>
-                            </div>
+                            {discount > 0 && (
+                                <div className="absolute top-5 right-5 z-20 w-14 h-14 bg-accent-500 rounded-full flex flex-col items-center justify-center shadow-lg shadow-accent-500/40 rotate-12 group-hover/card:rotate-0 transition-transform duration-500 border-2 border-white">
+                                    <span className="text-[10px] font-black text-black leading-none uppercase">Off</span>
+                                    <span className="text-base font-black text-black leading-none">{discount}%</span>
+                                </div>
+                            )}
 
                             {/* Elegant Image Section */}
                             <div className="relative h-56 overflow-hidden">
