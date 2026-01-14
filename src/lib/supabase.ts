@@ -15,4 +15,7 @@ if (supabaseUrl === 'https://placeholder.supabase.co') {
     console.warn('5. Restart the dev server');
 }
 
+const isConfigured = supabaseUrl !== 'https://placeholder.supabase.co' && supabaseAnonKey !== 'placeholder-key';
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const isSupabaseConfigured = () => isConfigured;
