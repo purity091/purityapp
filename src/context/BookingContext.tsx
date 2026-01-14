@@ -10,7 +10,7 @@ interface BookingContextType {
     deleteBooking: (id: string) => Promise<void>;
     getBookingById: (id: string) => Booking | undefined;
 }
-
+//hello
 export type CreateBookingData = Omit<Booking, 'id' | 'status' | 'createdAt'>;
 
 export interface BookingFormData {
