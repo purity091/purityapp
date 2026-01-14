@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 
-// تحذير في Console إذا لم تكن القيم موجودة
+// تحذير  في Console إذا لم تكن القيم موجودة
 if (supabaseUrl === 'https://placeholder.supabase.co') {
     console.warn('⚠️ Supabase URL not configured!');
     console.warn('📝 Follow these steps:');
