@@ -5,7 +5,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 interface BookingContextType {
     bookings: Booking[];
     loading: boolean;
-    addBooking: (booking: CreateBookingData) => Promise<void>;
+    addBooking: (booking: CreateBookingData) => Promise<{ synced: boolean }>;
     updateBookingStatus: (id: string, status: BookingStatus) => Promise<void>;
     deleteBooking: (id: string) => Promise<void>;
     getBookingById: (id: string) => Booking | undefined;
@@ -31,6 +31,30 @@ export interface BookingFormData {
     notes: string;
 }
 
+interface BookingDbRow {
+    id: string;
+    customer_name: string;
+    phone_number: string;
+    service_id: string;
+    service_name: string;
+    neighborhood: string;
+    hours: number;
+    date: string;
+    time: string;
+    number_of_workers: number;
+    number_of_rooms?: number;
+    number_of_carpets?: number;
+    number_of_single_mattresses?: number;
+    number_of_large_mattresses?: number;
+    number_of_sofa_seats?: number;
+    number_of_curtains?: number;
+    include_chemicals: boolean;
+    notes?: string;
+    total_price: number;
+    status: BookingStatus;
+    created_at: string;
+}
+
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
 
 export const useBookings = () => {
@@ -41,12 +65,31 @@ export const useBookings = () => {
     return context;
 };
 
+const LS_KEY = 'purity_bookings';
+
+const readFromLS = (): Booking[] => {
+    try {
+        const saved = localStorage.getItem(LS_KEY);
+        return saved ? JSON.parse(saved) : [];
+    } catch {
+        return [];
+    }
+};
+
+const writeToLS = (bookings: Booking[]) => {
+    try {
+        localStorage.setItem(LS_KEY, JSON.stringify(bookings));
+        window.dispatchEvent(new Event('purity:bookings-updated'));
+    } catch { /* ignore quota errors */ }
+};
+
 export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [bookings, setBookings] = useState<Booking[]>([]);
+    // Seed from localStorage immediately — no flash of empty state
+    const [bookings, setBookings] = useState<Booking[]>(readFromLS);
     const [loading, setLoading] = useState(false);
 
     // Helpers to map between DB (snake_case) and App (camelCase)
-    const mapFromDb = (data: any): Booking => ({
+    const mapFromDb = (data: BookingDbRow): Booking => ({
         id: data.id,
         customerName: data.customer_name,
         phoneNumber: data.phone_number,
@@ -94,9 +137,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const fetchBookings = async () => {
         if (!isSupabaseConfigured()) {
-            // Fallback to localStorage for demo/offline if Supabase is not ready
-            const saved = localStorage.getItem('purity_bookings');
-            if (saved) setBookings(JSON.parse(saved));
+            // Already seeded from localStorage in useState init — nothing extra needed
             return;
         }
 
@@ -108,8 +149,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (error) {
             console.error('Error fetching bookings:', error);
+            // Fall back to localStorage on Supabase error
+            setBookings(readFromLS());
         } else {
-            setBookings(data.map(mapFromDb));
+            const mapped = data.map(mapFromDb);
+            setBookings(mapped);
+            writeToLS(mapped); // Keep localStorage mirror in sync
         }
         setLoading(false);
     };
@@ -130,11 +175,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 subscription.unsubscribe();
             };
         }
+    // fetchBookings intentionally owns its Supabase subscription lifecycle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const addBooking = async (newBookingData: CreateBookingData) => {
         if (!isSupabaseConfigured()) {
-            // LocalStorage Fallback
             const newBooking: Booking = {
                 ...newBookingData,
                 id: Math.random().toString(36).substr(2, 9),
@@ -143,47 +189,60 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             };
             const updated = [newBooking, ...bookings];
             setBookings(updated);
-            localStorage.setItem('purity_bookings', JSON.stringify(updated));
-            return;
+            writeToLS(updated);
+            return { synced: false };
         }
 
-        const { error } = await supabase.from('bookings').insert([mapToDb(newBookingData)]);
+        const { data, error } = await supabase
+            .from('bookings')
+            .insert([mapToDb(newBookingData)])
+            .select()
+            .single();
+
         if (error) {
             console.error('Error adding booking:', error);
-            throw error;
+            // Supabase failed — save locally as fallback so user doesn't lose their booking
+            const fallback: Booking = {
+                ...newBookingData,
+                id: Math.random().toString(36).substr(2, 9),
+                status: 'pending',
+                createdAt: new Date().toISOString(),
+            };
+            const updated = [fallback, ...bookings];
+            setBookings(updated);
+            writeToLS(updated);
+            return { synced: false };
+        } else if (data) {
+            const newBooking = mapFromDb(data);
+            const updated = [newBooking, ...bookings];
+            setBookings(updated);
+            writeToLS(updated);
+            return { synced: true };
         }
+
+        return { synced: false };
     };
 
     const updateBookingStatus = async (id: string, status: BookingStatus) => {
-        if (!isSupabaseConfigured()) {
-            // LocalStorage Fallback
-            const updated = bookings.map(b => b.id === id ? { ...b, status } : b);
-            setBookings(updated);
-            localStorage.setItem('purity_bookings', JSON.stringify(updated));
-            return;
-        }
+        const updated = bookings.map(b => b.id === id ? { ...b, status } : b);
+        setBookings(updated);
+        writeToLS(updated);
+
+        if (!isSupabaseConfigured()) return;
 
         const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
-        if (error) {
-            console.error('Error updating booking:', error);
-            throw error;
-        }
+        if (error) console.error('Error updating booking:', error);
     };
 
     const deleteBooking = async (id: string) => {
-        if (!isSupabaseConfigured()) {
-            // LocalStorage Fallback
-            const updated = bookings.filter(b => b.id !== id);
-            setBookings(updated);
-            localStorage.setItem('purity_bookings', JSON.stringify(updated));
-            return;
-        }
+        const updated = bookings.filter(b => b.id !== id);
+        setBookings(updated);
+        writeToLS(updated);
+
+        if (!isSupabaseConfigured()) return;
 
         const { error } = await supabase.from('bookings').delete().eq('id', id);
-        if (error) {
-            console.error('Error deleting booking:', error);
-            throw error;
-        }
+        if (error) console.error('Error deleting booking:', error);
     };
 
     const getBookingById = (id: string) => {

@@ -35,7 +35,7 @@ export const AdminLoginPage: React.FC = () => {
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900">Admin Portal</h1>
                     <p className="text-gray-500 text-sm mt-2">Purity Management System</p>
-                    <p className="text-xs text-primary-600 mt-2">Powered by Supabase 🚀</p>
+                    <p className="text-xs text-amber-600 mt-2 font-medium">Local demo mode — backend not connected</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -84,7 +84,7 @@ export const AdminLoginPage: React.FC = () => {
 
                 <div className="mt-6 text-center">
                     <p className="text-xs text-gray-400">
-                        Secured by Supabase Authentication
+                        Demo credentials are stored locally in this browser.
                     </p>
                 </div>
             </div>

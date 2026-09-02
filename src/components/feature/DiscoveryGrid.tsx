@@ -1,7 +1,8 @@
-// @ts-nocheck
-import React, { useRef } from 'react';
-import { Star, ShoppingBag, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Star, TrendingUp, ChevronLeft, ChevronRight, Heart, Gift, Navigation } from 'lucide-react';
 import { Service } from '../../types';
+import { readWishlist, toggleWishlist } from '../../lib/wishlist';
+import { SafeImage } from '../ui/SafeImage';
 
 interface DiscoveryGridProps {
     services: Service[];
@@ -15,123 +16,168 @@ export const DiscoveryGrid: React.FC<DiscoveryGridProps> = ({ services, onSelect
     const scroll = (direction: 'left' | 'right') => {
         if (scrollRef.current) {
             const { scrollLeft, clientWidth } = scrollRef.current;
-            // Scroll by one card width approx
-            const scrollAmount = clientWidth > 600 ? clientWidth * 0.5 : clientWidth * 0.8;
-            const scrollTo = direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
-            scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+            const scrollAmount = clientWidth * 0.8;
+            scrollRef.current.scrollTo({
+                left: direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount,
+                behavior: 'smooth'
+            });
         }
     };
 
     return (
-        <section className="space-y-6 mb-12 group relative">
-            <div className="flex items-center justify-between px-0">
+        <section className="space-y-2.5 mb-4 relative">
+            {/* Section Header */}
+            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="p-1.5 bg-primary-50 rounded-lg">
-                        <TrendingUp size={18} className="text-primary-600" />
+                        <TrendingUp size={16} className="text-primary-600" />
                     </div>
-                    <h3 className="text-xl font-black text-gray-900 tracking-tight">{title || 'Discover the Best'}</h3>
+                    <h3 className="text-lg font-extrabold text-gray-900 tracking-tight">{title || 'Discover the Best'}</h3>
+                    <span className="text-xs font-black text-gray-700 bg-gray-200/80 rounded-full px-2.5 py-0.5 ml-1">{services.length}</span>
+                </div>
+
+                {/* Desktop scroll arrows */}
+                <div className="hidden lg:flex items-center gap-2">
+                    <button type="button" aria-label={`Scroll ${title || 'services'} left`} onClick={() => scroll('left')} className="w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-100 text-gray-700 hover:text-primary-700 transition-all active:scale-95">
+                        <ChevronLeft size={16} />
+                    </button>
+                    <button type="button" aria-label={`Scroll ${title || 'services'} right`} onClick={() => scroll('right')} className="w-8 h-8 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-100 text-gray-700 hover:text-primary-700 transition-all active:scale-95">
+                        <ChevronRight size={16} />
+                    </button>
                 </div>
             </div>
 
-            {/* Desktop Navigation Arrows */}
-            <div className="hidden lg:block">
-                <button
-                    onClick={() => scroll('left')}
-                    className="absolute left-[-20px] top-[60%] -translate-y-1/2 z-20 w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 active:scale-95 transition-all text-gray-400 hover:text-primary-600 opacity-0 group-hover:opacity-100 group-hover:left-[-15px]"
-                >
-                    <ChevronLeft size={24} />
-                </button>
-                <button
-                    onClick={() => scroll('right')}
-                    className="absolute right-[-20px] top-[60%] -translate-y-1/2 z-20 w-10 h-10 bg-white border border-gray-100 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 active:scale-95 transition-all text-gray-400 hover:text-primary-600 opacity-0 group-hover:opacity-100 group-hover:right-[-15px]"
-                >
-                    <ChevronRight size={24} />
-                </button>
-            </div>
-
-            <div
-                ref={scrollRef}
-                className="flex overflow-x-auto gap-5 px-0 snap-x snap-mandatory no-scrollbar pb-6"
-            >
+            {/* ── MOBILE: horizontal scroll carousel ── */}
+            <div ref={scrollRef} className="md:hidden flex overflow-x-auto gap-4 snap-x snap-mandatory no-scrollbar pb-4">
                 {services.map(service => (
-                    <div
-                        key={service.id}
-                        onClick={() => onSelect(service)}
-                        className="flex-none w-[280px] sm:w-[320px] bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 flex flex-col group/card active:scale-[0.99] cursor-pointer snap-start"
-                    >
-                        {/* Image Area */}
-                        <div className="relative h-48 sm:h-56 overflow-hidden">
-                            <img
-                                src={service.image}
-                                className="w-full h-full object-cover group-hover/card:scale-105 transition-transform duration-700"
-                                alt={service.name}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-90" />
-
-                            {/* Badges */}
-                            <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
-                                {service.offerTag && (
-                                    <span className="bg-rose-500 text-white text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg backdrop-blur-sm bg-opacity-95 uppercase tracking-wider">
-                                        {service.offerTag}
-                                    </span>
-                                )}
-                                {service.isPopular && (
-                                    <span className="bg-yellow-400 text-gray-900 text-[9px] font-black px-2.5 py-1 rounded-full shadow-lg flex items-center gap-1 uppercase tracking-wider">
-                                        <Star size={9} fill="currentColor" /> Featured
-                                    </span>
-                                )}
-                            </div>
-
-                            <div className="absolute bottom-4 left-4 text-white max-w-[85%] text-left" dir="ltr">
-                                <p className="text-[9px] font-bold opacity-90 uppercase tracking-widest mb-0.5 text-primary-200">{service.category}</p>
-                                <h4 className="text-lg font-black leading-tight drop-shadow-md">{service.name}</h4>
-                            </div>
-                        </div>
-
-                        {/* Content Area */}
-                        <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
-                            <div className="space-y-4">
-                                <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed font-medium">
-                                    {service.description}
-                                </p>
-
-                                <div className="flex items-center gap-3 text-[10px] font-bold text-gray-400 bg-gray-50/50 p-2.5 rounded-xl border border-gray-50">
-                                    <div className="flex items-center gap-1.5">
-                                        <Star size={12} className="text-yellow-500" fill="currentColor" />
-                                        <span className="text-gray-900 font-black text-xs">{service.rating}</span>
-                                    </div>
-                                    <div className="w-px h-3 bg-gray-200"></div>
-                                    <div className="flex items-center gap-1.5">
-                                        <ShoppingBag size={12} className="text-primary-500" />
-                                        <span className="text-gray-900 font-black text-xs">{service.soldCount}+</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="pt-2 flex items-center justify-between">
-                                <div className="flex flex-col">
-                                    <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Starting</span>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-2xl font-black text-primary-600 tracking-tight">{service.price}</span>
-                                        <span className="text-[10px] text-primary-600 font-bold uppercase">AED</span>
-                                        {service.priceUnit && (
-                                            <span className="text-[10px] text-gray-400 font-bold ml-0.5 whitespace-nowrap">
-                                                / {service.priceUnit.replace('per ', '')}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <button className="bg-primary-600 text-white px-5 py-3 rounded-xl font-black text-[11px] shadow-lg shadow-primary-600/20 active:bg-primary-700 active:scale-95 transition-all hover:bg-primary-700 uppercase tracking-tighter">
-                                    Book Now
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <GrouponCard key={service.id} service={service} onSelect={onSelect} />
                 ))}
-
-                {/* Spacer for scroll end */}
                 <div className="flex-none w-px" />
             </div>
+
+            {/* ── DESKTOP: 4-column compact Groupon-style grid ── */}
+            <div className="hidden md:grid md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {services.map(service => (
+                    <GrouponCard key={service.id} service={service} onSelect={onSelect} isGrid />
+                ))}
+            </div>
         </section>
+    );
+};
+
+/* ─── High Contrast Groupon Card Component ─── */
+const GrouponCard = ({ service, onSelect, isGrid = false }: { service: Service; onSelect: (s: Service) => void; isGrid?: boolean }) => {
+    const discount = service.originalPrice && service.originalPrice > service.price
+        ? Math.round(((service.originalPrice - service.price) / service.originalPrice) * 100)
+        : 25;
+
+    const originalPrice = service.originalPrice || Math.round(service.price * 1.35);
+    const [isWishlisted, setIsWishlisted] = useState(() => readWishlist().includes(service.id));
+
+    const handleWishlist = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        const next = toggleWishlist(service.id);
+        setIsWishlisted(next.includes(service.id));
+    };
+
+    return (
+        <div
+            onClick={() => onSelect(service)}
+            onKeyDown={(event) => {
+                if (event.target !== event.currentTarget) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    onSelect(service);
+                }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Book ${service.name}`}
+            className={`group relative flex cursor-pointer flex-col gap-2 text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 ${
+                isGrid ? 'w-full' : 'flex-none w-[82vw] max-w-[270px] snap-start sm:w-[310px]'
+            }`}
+        >
+            {/* 1. Image Container (Aspect-Video 16:9 ratio) */}
+            <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-200/90 shadow-sm">
+                <SafeImage
+                    src={service.image}
+                    alt={service.name}
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+
+                {/* Top-Left Badge - High Contrast */}
+                <span className="absolute left-2.5 top-2.5 flex items-center gap-1 bg-white border border-gray-300 text-gray-900 text-[11px] font-black px-2 py-0.5 rounded-md shadow-md">
+                    <Gift size={12} className="text-pink-600" />
+                    <span className="truncate max-w-[120px] text-gray-900">{service.offerTag || 'Popular Deal'}</span>
+                </span>
+
+                {/* Top-Right Wishlist Button */}
+                <button
+                    onClick={handleWishlist}
+                    aria-label={isWishlisted ? `Remove ${service.name} from wishlist` : `Add ${service.name} to wishlist`}
+                    title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                    className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all group/heart"
+                >
+                    <Heart size={15} className={isWishlisted ? 'text-red-600 fill-red-600' : 'text-gray-900 group-hover/heart:text-red-600 group-hover/heart:fill-red-600 transition-colors'} />
+                </button>
+            </div>
+
+            {/* 2. Content Info - High Contrast Typography */}
+            <div className="flex flex-1 flex-col gap-1 overflow-hidden px-0.5">
+                {/* Merchant Name */}
+                <div className="hidden" aria-hidden="true">
+                    <span className="text-xs font-bold text-gray-700">Purity Home Dubai · <span className="text-gray-900 font-extrabold">{service.category}</span></span>
+                </div>
+
+                {/* Deal Title */}
+                <h3 className="line-clamp-2 text-sm sm:text-base font-black text-gray-900 leading-snug group-hover:underline decoration-gray-900">
+                    {service.name}
+                </h3>
+
+                {/* Location */}
+                <div className="flex flex-row justify-between items-center gap-x-2 text-xs font-bold text-gray-800">
+                    <span className="truncate">Dubai, UAE</span>
+                    <span className="flex items-center gap-1 text-xs font-extrabold text-gray-700 underline decoration-dotted">
+                        <Navigation size={10} className="rotate-90 text-gray-600" />
+                        Dubai Central
+                    </span>
+                </div>
+
+                {/* Rating Row */}
+                <div className="inline-flex items-center gap-1 mt-0.5">
+                    <div className="flex items-center gap-0.5 text-amber-500">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <Star
+                                key={i}
+                                size={12}
+                                className={i <= Math.round(service.rating) ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}
+                            />
+                        ))}
+                    </div>
+                    <span className="font-black text-xs text-gray-900">{service.rating}</span>
+                    <span className="text-xs font-bold text-gray-700">({service.soldCount || 120})</span>
+                </div>
+
+                {/* Pricing Block (Groupon Exact Style with Ultra-High Contrast) */}
+                <div className="mt-1 flex flex-col gap-0.5">
+                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                        {/* Original Price */}
+                        <span className="text-xs text-gray-500 font-bold line-through decoration-gray-400">
+                            AED {originalPrice}
+                        </span>
+
+                        {/* Sell Price */}
+                        <span className="text-base font-black text-emerald-700">
+                            AED {service.price}
+                        </span>
+
+                        {/* Discount Badge */}
+                        <span className="text-[11px] font-black text-emerald-800 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded-sm">
+                            -{discount}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 };

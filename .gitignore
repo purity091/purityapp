@@ -14,8 +14,25 @@ dist-ssr
 
 # Environment variables
 .env
+.env.*
+!.env.example
+!.env.local.example
+!.env.namecheap.template
+!.env.supabase.template
 .env.local
 .env.production
+
+# Local test and API client artifacts
+test-login.*
+Purity_API.postman_collection.json
+
+# Secrets and local deployment state
+*.pem
+*.key
+*.crt
+.vercel
+coverage
+.cache
 
 # Editor directories and files
 .vscode/*

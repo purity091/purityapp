@@ -4,13 +4,13 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    @apply overflow-x-hidden max-w-[100vw];
-    overscroll-behavior-y: none; /* Optional: prevents standard pull-to-refresh on mobile if not desired, good for apps */
+  html {
+    scroll-behavior: smooth;
   }
-  
+
   body {
-    @apply font-sans antialiased text-gray-900 bg-gray-50;
+    @apply font-sans antialiased text-gray-900 bg-gray-50 overflow-x-hidden;
+    min-height: 100vh;
   }
 }
 
@@ -36,5 +36,5 @@
 }
 
 .pb-safe-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 20px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

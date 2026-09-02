@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface User {
     email: string;
@@ -23,27 +23,27 @@ export const useAuth = () => {
     return context;
 };
 
-// بيانات Admin المؤقتة
+const readSavedUser = (): User | null => {
+    const savedUser = localStorage.getItem('purity_user');
+    if (!savedUser) return null;
+    try {
+        return JSON.parse(savedUser) as User;
+    } catch {
+        localStorage.removeItem('purity_user');
+        return null;
+    }
+};
+
+// Development-only credentials are supplied through the ignored local .env file.
+// Production authentication must be handled by a server-side provider.
 const ADMIN_CREDENTIALS = {
-    email: 'admin@purity.com',
-    password: 'Admin@2025!',
+    email: import.meta.env.VITE_ADMIN_EMAIL || '',
+    password: import.meta.env.VITE_ADMIN_PASSWORD || '',
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(readSavedUser);
     const [isLoading, setIsLoading] = useState(false);
-
-    // تحميل المستخدم من localStorage
-    useEffect(() => {
-        const savedUser = localStorage.getItem('purity_user');
-        if (savedUser) {
-            try {
-                setUser(JSON.parse(savedUser));
-            } catch (e) {
-                localStorage.removeItem('purity_user');
-            }
-        }
-    }, []);
 
     // تسجيل الدخول
     const login = async (email: string, password: string) => {
@@ -51,6 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // محاكاة تأخير API
         await new Promise(resolve => setTimeout(resolve, 500));
+
+        if (!ADMIN_CREDENTIALS.email || !ADMIN_CREDENTIALS.password) {
+            setIsLoading(false);
+            return {
+                success: false,
+                message: 'Admin login is not configured for this environment',
+            };
+        }
 
         if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
             const userData = {

@@ -102,9 +102,11 @@ export const SAUDI_NEIGHBORHOODS = [
 export const TIME_SLOTS = [
     '9:00 AM – 12:00 PM',
     '12:00 PM – 3:00 PM',
-    '3:00 PM – 6:00 PM'
+    '3:00 PM – 6:00 PM',
+    '6:00 PM – 8:00 PM'
 ];
 
 export const CATEGORIES = [
-    'Home Cleaning', 'Furniture', 'Flooring', 'Commercial', 'Care', 'Laundry'
+    'Home Cleaning', 'Furniture', 'Flooring', 'Commercial', 'Care', 'Laundry',
+    'Upholstery Cleaning', 'Event Services'
 ];

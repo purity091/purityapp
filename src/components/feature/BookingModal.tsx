@@ -1,18 +1,66 @@
 // @ts-nocheck
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Calendar, Clock, MapPin, Loader2, CheckCircle2, User, Phone, FileText, Tag, Info, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { Calendar, MapPin, Loader2, CheckCircle2, Heart, Share2, Star, Gift, Eye } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Select, TextArea } from '../ui/Input';
 import { useBookings, BookingFormData, CreateBookingData } from '../../context/BookingContext';
 import { Service, SAUDI_NEIGHBORHOODS, TIME_SLOTS } from '../../types';
+import { readWishlist, toggleWishlist } from '../../lib/wishlist';
+import { SafeImage } from '../ui/SafeImage';
 
 interface BookingModalProps {
     isOpen: boolean;
     onClose: () => void;
     service: Service | null;
 }
+
+const HOURLY_SERVICE_NAMES = [
+    'Housekeeping / Part-time Maid',
+    'Deep Cleaning',
+    'Regular Cleaning',
+    'Move In/Out Cleaning',
+    'Party Cleaning',
+    'Wash and Iron',
+    'Pet Sitting',
+];
+
+const MATERIAL_SERVICE_NAMES = [
+    'Deep Cleaning',
+    'Regular Cleaning',
+    'Move In/Out Cleaning',
+    'Party Cleaning',
+    'Wash and Iron',
+    'Pet Sitting',
+];
+
+const calculateBookingTotal = (service: Service, formData: BookingFormData) => {
+    let total = service.price;
+
+    if (HOURLY_SERVICE_NAMES.includes(service.name)) {
+        total = service.price * formData.hours * formData.numberOfWorkers;
+    } else if (service.name === 'Babysitting At Home') {
+        total = service.price * formData.numberOfWorkers;
+    } else if (service.name === 'Floor Cleaning') {
+        total = formData.numberOfRooms === 1 ? 200 : (formData.numberOfRooms === 2 ? 300 : formData.numberOfRooms * 150);
+    } else if (service.name === 'Carpet Cleaning') {
+        total = 200 * formData.numberOfCarpets;
+    } else if (service.name === 'Mattress Cleaning') {
+        total = (150 * formData.numberOfSingleMattresses) + (200 * formData.numberOfLargeMattresses);
+        if (total === 0) total = 150;
+    } else if (service.name === 'Sofa Cleaning') {
+        total = 35 * formData.numberOfSofaSeats;
+    } else if (service.name === 'Curtain Cleaning') {
+        total = 200 * formData.numberOfCurtains;
+    }
+
+    if (MATERIAL_SERVICE_NAMES.includes(service.name) && formData.includeChemicals) {
+        total += 30;
+    }
+
+    return total;
+};
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, service }) => {
     const { addBooking } = useBookings();
@@ -34,14 +82,24 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
         notes: '',
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formError, setFormError] = useState('');
+    const [saveNotice, setSaveNotice] = useState('');
+    const [shareNotice, setShareNotice] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
-    const [activeTab, setActiveTab] = useState<'details' | 'book'>('book');
-    const [showNotes, setShowNotes] = useState(false);
+    const [activeDetailTab, setActiveDetailTab] = useState<'about' | 'needtoknow' | 'redeem' | 'reviews'>('about');
+    const [isWishlisted, setIsWishlisted] = useState(false);
+
+    const today = new Date();
+    const todayStr = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
     useEffect(() => {
         if (isOpen) {
             setShowSuccess(false);
-            setActiveTab('book');
+            setFormError('');
+            setSaveNotice('');
+            setShareNotice('');
+            setActiveDetailTab('about');
+            setIsWishlisted(readWishlist().includes(service?.id || ''));
             setFormData({
                 customerName: '',
                 phoneNumber: '',
@@ -55,47 +113,40 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                 numberOfSofaSeats: 3,
                 numberOfCurtains: 1,
                 includeChemicals: false,
-                date: '',
+                date: todayStr,
                 time: '',
                 notes: '',
             });
         }
-    }, [isOpen]);
+    }, [isOpen, todayStr, service?.id]);
 
     if (!service) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const normalizedPhone = formData.phoneNumber.replace(/[\s-]/g, '');
+        if (!formData.customerName.trim()) {
+            setFormError('Please enter your full name.');
+            return;
+        }
+        if (!/^(05\d{8}|\+9715\d{8})$/.test(normalizedPhone)) {
+            setFormError('Please enter a valid UAE mobile number, for example 05XXXXXXXX.');
+            return;
+        }
+        if (!formData.neighborhood || !formData.date || !formData.time) {
+            setFormError('Please complete your area, date, and time before booking.');
+            return;
+        }
+        if (formData.date < todayStr) {
+            setFormError('Please select today or a future date for your appointment.');
+            return;
+        }
+
+        setFormError('');
         setIsSubmitting(true);
 
-        const isHourly = ['Housekeeping / Part-time Maid', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name);
-        const isDaily = service.name === 'Babysitting At Home';
-
-        let calculatedPrice = 0;
-
-        if (isHourly) {
-            calculatedPrice = service.price * formData.hours * formData.numberOfWorkers;
-        } else if (isDaily) {
-            calculatedPrice = service.price * formData.numberOfWorkers;
-        } else if (service.name === 'Floor Cleaning') {
-            calculatedPrice = formData.numberOfRooms === 1 ? 200 : (formData.numberOfRooms === 2 ? 300 : formData.numberOfRooms * 150);
-        } else if (service.name === 'Carpet Cleaning') {
-            calculatedPrice = 200 * formData.numberOfCarpets;
-        } else if (service.name === 'Mattress Cleaning') {
-            calculatedPrice = (150 * formData.numberOfSingleMattresses) + (200 * formData.numberOfLargeMattresses);
-            if (calculatedPrice === 0) calculatedPrice = 150; // Fallback
-        } else if (service.name === 'Sofa Cleaning') {
-            calculatedPrice = 35 * formData.numberOfSofaSeats;
-        } else if (service.name === 'Curtain Cleaning') {
-            calculatedPrice = 200 * formData.numberOfCurtains;
-        } else {
-            calculatedPrice = service.price;
-        }
-
-        // Add 30 AED for materials if selected (For Cleaning, Laundry, and Care services)
-        if (['Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name) && formData.includeChemicals) {
-            calculatedPrice += 30;
-        }
+        const calculatedPrice = calculateBookingTotal(service, formData);
 
         const bookingData: CreateBookingData = {
             ...formData,
@@ -104,618 +155,505 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             totalPrice: calculatedPrice
         };
 
-        await new Promise(resolve => setTimeout(resolve, 1500));
-
-        addBooking(bookingData);
-        setIsSubmitting(false);
-        setShowSuccess(true);
+        try {
+            const saveResult = await addBooking(bookingData);
+            setSaveNotice(saveResult.synced ? '' : 'Your booking is saved only on this device. Please complete WhatsApp confirmation so our team receives it.');
+            setShowSuccess(true);
+        } catch {
+            setFormError('We could not save your booking. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleWhatsappRedirect = () => {
-        const message = `Hello, I would like to confirm my booking:%0A` +
-            `Service: ${service.name}%0A` +
-            `Name: ${formData.customerName}%0A` +
-            `Workers: ${formData.numberOfWorkers}%0A` +
-            `Hours: ${formData.hours}%0A` +
-            `Materials: ${formData.includeChemicals ? 'Yes' : 'No'}%0A` +
-            `Date: ${formData.date} at ${formData.time}`;
-        window.open(`https://wa.me/971544556106?text=${message}`, '_blank');
+        const isHourly = HOURLY_SERVICE_NAMES.includes(service.name);
+        const isDaily = service.name === 'Babysitting At Home';
+        const calculatedPrice = calculateBookingTotal(service, formData);
+
+        const messageLines = [
+            `Hello, I would like to confirm my booking:`,
+            `Service: ${service.name}`,
+            `Name: ${formData.customerName}`,
+            `Phone: ${formData.phoneNumber}`,
+            `Neighborhood: ${formData.neighborhood || 'N/A'}`,
+            `Date & Time: ${formData.date} at ${formData.time}`
+        ];
+
+        if (isHourly) {
+            messageLines.push(`Hours: ${formData.hours}`);
+            messageLines.push(`Workers: ${formData.numberOfWorkers}`);
+        } else if (isDaily) {
+            messageLines.push(`Workers: ${formData.numberOfWorkers}`);
+        } else if (service.name === 'Floor Cleaning') {
+            messageLines.push(`Rooms: ${formData.numberOfRooms}`);
+        } else if (service.name === 'Carpet Cleaning') {
+            messageLines.push(`Carpets: ${formData.numberOfCarpets}`);
+        } else if (service.name === 'Mattress Cleaning') {
+            messageLines.push(`Single Mattresses: ${formData.numberOfSingleMattresses}`);
+            messageLines.push(`Large Mattresses: ${formData.numberOfLargeMattresses}`);
+        } else if (service.name === 'Sofa Cleaning') {
+            messageLines.push(`Sofa Seats: ${formData.numberOfSofaSeats}`);
+        } else if (service.name === 'Curtain Cleaning') {
+            messageLines.push(`Curtains: ${formData.numberOfCurtains}`);
+        }
+
+        if (MATERIAL_SERVICE_NAMES.includes(service.name)) {
+            messageLines.push(`Materials: ${formData.includeChemicals ? 'Yes (+30 AED)' : 'No'}`);
+        }
+
+        if (formData.notes) {
+            messageLines.push(`Notes: ${formData.notes}`);
+        }
+
+        messageLines.push(`Total Price: ${calculatedPrice.toFixed(2)} AED`);
+
+        const fullMessage = messageLines.join('\n');
+        window.location.href = `https://wa.me/971544556106?text=${encodeURIComponent(fullMessage)}`;
         onClose();
     };
+
+    const handleWishlist = () => {
+        const next = toggleWishlist(service.id);
+        setIsWishlisted(next.includes(service.id));
+    };
+
+    const handleShare = async () => {
+        const shareText = `${service.name} - Purity Home Services (${service.price} AED)`;
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: service.name, text: shareText, url: window.location.href });
+                return;
+            }
+            if (navigator.clipboard) {
+                await navigator.clipboard.writeText(shareText);
+                setShareNotice('Service details copied.');
+            } else {
+                setShareNotice('Sharing is not available on this browser.');
+            }
+            window.setTimeout(() => setShareNotice(''), 2500);
+        } catch {
+            // Sharing can be cancelled by the user; no error state is needed.
+        }
+    };
+
+    const finalTotalPrice = calculateBookingTotal(service, formData);
+    const originalPriceDisplay = service.originalPrice || Math.round(service.price * 1.45);
+    const discountPercentage = Math.round(((originalPriceDisplay - service.price) / originalPriceDisplay) * 100);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={showSuccess ? "Success" : service.name} isDismissible={false}>
             <AnimatePresence mode="wait">
                 {showSuccess ? (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="flex flex-col items-center justify-center py-10 text-center space-y-6"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="py-3 space-y-4"
                     >
-                        <div className="relative">
-                            <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1.2 }}
-                                transition={{ type: "spring", stiffness: 200, damping: 10 }}
-                                className="w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center text-primary-500 shadow-inner"
-                            >
-                                <CheckCircle2 size={40} />
-                            </motion.div>
-                            <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                                className="absolute -top-1 -right-1 text-accent-500"
-                            >
-                                <Sparkles size={20} />
-                            </motion.div>
+                        {/* Header */}
+                        <div className="flex flex-col items-center gap-2 text-center pb-4 border-b border-gray-100">
+                            <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                                <CheckCircle2 size={34} className="text-white" strokeWidth={2.5} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-black text-gray-900">Booking Received!</h3>
+                                <p className="text-xs text-gray-500 font-semibold mt-0.5">One last step to confirm your appointment →</p>
+                                {saveNotice && <p className="mt-2 max-w-xs rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10px] font-semibold leading-4 text-amber-800">{saveNotice}</p>}
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <h3 className="text-2xl font-bold text-gray-900">Booking Confirmed!</h3>
-                            <p className="text-gray-500 px-6 leading-relaxed max-w-xs mx-auto text-sm">
-                                Your request is being processed. Please confirm on WhatsApp to finalize your appointment with our team.
-                            </p>
+
+                        {/* Two-column visual status cards */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {/* Card 1: Done */}
+                            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 flex flex-col items-center text-center gap-2">
+                                <div className="w-11 h-11 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                                    <CheckCircle2 size={22} strokeWidth={2.5} />
+                                </div>
+                                <div>
+                                    <span className="text-sm font-black text-emerald-900 block">Done ✓</span>
+                                    <span className="text-[11px] text-emerald-800 font-semibold leading-snug block mt-0.5">Your booking details<br/>have been saved</span>
+                                </div>
+                            </div>
+
+                            {/* Card 2: Action needed */}
+                            <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 flex flex-col items-center text-center gap-2 relative overflow-hidden">
+                                <span className="absolute top-2.5 right-2.5 flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                </span>
+                                <div className="w-11 h-11 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-sm">
+                                    <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                </div>
+                                <div>
+                                    <span className="text-sm font-black text-amber-900 block">Action Required</span>
+                                    <span className="text-[11px] text-amber-800 font-semibold leading-snug block mt-0.5">Tap below to open WhatsApp<br/>& finalize your booking</span>
+                                </div>
+                            </div>
                         </div>
+
+                        {/* Big CTA */}
                         <Button
                             onClick={handleWhatsappRedirect}
-                            className="w-full mt-4 bg-primary-500 hover:bg-primary-600 text-white shadow-xl shadow-primary-500/20 py-4"
-                            size="lg"
+                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-600/25 py-4 text-sm rounded-2xl flex items-center justify-center gap-2.5"
                         >
-                            Confirm on WhatsApp
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-none" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                            Open WhatsApp to Confirm Booking
                         </Button>
+                        <p className="text-center text-[10px] text-gray-500 font-semibold">
+                            Your booking is not final until confirmed via WhatsApp.
+                        </p>
                     </motion.div>
                 ) : (
-                    <div className="flex flex-col h-full md:max-h-[80vh]">
-                        {/* Apple-Style Segmented Control */}
-                        <div className="flex-none flex p-1 bg-gray-100 rounded-xl mb-6 relative">
-                            <motion.div
-                                className="absolute top-1 bottom-1 bg-white rounded-lg shadow-sm z-0"
-                                layoutId="activeTab"
-                                animate={{
-                                    left: activeTab === 'book' ? '4px' : '50%',
-                                    right: activeTab === 'book' ? '50%' : '4px'
-                                }}
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                            />
-                            <button
-                                onClick={() => setActiveTab('book')}
-                                className={`relative z-10 flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${activeTab === 'book' ? 'text-gray-900' : 'text-gray-400'}`}
-                            >
-                                Book Service
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('details')}
-                                className={`relative z-10 flex-1 py-2 text-xs font-bold rounded-lg transition-colors ${activeTab === 'details' ? 'text-gray-900' : 'text-gray-400'}`}
-                            >
-                                Service Details
-                            </button>
-                        </div>
+                    <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-12 md:gap-6">
 
-                        {/* Scrollable Content Area */}
-                        <div className="flex-1 overflow-y-auto no-scrollbar -mx-6 px-6 pb-20">
-                            <AnimatePresence mode="wait">
-                                {activeTab === 'details' ? (
-                                    <motion.div
-                                        key="details"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        className="space-y-6"
+                        {/* LEFT COLUMN: Groupon Detail View (Title, Subtitle, Image Gallery, Tabs, Descriptions) */}
+                        <div className="space-y-3 md:col-span-7 md:space-y-4">
+                            {/* Service Header Info */}
+                            <div className="space-y-2">
+                                <h2 className="text-lg font-black leading-tight tracking-tight text-gray-900 sm:text-2xl">
+                                    {service.name} <span className="text-emerald-700 font-extrabold text-lg sm:text-xl">(Up to {discountPercentage}% Off)</span>
+                                </h2>
+
+                                {/* Merchant & Location Bar */}
+                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-800 font-bold">
+                                    <span className="text-gray-900 font-extrabold">Purity Home Services</span>
+                                    <span>•</span>
+                                    <span className="text-gray-800">Dubai, UAE</span>
+                                    <span>•</span>
+                                    <span className="text-gray-800 flex items-center gap-1">
+                                        <MapPin size={12} className="text-rose-500 inline" /> All Neighborhoods
+                                    </span>
+                                    <span>•</span>
+                                    <div className="flex items-center gap-1 text-amber-500 font-black">
+                                        <Star size={13} fill="currentColor" />
+                                        <span>4.9</span>
+                                        <span className="text-gray-700 font-bold">(120+ reviews)</span>
+                                    </div>
+                                </div>
+
+                                {/* Popular Gift Badge */}
+                                <div className="flex items-center gap-1.5 bg-purple-50 text-purple-800 border border-purple-200/80 px-2.5 py-0.5 rounded-full w-fit text-[11px] font-extrabold">
+                                    <Gift size={12} />
+                                    <span>Popular Verified Service</span>
+                                </div>
+                            </div>
+
+                            {/* Service Hero Image & Action Overlay (16:9 Aspect Ratio Maintained) */}
+                            <div className="relative aspect-[16/9] max-h-44 w-full rounded-xl overflow-hidden shadow-xs group">
+                                <SafeImage src={service.image} alt={service.name} loading="eager" className="w-full h-full object-cover object-center" />
+                                <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 z-10">
+                                    <button
+                                        type="button"
+                                        onClick={handleWishlist}
+                                        aria-label={isWishlisted ? 'Remove service from wishlist' : 'Add service to wishlist'}
+                                        title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                                        className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-rose-600 shadow-sm transition-all"
                                     >
-                                        <div className="aspect-video w-full rounded-xl overflow-hidden shadow-sm relative group">
-                                            <img src={service.image} alt={service.name} className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-6">
-                                                <span className="bg-primary-500 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">{service.category}</span>
-                                            </div>
-                                        </div>
+                                        <Heart size={14} fill={isWishlisted ? '#e11d48' : 'none'} className={isWishlisted ? 'text-rose-600' : ''} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={handleShare}
+                                        aria-label="Share service"
+                                        title="Share service"
+                                        className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-primary-600 shadow-sm transition-all"
+                                    >
+                                        <Share2 size={14} />
+                                    </button>
+                                </div>
+                            </div>
+                            {shareNotice && (
+                                <p role="status" aria-live="polite" className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[11px] font-semibold text-emerald-800">
+                                    {shareNotice}
+                                </p>
+                            )}
 
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-xl font-bold text-gray-900 leading-tight">{service.name}</h3>
-                                                <div className="text-right">
-                                                    <div className="text-2xl font-bold text-primary-500">
-                                                        {service.price}
-                                                        <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold ml-1">
-                                                            AED {['Housekeeping / Part-time Maid', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name) ? '/ HR' : (service.name === 'Babysitting At Home' ? '/ DAY' : '')}
-                                                        </span>
-                                                    </div>
-                                                    {service.originalPrice && (
-                                                        <div className="text-sm text-gray-400 line-through opacity-60">{service.originalPrice} AED</div>
-                                                    )}
-                                                </div>
-                                            </div>
+                            {/* Groupon-style Section Navigation Tabs */}
+                            <div className="flex gap-4 overflow-x-auto whitespace-nowrap border-b border-gray-200 pt-1 text-[11px] font-black text-gray-800 md:gap-6 md:text-xs">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveDetailTab('about')}
+                                    className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'about' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
+                                >
+                                    About
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveDetailTab('needtoknow')}
+                                    className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'needtoknow' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
+                                >
+                                    Need To Know Info
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveDetailTab('redeem')}
+                                    className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'redeem' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
+                                >
+                                    Where To Redeem
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveDetailTab('reviews')}
+                                    className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'reviews' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
+                                >
+                                    Reviews
+                                </button>
+                            </div>
 
-                                            <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 flex flex-col gap-2">
-                                                <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                    <FileText size={12} className="text-primary-500" /> Description
-                                                </h4>
-                                                <p className="text-gray-600 text-xs leading-relaxed whitespace-pre-line">
-                                                    {service.description}
-                                                </p>
-                                            </div>
-
-                                            <div className="grid grid-cols-2 gap-3">
+                            {/* Tab Content Display */}
+                            <div className="text-xs text-gray-800 space-y-3 font-medium">
+                                {activeDetailTab === 'about' && (
+                                    <div className="space-y-3">
+                                        <p className="leading-relaxed text-gray-800 font-semibold">
+                                            {service.description}
+                                        </p>
+                                        <div className="space-y-2 pt-1">
+                                            <h4 className="font-extrabold text-gray-900 text-xs">What We Offer:</h4>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {[
-                                                    { icon: <CheckCircle2 size={14} />, label: "Expert Team" },
-                                                    { icon: <Clock size={14} />, label: "Flexible Time" }
+                                                    "Professional Vetted Staff",
+                                                    "Hotel Standard Cleaning",
+                                                    "Eco-Friendly Materials",
+                                                    "Flexible Time Slots"
                                                 ].map((item, idx) => (
-                                                    <div key={idx} className="bg-white border border-gray-100 p-3 rounded-xl flex items-center gap-3 shadow-sm">
-                                                        <div className="w-7 h-7 rounded-full bg-primary-50 flex items-center justify-center text-primary-500">
-                                                            {item.icon}
-                                                        </div>
-                                                        <span className="text-xs font-bold text-gray-700">{item.label}</span>
+                                                    <div key={idx} className="flex items-center gap-2 bg-gray-50 border border-gray-200/80 p-2 rounded-xl">
+                                                        <CheckCircle2 size={14} className="text-emerald-600 flex-none" />
+                                                        <span className="font-bold text-gray-900">{item}</span>
                                                     </div>
                                                 ))}
                                             </div>
                                         </div>
+                                    </div>
+                                )}
 
-                                        <Button onClick={() => setActiveTab('book')} className="w-full py-4 text-sm font-bold mt-4 shadow-lg shadow-primary-500/10 rounded-xl">
-                                            Book this service
-                                        </Button>
-                                    </motion.div>
-                                ) : (
-                                    <motion.form
-                                        key="book"
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        onSubmit={handleSubmit}
-                                        className="space-y-4"
-                                    >
-                                        {/* Group 1: Contact & Location */}
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
-                                            <div className="space-y-3">
-                                                <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                    <User size={12} /> Contact Info
-                                                </h5>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <Input
-                                                        className="bg-gray-50/50 border-none rounded-xl"
-                                                        label="Full Name"
-                                                        placeholder="John Doe"
-                                                        value={formData.customerName}
-                                                        onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                                                        required
-                                                    />
-                                                    <Input
-                                                        className="bg-gray-50/50 border-none rounded-xl"
-                                                        label="Phone Number"
-                                                        placeholder="05XXXXXXXX"
-                                                        type="tel"
-                                                        value={formData.phoneNumber}
-                                                        onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
-                                                        required
-                                                    />
-                                                </div>
-                                            </div>
+                                {activeDetailTab === 'needtoknow' && (
+                                    <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-gray-800">
+                                        <p className="font-bold text-gray-900">• Please ensure access to electricity and clean water on site.</p>
+                                        <p className="font-bold text-gray-900">• Free cancellation up to 2 hours prior to scheduled appointment time.</p>
+                                        <p className="font-bold text-gray-900">• All cleaners undergo daily health and safety screening.</p>
+                                    </div>
+                                )}
 
-                                            <div className="space-y-2">
-                                                <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                    <MapPin size={12} /> Neighborhood
-                                                </h5>
-                                                <Select
-                                                    className="bg-gray-50/50 border-none rounded-xl"
-                                                    value={formData.neighborhood}
-                                                    onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                                                    options={[
-                                                        { value: '', label: 'Select Area' },
-                                                        ...SAUDI_NEIGHBORHOODS.map(n => ({ value: n, label: n }))
-                                                    ]}
-                                                    required
-                                                />
+                                {activeDetailTab === 'redeem' && (
+                                    <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-gray-800">
+                                        <span className="font-extrabold text-gray-900 block">Available Across All Dubai Neighborhoods:</span>
+                                        <p className="text-gray-700">Downtown Dubai, Dubai Marina, JBR, Palm Jumeirah, Business Bay, JLT, Arabian Ranches, Mirdif, and more.</p>
+                                    </div>
+                                )}
+
+                                {activeDetailTab === 'reviews' && (
+                                    <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex text-amber-500">
+                                                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
                                             </div>
+                                            <span className="font-black text-gray-900">4.9 out of 5</span>
+                                            <span className="text-gray-700 font-bold">(Based on 120+ verified bookings)</span>
                                         </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
-                                        {/* Group 2: Schedule */}
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3">
-                                            <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                <Calendar size={12} /> Appointment
-                                            </h5>
-                                            <div className="grid grid-cols-2 gap-3">
-                                                <Input
-                                                    className="bg-gray-50/50 border-none rounded-xl"
-                                                    label="Date"
-                                                    type="date"
-                                                    value={formData.date}
-                                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                                    required
-                                                />
-                                                <Select
-                                                    className="bg-gray-50/50 border-none rounded-xl"
-                                                    label="Time"
-                                                    value={formData.time}
-                                                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                                                    options={[
-                                                        { value: '', label: 'Select Slot' },
-                                                        ...TIME_SLOTS.map(t => ({ value: t, label: t }))
-                                                    ]}
-                                                    required
-                                                />
-                                            </div>
+                        {/* RIGHT COLUMN: Groupon Booking & Pricing Side Panel (~42% width) */}
+                        <div className="space-y-3 md:col-span-5 md:space-y-4">
+                            {/* Groupon Option Card Container */}
+                            <div className="relative space-y-2 rounded-xl border-2 border-primary-600/90 bg-white p-2.5 shadow-sm md:space-y-3 md:rounded-2xl md:p-4">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <span className="text-xs font-black text-gray-900 block leading-tight">{service.name}</span>
+                                        <span className="text-[10px] font-bold text-gray-700 block mt-0.5">Instant Online Booking</span>
+                                    </div>
+                                    {/* Pricing Stack */}
+                                    <div className="text-right">
+                                        <div className="flex items-center justify-end gap-1.5">
+                                            <span className="text-xs text-gray-500 font-bold line-through">AED{originalPriceDisplay}</span>
+                                            <span className="text-base font-black text-emerald-700">AED{service.price}</span>
+                                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-1.5 py-0.5 rounded">-{discountPercentage}%</span>
                                         </div>
+                                    </div>
+                                </div>
 
-                                        {/* Group 3: Service Customization */}
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-5">
-                                            <h5 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                                                <Tag size={12} /> Preferences
-                                            </h5>
+                                <div className="text-[10px] font-bold text-gray-700 border-t border-gray-100 pt-2 flex items-center justify-between">
+                                    <span>120+ bought</span>
+                                    <span className="text-emerald-700 font-extrabold">Instant Confirmation</span>
+                                </div>
+                            </div>
 
-                                            {(['Housekeeping / Part-time Maid', 'Babysitting At Home', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name)) && (
-                                                <div className="space-y-4">
-                                                    {/* Hours Selector */}
-                                                    {service.name !== 'Babysitting At Home' && (
-                                                        <div className="space-y-2">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-xs font-bold text-gray-700">Duration (Hours)</span>
-                                                                <span className="text-[10px] font-bold text-primary-500 bg-primary-50 px-2 py-0.5 rounded-full">{formData.hours}h selected</span>
-                                                            </div>
-                                                            <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                                                {[3, 4, 5, 6, 7, 8].map(num => (
-                                                                    <button
-                                                                        key={num}
-                                                                        type="button"
-                                                                        onClick={() => setFormData({ ...formData, hours: num })}
-                                                                        className={`w-9 h-9 rounded-full flex-none flex items-center justify-center text-xs font-bold border transition-all
-                                                                            ${formData.hours === num
-                                                                                ? 'bg-primary-500 border-primary-500 text-white shadow-md'
-                                                                                : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'
-                                                                            }`}
-                                                                    >
-                                                                        {num}
-                                                                    </button>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                    )}
+                            {/* Booking Form Inputs (100% UNTOUCHED INPUT COMPONENTS!) */}
+                            <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm md:space-y-3 md:rounded-2xl md:p-4">
+                                <div className="border-b border-gray-100 pb-2 flex items-center justify-between">
+                                    <h4 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-gray-900 md:text-xs">
+                                        <Calendar size={13} className="text-primary-600 md:h-3.5 md:w-3.5" /> Enter Booking Details
+                                    </h4>
+                                    <span className="text-[10px] font-bold text-gray-500">Step 1 of 1</span>
+                                </div>
+                                {formError && (
+                                    <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] font-semibold leading-4 text-red-700">
+                                        {formError}
+                                    </p>
+                                )}
 
-                                                    {/* Workers Selector */}
-                                                    <div className="space-y-2">
-                                                        <span className="text-xs font-bold text-gray-700">Professionals Count</span>
-                                                        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                                            {[1, 2, 3, 4].map(num => (
-                                                                <button
-                                                                    key={num}
-                                                                    type="button"
-                                                                    onClick={() => setFormData({ ...formData, numberOfWorkers: num })}
-                                                                    className={`w-9 h-9 rounded-full flex-none flex items-center justify-center text-xs font-bold border transition-all
-                                                                        ${formData.numberOfWorkers === num
-                                                                            ? 'bg-primary-500 border-primary-500 text-white shadow-md'
-                                                                            : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'
-                                                                        }`}
-                                                                >
-                                                                    {num}
-                                                                </button>
-                                                            ))}
-                                                        </div>
+                                <div className="space-y-1.5 md:space-y-2.5">
+                                    {/* Row 1: Contact (Name & Phone) */}
+                                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <Input
+                                            label="Full Name"
+                                            placeholder="John Doe"
+                                            value={formData.customerName}
+                                            onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                                            required
+                                        />
+                                        <Input
+                                            label="Phone Number"
+                                            placeholder="05XXXXXXXX"
+                                            type="tel"
+                                            value={formData.phoneNumber}
+                                            onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Row 2: Location */}
+                                    <Select
+                                        label="Neighborhood"
+                                        value={formData.neighborhood}
+                                        onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                                        options={[
+                                            { value: '', label: 'Select Area' },
+                                            ...SAUDI_NEIGHBORHOODS.map(n => ({ value: n, label: n }))
+                                        ]}
+                                        required
+                                    />
+
+                                    {/* Row 3: Date & Time */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Input
+                                            label="Date"
+                                            type="date"
+                                            min={todayStr}
+                                            value={formData.date}
+                                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                            required
+                                        />
+                                        <Select
+                                            label="Time"
+                                            value={formData.time}
+                                            onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                                            options={[
+                                                { value: '', label: 'Select Slot' },
+                                                ...TIME_SLOTS.map(t => ({ value: t, label: t }))
+                                            ]}
+                                            required
+                                        />
+                                    </div>
+
+                                    {/* Options: Duration & Staff count */}
+                                    {(['Housekeeping / Part-time Maid', 'Babysitting At Home', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name)) && (
+                                        <div className="space-y-2 pt-1 border-t border-gray-100">
+                                            {service.name !== 'Babysitting At Home' && (
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between items-center text-xs font-bold text-gray-900">
+                                                        <span>Duration</span>
+                                                        <span className="text-primary-700 bg-primary-50 border border-primary-200 px-2 py-0.5 rounded-full text-[11px]">{formData.hours} Hours</span>
                                                     </div>
-                                                </div>
-                                            )}
-
-                                            {/* Floor Cleaning: Rooms */}
-                                            {service.name === 'Floor Cleaning' && (
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <span className="text-xs font-bold text-gray-700">Number of Rooms</span>
-                                                        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                                            {[1, 2, 3, 4, 5].map(num => (
-                                                                <button
-                                                                    key={num}
-                                                                    type="button"
-                                                                    onClick={() => setFormData({ ...formData, numberOfRooms: num })}
-                                                                    className={`w-12 h-9 rounded-xl flex-none flex items-center justify-center text-xs font-bold border transition-all
-                                                                        ${formData.numberOfRooms === num
-                                                                            ? 'bg-primary-500 border-primary-500 text-white'
-                                                                            : 'bg-white border-gray-100 text-gray-500'
-                                                                        }`}
-                                                                >
-                                                                    {num} {num === 1 ? 'Room' : 'Rooms'}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Carpet Cleaning: Carpets */}
-                                            {service.name === 'Carpet Cleaning' && (
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <span className="text-xs font-bold text-gray-700">Number of Carpets (2x2 standard)</span>
-                                                        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                                            {[1, 2, 3, 4, 5].map(num => (
-                                                                <button
-                                                                    key={num}
-                                                                    type="button"
-                                                                    onClick={() => setFormData({ ...formData, numberOfCarpets: num })}
-                                                                    className={`w-12 h-9 rounded-xl flex-none flex items-center justify-center text-xs font-bold border transition-all
-                                                                        ${formData.numberOfCarpets === num
-                                                                            ? 'bg-primary-500 border-primary-500 text-white'
-                                                                            : 'bg-white border-gray-100 text-gray-500'
-                                                                        }`}
-                                                                >
-                                                                    {num}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Mattress Cleaning: Single & Large */}
-                                            {service.name === 'Mattress Cleaning' && (
-                                                <div className="space-y-4">
-                                                    <div className="space-y-3">
-                                                        <span className="text-xs font-bold text-gray-700">Single Mattresses (150 AED)</span>
-                                                        <div className="flex items-center gap-4">
+                                                    <div className="flex gap-1.5">
+                                                        {[3, 4, 5, 6].map(num => (
                                                             <button
+                                                                key={num}
                                                                 type="button"
-                                                                onClick={() => setFormData({ ...formData, numberOfSingleMattresses: Math.max(0, formData.numberOfSingleMattresses - 1) })}
-                                                                className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-50"
-                                                            >-</button>
-                                                            <span className="text-sm font-bold w-4 text-center">{formData.numberOfSingleMattresses}</span>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setFormData({ ...formData, numberOfSingleMattresses: formData.numberOfSingleMattresses + 1 })}
-                                                                className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-50"
-                                                            >+</button>
-                                                        </div>
-                                                    </div>
-                                                    <div className="space-y-3">
-                                                        <span className="text-xs font-bold text-gray-700">Large Mattresses (200 AED)</span>
-                                                        <div className="flex items-center gap-4">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setFormData({ ...formData, numberOfLargeMattresses: Math.max(0, formData.numberOfLargeMattresses - 1) })}
-                                                                className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-50"
-                                                            >-</button>
-                                                            <span className="text-sm font-bold w-4 text-center">{formData.numberOfLargeMattresses}</span>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setFormData({ ...formData, numberOfLargeMattresses: formData.numberOfLargeMattresses + 1 })}
-                                                                className="w-8 h-8 rounded-full border border-gray-100 flex items-center justify-center text-gray-400 hover:bg-gray-50"
-                                                            >+</button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Sofa Cleaning: Seats */}
-                                            {service.name === 'Sofa Cleaning' && (
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <span className="text-xs font-bold text-gray-700">Number of Seats (35 AED/seat)</span>
-                                                        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                                            {[1, 2, 3, 4, 5, 6, 7, 8].map(num => (
-                                                                <button
-                                                                    key={num}
-                                                                    type="button"
-                                                                    onClick={() => setFormData({ ...formData, numberOfSofaSeats: num })}
-                                                                    className={`w-9 h-9 rounded-full flex-none flex items-center justify-center text-xs font-bold border transition-all
-                                                                        ${formData.numberOfSofaSeats === num
-                                                                            ? 'bg-primary-500 border-primary-500 text-white'
-                                                                            : 'bg-white border-gray-100 text-gray-500'
-                                                                        }`}
-                                                                >
-                                                                    {num}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Curtain Cleaning: Curtains */}
-                                            {service.name === 'Curtain Cleaning' && (
-                                                <div className="space-y-4">
-                                                    <div className="space-y-2">
-                                                        <span className="text-xs font-bold text-gray-700">Large Curtains (200 AED each)</span>
-                                                        <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-                                                            {[1, 2, 3, 4, 5].map(num => (
-                                                                <button
-                                                                    key={num}
-                                                                    type="button"
-                                                                    onClick={() => setFormData({ ...formData, numberOfCurtains: num })}
-                                                                    className={`w-9 h-9 rounded-full flex-none flex items-center justify-center text-xs font-bold border transition-all
-                                                                        ${formData.numberOfCurtains === num
-                                                                            ? 'bg-primary-500 border-primary-500 text-white'
-                                                                            : 'bg-white border-gray-100 text-gray-500'
-                                                                        }`}
-                                                                >
-                                                                    {num}
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Materials Toggle */}
-                                            <div className="space-y-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs font-bold text-gray-700">Cleaning materials?</span>
-                                                </div>
-                                                <div className="flex gap-2">
-                                                    {[{ val: false, lbl: 'I have them' }, { val: true, lbl: 'Include materials' }].map((opt) => (
-                                                        <button
-                                                            key={String(opt.val)}
-                                                            type="button"
-                                                            onClick={() => setFormData({ ...formData, includeChemicals: opt.val })}
-                                                            className={`flex-1 py-3 rounded-xl text-xs font-bold border transition-all
-                                                                ${formData.includeChemicals === opt.val
-                                                                    ? 'bg-primary-50 border-primary-500 text-primary-600 shadow-sm'
-                                                                    : 'bg-white border-gray-100 text-gray-500 hover:bg-gray-50'
+                                                                onClick={() => setFormData({ ...formData, hours: num })}
+                                                                className={`w-8 h-8 rounded-lg text-xs font-black border transition-all ${
+                                                                    formData.hours === num
+                                                                        ? 'bg-primary-600 border-primary-600 text-white'
+                                                                        : 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50'
                                                                 }`}
+                                                            >
+                                                                {num}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            <div className="space-y-1">
+                                                <span className="text-xs font-bold text-gray-900 block">Staff Count</span>
+                                                <div className="flex gap-1.5">
+                                                    {[1, 2, 3].map(num => (
+                                                        <button
+                                                            key={num}
+                                                            type="button"
+                                                            onClick={() => setFormData({ ...formData, numberOfWorkers: num })}
+                                                            className={`w-8 h-8 rounded-lg text-xs font-black border transition-all ${
+                                                                formData.numberOfWorkers === num
+                                                                    ? 'bg-primary-600 border-primary-600 text-white'
+                                                                    : 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50'
+                                                            }`}
                                                         >
-                                                            {opt.lbl}
+                                                            {num}
                                                         </button>
                                                     ))}
                                                 </div>
                                             </div>
+                                        </div>
+                                    )}
 
-                                            {/* Notes Toggle */}
-                                            <div className="pt-2 border-t border-gray-100">
+                                    {/* Chemical materials option */}
+                                    {['Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name) && (
+                                        <div className="flex gap-2 pt-1">
+                                            {[{ val: false, lbl: 'I have materials' }, { val: true, lbl: 'Include materials (+30 AED)' }].map((opt) => (
                                                 <button
+                                                    key={String(opt.val)}
                                                     type="button"
-                                                    onClick={() => setShowNotes(!showNotes)}
-                                                    className="w-full flex items-center justify-between py-2 text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-gray-600 transition-colors"
+                                                    onClick={() => setFormData({ ...formData, includeChemicals: opt.val })}
+                                                    className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-extrabold border transition-all ${
+                                                        formData.includeChemicals === opt.val
+                                                            ? 'bg-primary-50 border-2 border-primary-600 text-primary-900'
+                                                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                                    }`}
                                                 >
-                                                    <span className="flex items-center gap-2"><FileText size={12} /> Notes (Optional)</span>
-                                                    {showNotes ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                                    {opt.lbl}
                                                 </button>
-                                                <AnimatePresence>
-                                                    {showNotes && (
-                                                        <motion.div
-                                                            initial={{ opacity: 0, height: 0 }}
-                                                            animate={{ opacity: 1, height: 'auto' }}
-                                                            exit={{ opacity: 0, height: 0 }}
-                                                            className="overflow-hidden"
-                                                        >
-                                                            <div className="pt-3">
-                                                                <TextArea
-                                                                    className="bg-gray-50/50 border-none rounded-xl"
-                                                                    placeholder="Entry gate info, pet alerts, etc..."
-                                                                    value={formData.notes}
-                                                                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                                                />
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
-                                            </div>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    <TextArea
+                                        label="Notes (optional)"
+                                        placeholder="Add access instructions or special requests..."
+                                        value={formData.notes}
+                                        onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                        rows={3}
+                                    />
+
+                                    <div className="flex items-center justify-between rounded-xl bg-primary-50 border border-primary-100 px-3 py-2.5">
+                                        <span className="text-xs font-bold text-gray-700">Estimated total</span>
+                                        <strong className="text-base font-black text-primary-700">{finalTotalPrice.toFixed(2)} AED</strong>
+                                    </div>
+
+                                    {/* Urgency Counter & Submit Button */}
+                                    <div className="pt-2 space-y-2 border-t border-gray-100">
+                                        <div className="flex items-center justify-center gap-1.5 bg-amber-50/80 text-amber-900 border border-amber-200/80 py-1.5 px-3 rounded-xl text-[11px] font-black text-center shadow-2xs">
+                                            <Eye size={13} className="text-amber-600 flex-none" />
+                                            <span>Over 150 viewed today, so act now!</span>
                                         </div>
 
-                                        {/* Bill-Style Summary Card - Enhanced for Clarity */}
-                                        <div className="bg-primary-950 rounded-[2rem] p-7 text-white shadow-2xl shadow-primary-950/30 relative overflow-hidden border border-white/5">
-                                            {/* Decorative Background Elements */}
-                                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-20 -mt-20 blur-3xl" />
-                                            <div className="absolute bottom-0 left-0 w-32 h-32 bg-primary-500/10 rounded-full -ml-16 -mb-16 blur-2xl" />
-
-                                            <div className="relative z-10 space-y-6">
-                                                <div className="flex items-center gap-4 border-b border-white/10 pb-5">
-                                                    <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center border border-white/5">
-                                                        <Tag size={22} className="text-primary-400" />
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-xs font-black text-white/50 uppercase tracking-[0.2em] block mb-1">Service Receipt</span>
-                                                        <span className="text-lg font-black tracking-tight">{service.name}</span>
-                                                    </div>
-                                                </div>
-
-                                                <div className="space-y-4">
-                                                    {(() => {
-                                                        const isHourly = ['Housekeeping / Part-time Maid', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name);
-                                                        const isDaily = service.name === 'Babysitting At Home';
-
-                                                        let basePrice = 0;
-                                                        let breakdown = "";
-
-                                                        if (isHourly) {
-                                                            basePrice = service.price * formData.hours * formData.numberOfWorkers;
-                                                            breakdown = `${service.price} AED × ${formData.numberOfWorkers} Prof. × ${formData.hours}h`;
-                                                        } else if (isDaily) {
-                                                            basePrice = service.price * formData.numberOfWorkers;
-                                                            breakdown = `Daily Rate: ${service.price} AED × ${formData.numberOfWorkers} Sitter(s)`;
-                                                        } else if (service.name === 'Floor Cleaning') {
-                                                            basePrice = formData.numberOfRooms === 1 ? 200 : (formData.numberOfRooms === 2 ? 300 : formData.numberOfRooms * 150);
-                                                            breakdown = `Service for ${formData.numberOfRooms} Room(s)`;
-                                                        } else if (service.name === 'Carpet Cleaning') {
-                                                            basePrice = 200 * formData.numberOfCarpets;
-                                                            breakdown = `Cleaning for ${formData.numberOfCarpets} Carpet(s)`;
-                                                        } else if (service.name === 'Mattress Cleaning') {
-                                                            basePrice = (150 * formData.numberOfSingleMattresses) + (200 * formData.numberOfLargeMattresses);
-                                                            if (basePrice === 0) basePrice = 150;
-                                                            breakdown = `${formData.numberOfSingleMattresses} Single, ${formData.numberOfLargeMattresses} Large`;
-                                                        } else if (service.name === 'Sofa Cleaning') {
-                                                            basePrice = 35 * formData.numberOfSofaSeats;
-                                                            breakdown = `Sanitizing ${formData.numberOfSofaSeats} Seat(s)`;
-                                                        } else if (service.name === 'Curtain Cleaning') {
-                                                            basePrice = 200 * formData.numberOfCurtains;
-                                                            breakdown = `${formData.numberOfCurtains} Large Curtain(s)`;
-                                                        } else {
-                                                            basePrice = service.price;
-                                                            breakdown = "Standard Service Rate";
-                                                        }
-
-                                                        const total = (['Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name) && formData.includeChemicals)
-                                                            ? basePrice + 30
-                                                            : basePrice;
-
-                                                        return (
-                                                            <>
-                                                                {/* Row: Base Service */}
-                                                                <div className="flex justify-between items-start">
-                                                                    <div className="flex flex-col gap-1">
-                                                                        <span className="text-base font-bold text-white/90">
-                                                                            {service.name}
-                                                                        </span>
-                                                                        <span className="text-xs text-white/40 font-bold uppercase tracking-wider">
-                                                                            {breakdown}
-                                                                        </span>
-                                                                        {/* Package Description for Hot Deals */}
-                                                                        {['Package', 'Villa Package', 'Value Pack', 'Sanitization'].includes(service.category) || service.id.startsWith('offer-') ? (
-                                                                            <p className="mt-1 text-[10px] text-white/30 italic max-w-[200px] leading-relaxed">
-                                                                                {service.description}
-                                                                            </p>
-                                                                        ) : null}
-                                                                        {/* Deal Summary Features */}
-                                                                        {service.features && service.features.length > 0 && (
-                                                                            <ul className="mt-3 space-y-1.5">
-                                                                                {service.features.map((feature, idx) => (
-                                                                                    <li key={idx} className="flex items-center gap-2">
-                                                                                        <CheckCircle2 size={8} className="text-primary-400" />
-                                                                                        <span className="text-[10px] font-bold text-white/50 tracking-wide uppercase">{feature}</span>
-                                                                                    </li>
-                                                                                ))}
-                                                                            </ul>
-                                                                        )}
-                                                                    </div>
-                                                                    <span className="text-base font-black text-white">{basePrice} AED</span>
-                                                                </div>
-
-                                                                {/* Row: Materials (Conditional) */}
-                                                                {formData.includeChemicals && ['Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name) && (
-                                                                    <div className="flex justify-between items-center py-1">
-                                                                        <span className="text-sm font-bold text-white/80">Premium Materials</span>
-                                                                        <span className="text-sm font-black text-primary-400">+ 30 AED</span>
-                                                                    </div>
-                                                                )}
-
-                                                                {/* Divider and Final Total */}
-                                                                <div className="border-t border-white/10 pt-6 mt-4 flex justify-between items-end">
-                                                                    <div className="space-y-1">
-                                                                        <span className="text-xs font-black text-white/40 block tracking-[0.2em] uppercase">Amount Due</span>
-                                                                        <span className="text-[11px] text-white/20 font-bold tracking-tight block uppercase">Inclusive of all local taxes</span>
-                                                                    </div>
-                                                                    <div className="flex items-baseline gap-2">
-                                                                        <span className="text-4xl font-black tracking-tighter text-while animate-in fade-in zoom-in duration-500">
-                                                                            {total.toFixed(0)}
-                                                                        </span>
-                                                                        <span className="text-sm font-black text-primary-500 uppercase">AED</span>
-                                                                    </div>
-                                                                </div>
-                                                            </>
-                                                        );
-                                                    })()}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-2">
-                                            <Button
-                                                type="submit"
-                                                className="w-full py-4 text-sm font-bold shadow-xl shadow-primary-500/20 hover:shadow-2xl hover:shadow-primary-500/30 transition-all rounded-xl"
-                                                disabled={isSubmitting}
-                                            >
-                                                {isSubmitting ? <Loader2 className="animate-spin" /> : "Confirm and Book"}
-                                            </Button>
-                                        </div>
-                                    </motion.form>
-                                )}
-                            </AnimatePresence>
+                                        <Button
+                                            type="submit"
+                                            className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-black text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 md:py-3.5"
+                                            disabled={isSubmitting}
+                                        >
+                                            {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Confirm & Book Now"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </form>
                         </div>
+
                     </div>
                 )}
-            </AnimatePresence >
-        </Modal >
+            </AnimatePresence>
+        </Modal>
     );
 };
-

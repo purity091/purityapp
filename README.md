@@ -1,112 +1,23 @@
-# 🏠 Purity - Professional Cleaning Services Platform
+# Purity
 
-نظام إدارة خدمات التنظيف الاحترافي مع **Supabase Authentication**.
+React + TypeScript booking platform for Purity home-cleaning services in Dubai.
 
----
-
-## ✨ المميزات
-
-- 🔐 **نظام مصادقة آمن** باستخدام Supabase
-- 🎨 **واجهة حديثة** مع React + TypeScript
-- 🚀 **سرعة فائقة** - Vite Build Tool
-- 📱 **متجاوب** - يعمل على جميع الأجهزة
-- ☁️ **جاهز للنشر** - Vercel Ready
-
----
-
-## 🚀 البدء السريع
-
-### 1. التثبيت
+## Development
 
 ```bash
 npm install
-```
-
-### 2. إعداد Supabase
-
-اتبع التعليمات في: **[DEPLOY_NOW.md](DEPLOY_NOW.md)**
-
-### 3. التشغيل
-
-```bash
 npm run dev
 ```
 
-افتح: `http://localhost:5173/admin`
+Open `http://localhost:5173`.
 
----
+## Production build
 
-## 📁 البنية
-
-```
-purity1/
-├── src/
-│   ├── components/     # React Components
-│   ├── context/        # Auth Context (Supabase)
-│   ├── lib/            # Supabase Client
-│   ├── pages/          # Pages
-│   └── types/          # TypeScript Types
-│
-├── .env.local.example  # Environment Variables Template
-├── DEPLOY_NOW.md       # دليل النشر السريع
-└── package.json
+```bash
+npm run lint
+npm run build
 ```
 
----
+Copy `.env.example` to a local ignored `.env` file when environment configuration is needed. Never commit real credentials or deployment secrets.
 
-## 🌐 النشر على Vercel
-
-اقرأ: **[DEPLOY_NOW.md](DEPLOY_NOW.md)** للتعليمات الكاملة.
-
-**ملخص سريع:**
-1. أنشئ مشروع Supabase
-2. ارفع الكود على GitHub  
-3. انشر على Vercel
-4. أضف Environment Variables
-
----
-
-## 🔐 بيانات الدخول الافتراضية
-
-```
-Email: admin@purity.com
-Password: Admin@2025!
-```
-
-**⚠️ هام:** غيّر كلمة المرور بعد أول تسجيل دخول!
-
----
-
-## 📚 التوثيق
-
-- **[DEPLOY_NOW.md](DEPLOY_NOW.md)** - دليل النشر
-- **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** - شرح تفصيلي لـ Supabase
-
----
-
-## 🛠️ التقنيات المستخدمة
-
-- **Frontend:** React 19 + TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS
-- **Authentication:** Supabase
-- **Database:** Supabase (PostgreSQL)
-- **Hosting:** Vercel
-
----
-
-## 📞 الدعم
-
-للمساعدة:
-- 📧 Email: support@purity.com
-- 📱 Phone: +971 54 455 6106
-
----
-
-## 📄 الترخيص
-
-© 2025 Purity. جميع الحقوق محفوظة.
-
----
-
-**صُنع بـ ❤️ في الإمارات**
+The optional Supabase schema is in `supabase_bookings.sql`. Supabase mode is disabled by default and must be enabled explicitly with `VITE_USE_SUPABASE=true` after configuring the public URL and anonymous key.

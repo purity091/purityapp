@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useBookings } from '../context/BookingContext';
 import { useAuth } from '../context/AuthContext';
-import { BookingStatus } from '../types';
+import { Booking, BookingStatus } from '../types';
 import { Button } from '../components/ui/Button';
-import { LogOut, Phone, Trash2, CheckCircle, Clock, XCircle, Search, Filter } from 'lucide-react';
+import { LogOut, Phone, Trash2, CheckCircle, Clock, Search, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export const AdminDashboardPage: React.FC = () => {
@@ -42,19 +42,54 @@ export const AdminDashboardPage: React.FC = () => {
         return matchesStatus && matchesSearch;
     });
 
-    const generateWhatsAppLink = (booking: any) => {
-        let phone = booking.phoneNumber;
+    const generateWhatsAppLink = (booking: Booking) => {
+        let phone = booking.phoneNumber || '';
         if (phone.startsWith('0')) phone = phone.substring(1);
-        const message = `Hello ${booking.customerName}،
-Regarding your order #${booking.id}
-Service: ${booking.serviceName}
-Workers: ${booking.numberOfWorkers || 1}
-Hours: ${booking.hours}
-Materials: ${booking.includeChemicals ? 'Yes' : 'No'}
-Date: ${booking.date} - ${booking.time}
-We would like to confirm your booking.`;
 
-        return `https://wa.me/971${phone}?text=${encodeURIComponent(message)}`;
+        const isHourly = ['Housekeeping / Part-time Maid', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(booking.serviceName);
+        const isDaily = booking.serviceName === 'Babysitting At Home';
+
+        const messageLines = [
+            `Hello ${booking.customerName},`,
+            `Regarding your order #${booking.id?.substr(0, 4)}`,
+            `Service: ${booking.serviceName}`,
+            `Neighborhood: ${booking.neighborhood || 'N/A'}`,
+            `Date & Time: ${booking.date} - ${booking.time}`
+        ];
+
+        if (isHourly) {
+            messageLines.push(`Hours: ${booking.hours}`);
+            messageLines.push(`Workers: ${booking.numberOfWorkers || 1}`);
+        } else if (isDaily) {
+            messageLines.push(`Workers: ${booking.numberOfWorkers || 1}`);
+        } else if (booking.serviceName === 'Floor Cleaning') {
+            messageLines.push(`Rooms: ${booking.numberOfRooms}`);
+        } else if (booking.serviceName === 'Carpet Cleaning') {
+            messageLines.push(`Carpets: ${booking.numberOfCarpets}`);
+        } else if (booking.serviceName === 'Mattress Cleaning') {
+            messageLines.push(`Single Mattresses: ${booking.numberOfSingleMattresses || 0}`);
+            messageLines.push(`Large Mattresses: ${booking.numberOfLargeMattresses || 0}`);
+        } else if (booking.serviceName === 'Sofa Cleaning') {
+            messageLines.push(`Sofa Seats: ${booking.numberOfSofaSeats}`);
+        } else if (booking.serviceName === 'Curtain Cleaning') {
+            messageLines.push(`Curtains: ${booking.numberOfCurtains}`);
+        }
+
+        if (['Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(booking.serviceName)) {
+            messageLines.push(`Materials: ${booking.includeChemicals ? 'Yes' : 'No'}`);
+        }
+
+        if (booking.notes) {
+            messageLines.push(`Notes: ${booking.notes}`);
+        }
+
+        if (booking.totalPrice) {
+            messageLines.push(`Total Price: ${booking.totalPrice} AED`);
+        }
+
+        messageLines.push(`We would like to confirm your booking.`);
+
+        return `https://wa.me/971${phone}?text=${encodeURIComponent(messageLines.join('\n'))}`;
     };
 
     const stats = {
@@ -107,7 +142,7 @@ We would like to confirm your booking.`;
                         <select
                             className="bg-gray-50 border border-gray-300 rounded-lg text-sm p-2 outline-none focus:ring-2 focus:ring-primary-500"
                             value={filterStatus}
-                            onChange={(e) => setFilterStatus(e.target.value as any)}
+                            onChange={(e) => setFilterStatus(e.target.value as BookingStatus | 'all')}
                         >
                             <option value="all">All</option>
                             <option value="pending">Pending</option>

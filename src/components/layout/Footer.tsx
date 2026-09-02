@@ -1,89 +1,65 @@
 import React from 'react';
-import { Sparkles, Phone, Mail, MapPin } from 'lucide-react';
-
+import { Mail, MapPin, Phone } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 
-export const Footer: React.FC = () => {
-    return (
-        <footer className="bg-gray-900 text-white mt-auto pt-16 pb-8">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                    {/* Brand */}
-                    <div className="col-span-1 md:col-span-2 space-y-4">
-                        <div className="flex items-center gap-2">
-                            <img src={logo} alt="Purity" className="h-10 w-auto object-contain" />
-                        </div>
-                        <h3 className="text-xl font-bold text-white">We are Purity!</h3>
-                        <p className="text-gray-400 max-w-sm leading-relaxed">
-                            Purity Cleaning Services is the ideal choice for individuals and families looking for comfort, quality and reliability.
-                        </p>
-                        <div className="pt-2">
-                            <a
-                                href="https://consumerrights.gov.ae/ar/know-your-rights"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-block hover:opacity-80 transition-opacity"
-                            >
-                                <img
-                                    src="/consumer-rights.png"
-                                    alt="Consumer Rights UAE"
-                                    className="h-16 w-auto rounded-lg shadow-lg border border-white/10"
-                                />
-                            </a>
-                        </div>
-                    </div>
+export const Footer: React.FC = () => (
+    <footer className="mt-auto border-t border-gray-800 bg-gray-900 pb-8 pt-12 text-white md:pt-14">
+        <div className="mx-auto w-full max-w-[1500px] px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 gap-10 border-b border-gray-800 pb-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-12">
+                <div className="space-y-4 lg:col-span-6">
+                    <img src={logo} alt="Purity" width={58} height={40} className="h-10 w-auto object-contain" />
+                    <h2 className="text-xl font-black text-white">We are Purity.</h2>
+                    <p className="max-w-xl text-sm font-medium leading-7 text-gray-400">
+                        Purity Cleaning Services is the ideal choice for individuals and families looking for comfort, quality, and reliability.
+                    </p>
+                    <a
+                        href="https://consumerrights.gov.ae/ar/know-your-rights"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block pt-1 transition-opacity hover:opacity-80"
+                    >
+                        <img src="/consumer-rights.png" alt="Consumer Rights UAE" className="h-14 w-auto rounded-lg border border-white/10" />
+                    </a>
+                </div>
 
-                    {/* Contact */}
-                    <div>
-                        <h4 className="text-lg font-bold mb-6 text-primary-400">Contact Us</h4>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-gray-300">
-                                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center">
-                                    <MapPin className="w-4 h-4" />
-                                </div>
-                                <span>Dubailand, Dubai</span>
-                            </div>
-                            <a href="https://wa.me/971544556106" className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group">
-                                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                                    <Phone className="w-4 h-4" />
-                                </div>
-                                <span dir="ltr">+971 54 455 6106</span>
-                            </a>
-                            <a href="mailto:info@purity-services.com" className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group">
-                                <div className="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center group-hover:bg-primary-600 transition-colors">
-                                    <Mail className="w-4 h-4" />
-                                </div>
-                                <span>info@purity-services.com</span>
-                            </a>
-                            <div className="pt-2">
-                                <h5 className="text-sm font-bold text-primary-400 mb-2">Operating Hours</h5>
-                                <div className="space-y-1 text-sm text-gray-400">
-                                    <p>Sun – Fri : 8 am – 8 pm</p>
-                                    <p className="text-red-400">Saturday: CLOSED</p>
-                                </div>
-                            </div>
+                <div className="lg:col-span-3">
+                    <h3 className="mb-5 text-sm font-black uppercase tracking-wider text-primary-300">Contact us</h3>
+                    <div className="space-y-4 text-sm font-medium text-gray-300">
+                        <div className="flex items-center gap-3">
+                            <MapPin className="h-4 w-4 flex-none text-primary-300" />
+                            <span>Dubailand, Dubai</span>
                         </div>
-                    </div>
-
-                    {/* Links */}
-                    <div>
-                        <h4 className="text-lg font-bold mb-6 text-primary-400">Quick Links</h4>
-                        <ul className="space-y-3">
-                            <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Home</a></li>
-                            <li><a href="#services" className="text-gray-300 hover:text-white transition-colors">Services</a></li>
-                            <li><a href="#privacy" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
-                        </ul>
+                        <a href="https://wa.me/971544556106" className="flex items-center gap-3 transition-colors hover:text-white">
+                            <Phone className="h-4 w-4 flex-none text-primary-300" />
+                            <span dir="ltr">+971 54 455 6106</span>
+                        </a>
+                        <a href="mailto:info@purity-services.com" className="flex items-center gap-3 transition-colors hover:text-white">
+                            <Mail className="h-4 w-4 flex-none text-primary-300" />
+                            <span>info@purity-services.com</span>
+                        </a>
                     </div>
                 </div>
 
-                <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <p className="text-gray-500 text-sm">
-                        © {new Date().getFullYear()} Purity. All rights reserved.
-                    </p>
-                    <div className="flex gap-4">
+                <div className="lg:col-span-3">
+                    <h3 className="mb-5 text-sm font-black uppercase tracking-wider text-primary-300">Explore</h3>
+                    <ul className="space-y-3 text-sm font-medium text-gray-300">
+                        <li><Link to="/" className="transition-colors hover:text-white">Home</Link></li>
+                        <li><Link to="/" state={{ scrollTo: 'services' }} className="transition-colors hover:text-white">Services</Link></li>
+                        <li><a href="mailto:info@purity-services.com" className="transition-colors hover:text-white">Contact support</a></li>
+                    </ul>
+                    <div className="mt-6 border-t border-gray-800 pt-4 text-xs font-medium text-gray-400">
+                        <p className="font-bold text-gray-300">Operating hours</p>
+                        <p className="mt-1">Sun – Fri: 8 am – 8 pm</p>
+                        <p className="mt-1 text-red-300">Saturday: Closed</p>
                     </div>
                 </div>
             </div>
-        </footer >
-    );
-};
+
+            <div className="flex flex-col items-start justify-between gap-3 pt-6 text-xs font-medium text-gray-500 sm:flex-row sm:items-center">
+                <p>© {new Date().getFullYear()} Purity. All rights reserved.</p>
+                <p>Pure home. Wise decision.</p>
+            </div>
+        </div>
+    </footer>
+);
