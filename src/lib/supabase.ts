@@ -5,13 +5,8 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.su
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
 const supabaseEnabled = import.meta.env.VITE_USE_SUPABASE === 'true';
 
-<<<<<<< HEAD
 // تحذير في Console إذا لم تكن القيم موجودة
 if (supabaseEnabled && supabaseUrl === 'https://placeholder.supabase.co') {
-=======
-// تحذير  في Console إذا لم تكن القيم موجودة
-if (supabaseUrl === 'https://placeholder.supabase.co') {
->>>>>>> 9559c3003612aa4d3b208f1e05bb0de40f886073
     console.warn('⚠️ Supabase URL not configured!');
     console.warn('📝 Follow these steps:');
     console.warn('1. Go to https://supabase.com');
