@@ -8,7 +8,7 @@ import { TrustSection } from '../components/feature/TrustSection';
 import { HappinessSection } from '../components/feature/HappinessSection';
 import { FAQSection } from '../components/feature/FAQSection';
 import { BookingModal } from '../components/feature/BookingModal';
-import { services } from '../data/services';
+import { useCatalog } from '../context/CatalogContext';
 import { Service, CATEGORIES } from '../types';
 import { SearchX, Sparkles, Grid3X3, SlidersHorizontal, X, ChevronRight } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -19,11 +19,13 @@ interface HomeNavigationState {
     serviceId?: string;
     openMobileTools?: boolean;
     scrollTo?: string;
+    openAuth?: boolean;
 }
 
 export const HomePage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { services } = useCatalog();
     const navigationState = (location.state || {}) as HomeNavigationState;
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -35,7 +37,7 @@ export const HomePage: React.FC = () => {
     useEffect(() => {
         const state = (location.state || {}) as HomeNavigationState;
         const hasNavigationState = Object.keys(state).length > 0;
-        if (!hasNavigationState) return;
+        if (!hasNavigationState || state.openAuth) return;
 
         if (state.searchQuery !== undefined) setSearchQuery(state.searchQuery);
         if (state.selectedCategory) setSelectedCategory(state.selectedCategory);
@@ -54,7 +56,7 @@ export const HomePage: React.FC = () => {
         }
 
         navigate(location.pathname, { replace: true, state: null });
-    }, [location.pathname, location.state, navigate]);
+    }, [location.pathname, location.state, navigate, services]);
 
     // Filtered + sorted services
     const filteredServices = useMemo(() => {
@@ -90,7 +92,7 @@ export const HomePage: React.FC = () => {
         }
 
         return result;
-    }, [searchQuery, selectedCategory, priceRange, sortBy]);
+    }, [services, searchQuery, selectedCategory, priceRange, sortBy]);
 
     const servicesByCategory = useMemo(() => {
         const grouped: Record<string, Service[]> = {};
@@ -188,7 +190,7 @@ export const HomePage: React.FC = () => {
                     {/* Search Results Header */}
                     {isSearching && (
                         <div className="mb-6 pt-4">
-                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                            <p className="text-xs font-bold text-gray-400 uppercase mb-1">
                                 Search Results
                             </p>
                             <h2 className="text-xl font-extrabold text-gray-900">
@@ -278,21 +280,27 @@ export const HomePage: React.FC = () => {
 };
 
 const MobileInfoNavigation: React.FC = () => (
-    <section className="border-t border-gray-200 px-4 py-6" aria-label="More about Purity">
-        <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-gray-500">More about Purity</p>
+    <section className="px-4 py-6" aria-label="More about Purity">
+        <p className="mb-3 text-[10px] font-black uppercase text-gray-500">More about Purity</p>
         <div className="grid grid-cols-3 gap-2">
-            <Link to="/about" className="min-w-0 border border-gray-200 bg-white px-2 py-2.5 text-center">
+            <Link to="/about" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
                 <span className="block truncate text-[11px] font-extrabold text-gray-900">Why Purity</span>
                 <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">Our standards</span>
             </Link>
-            <Link to="/faq" className="min-w-0 border border-gray-200 bg-white px-2 py-2.5 text-center">
+            <Link to="/faq" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
                 <span className="block truncate text-[11px] font-extrabold text-gray-900">FAQ</span>
                 <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">Before booking</span>
             </Link>
-            <Link to="/reviews" className="min-w-0 border border-gray-200 bg-white px-2 py-2.5 text-center">
+            <Link to="/reviews" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
                 <span className="block truncate text-[11px] font-extrabold text-gray-900">Reviews</span>
                 <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">Customer stories</span>
             </Link>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2">
+            <Link to="/terms" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Terms of use</Link>
+            <Link to="/privacy" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Privacy policy</Link>
+            <Link to="/consumer-rights" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Consumer rights</Link>
+            <Link to="/cookies" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Cookies</Link>
         </div>
     </section>
 );
@@ -331,7 +339,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
     const selectClass = 'block h-7 min-w-0 w-full rounded-md border border-gray-300 bg-white px-1.5 text-[10px] font-semibold text-gray-800 outline-none';
 
     return (
-        <div className="md:hidden border-b border-gray-200 bg-white" aria-label="Mobile service navigation and filters">
+        <div className="md:hidden bg-white" aria-label="Mobile service navigation and filters">
             <nav className="flex items-center gap-1 px-4 pt-2.5 pb-1 text-[11px] leading-4" aria-label="Breadcrumb">
                 <div className="flex min-w-0 items-center gap-1">
                     <Link to="/" className="shrink-0 font-semibold text-gray-500">Home</Link>

@@ -1,84 +1,35 @@
-import React, { useRef, useState } from 'react';
-import { Flame, Star, ChevronLeft, ChevronRight, Heart, Gift, Navigation } from 'lucide-react';
+import React from 'react';
+import { Flame, Star, Heart, Gift, Navigation, ArrowUpRight } from 'lucide-react';
 import { Service } from '../../types';
-import { packages } from '../../data/packages';
-import { readWishlist, toggleWishlist } from '../../lib/wishlist';
 import { SafeImage } from '../ui/SafeImage';
+import { useCatalog } from '../../context/CatalogContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { getPricePresentation, getPriceUnitLabel } from '../../lib/pricing';
 
 interface FlashDealsProps {
     onSelect: (service: Service) => void;
 }
 
 export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
-    const scrollRef = useRef<HTMLDivElement>(null);
-
-    const scroll = (direction: 'left' | 'right') => {
-        if (scrollRef.current) {
-            const { scrollLeft, clientWidth } = scrollRef.current;
-            const scrollAmount = clientWidth > 600 ? clientWidth * 0.5 : clientWidth * 0.8;
-            const scrollTo = direction === 'left' ? scrollLeft - scrollAmount : scrollLeft + scrollAmount;
-            scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-        }
-    };
+    const { packages } = useCatalog();
 
     return (
-        <section id="offers" className="w-full relative space-y-2.5 py-2 mb-4 group/section scroll-mt-20 overflow-hidden">
-            {/* Header */}
-            <div className="flex justify-between items-end px-1">
-                <div className="space-y-1">
-                    <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                        Hot Packages <Flame className="text-amber-500" size={22} fill="currentColor" />
-                    </h3>
-                </div>
-
-                {/* Countdown Header */}
-                <div className="hidden sm:flex items-center gap-3 bg-gray-900 text-white px-3.5 py-1.5 rounded-xl border border-gray-800 shadow-sm">
-                    <div className="flex flex-col items-center">
-                        <span className="text-sm font-black text-white leading-none">02</span>
-                        <span className="text-[8px] font-bold text-gray-400 uppercase">Hrs</span>
-                    </div>
-                    <span className="text-gray-600 font-bold text-xs">:</span>
-                    <div className="flex flex-col items-center">
-                        <span className="text-sm font-black text-white leading-none">45</span>
-                        <span className="text-[8px] font-bold text-gray-400 uppercase">Min</span>
-                    </div>
-                    <span className="text-gray-600 font-bold text-xs">:</span>
-                    <div className="flex flex-col items-center">
-                        <span className="text-sm font-black text-amber-400 leading-none animate-pulse">12</span>
-                        <span className="text-[8px] font-bold text-gray-400 uppercase">Sec</span>
-                    </div>
+        <section id="offers" aria-labelledby="hot-packages-title" className="mb-7 w-full scroll-mt-20 bg-white py-5 sm:py-6">
+            <div className="mb-5 px-1">
+                <div className="min-w-0">
+                    <h2 id="hot-packages-title" className="flex items-center gap-2 text-xl font-black text-gray-900 sm:text-2xl">
+                        Hot Packages
+                        <Flame className="shrink-0 text-amber-400" size={22} fill="currentColor" aria-hidden="true" />
+                    </h2>
+                    <p className="mt-1 max-w-xl text-xs font-medium leading-5 text-gray-500 sm:text-sm">
+                        More care for your home, with premium services bundled at a better price.
+                    </p>
                 </div>
             </div>
 
-            {/* Navigation Arrows */}
-            <div className="hidden lg:block">
-                <button
-                    type="button"
-                    onClick={() => scroll('left')}
-                    aria-label="Scroll hot packages left"
-                    className="absolute left-0 top-[55%] -translate-y-1/2 z-30 w-9 h-9 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 active:scale-95 transition-all text-gray-700 hover:text-primary-700 opacity-0 group-hover/section:opacity-100"
-                >
-                    <ChevronLeft size={20} />
-                </button>
-                <button
-                    type="button"
-                    onClick={() => scroll('right')}
-                    aria-label="Scroll hot packages right"
-                    className="absolute right-0 top-[55%] -translate-y-1/2 z-30 w-9 h-9 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 active:scale-95 transition-all text-gray-700 hover:text-primary-700 opacity-0 group-hover/section:opacity-100"
-                >
-                    <ChevronRight size={20} />
-                </button>
-            </div>
-
-            {/* Carousel Container */}
-            <div
-                ref={scrollRef}
-                className="flex w-full overflow-x-auto overscroll-x-contain gap-4 px-1 snap-x snap-mandatory no-scrollbar pb-4"
-            >
+            <div className="flex w-full gap-4 overflow-x-auto overscroll-x-contain px-1 pb-2 snap-x snap-mandatory no-scrollbar">
                 {packages.map((deal) => {
-                    const discount = deal.originalPrice && deal.originalPrice > 0
-                        ? Math.round(((deal.originalPrice - deal.price) / deal.originalPrice) * 100)
-                        : 30;
+                    const { originalPrice, discount } = getPricePresentation(deal);
 
                     return (
                         <div
@@ -94,20 +45,20 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
                             role="button"
                             tabIndex={0}
                             aria-label={`Book ${deal.name}`}
-                            className="group relative flex w-[82vw] max-w-[270px] flex-none snap-start flex-col gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-600 focus-visible:ring-offset-2 sm:w-[310px]"
+                            className="group relative flex w-[82vw] max-w-[282px] flex-none snap-start flex-col gap-3 rounded-2xl bg-white p-2.5 text-left shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:w-[310px]"
                         >
                             {/* 1. Image Container (Aspect-Video 16:9 ratio) */}
-                            <div className="relative aspect-video w-full shrink-0 overflow-hidden rounded-xl bg-gray-100 border border-gray-200/90 shadow-sm">
+                            <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-xl bg-slate-100 shadow-sm">
                                 <SafeImage
                                     src={deal.image}
                                     alt={deal.name}
-                                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
 
                                 {/* Top-Left Badge */}
-                                <span className="absolute left-2.5 top-2.5 flex items-center gap-1 bg-white border border-gray-300 text-gray-900 text-[11px] font-black px-2 py-0.5 rounded-md shadow-md">
-                                    <Gift size={12} className="text-pink-600" />
-                                    <span className="truncate max-w-[120px] text-gray-900">{deal.offerTag}</span>
+                                <span className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-lg bg-white/95 px-2 py-1 text-[10px] font-black text-slate-900 shadow-md backdrop-blur-sm">
+                                    <Gift size={12} className="text-primary-600" aria-hidden="true" />
+                                    <span className="max-w-[120px] truncate">{deal.offerTag}</span>
                                 </span>
 
                                 {/* Top-Right Wishlist Button */}
@@ -115,23 +66,23 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
                             </div>
 
                             {/* 2. Content Info - High Contrast Typography */}
-                            <div className="flex flex-1 flex-col gap-1 overflow-hidden px-0.5">
+                            <div className="flex flex-1 flex-col gap-1 overflow-hidden px-1 pb-1">
                                 {/* Merchant Name */}
                                 <div className="hidden" aria-hidden="true">
                                     <span className="text-xs font-bold text-gray-700">Purity Home Dubai · <span className="text-gray-900 font-extrabold">{deal.category}</span></span>
                                 </div>
 
                                 {/* Title */}
-                                <h3 className="line-clamp-2 text-sm sm:text-base font-black text-gray-900 leading-snug group-hover:underline decoration-gray-900">
+                                <h3 className="line-clamp-2 text-sm font-black leading-snug text-slate-950 decoration-slate-950 group-hover:underline sm:text-base">
                                     {deal.name}
                                 </h3>
 
                                 {/* Location */}
-                                <div className="flex flex-row justify-between items-center gap-x-2 text-xs font-bold text-gray-800">
-                                    <span className="truncate">Dubai, UAE</span>
-                                    <span className="flex items-center gap-1 text-xs font-extrabold text-gray-700 underline decoration-dotted">
-                                        <Navigation size={10} className="rotate-90 text-gray-600" />
-                                        Dubai Central
+                                <div className="flex flex-row items-center justify-between gap-x-2 text-xs font-semibold text-slate-600">
+                                    <span className="truncate">Dubai</span>
+                                    <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-500">
+                                        <Navigation size={10} className="rotate-90 text-primary-500" aria-hidden="true" />
+                                        Central Dubai
                                     </span>
                                 </div>
 
@@ -146,28 +97,27 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
                                             />
                                         ))}
                                     </div>
-                                    <span className="font-black text-xs text-gray-900">{deal.rating}</span>
-                                    <span className="text-xs font-bold text-gray-700">({deal.soldCount})</span>
+                                    <span className="text-xs font-black text-slate-950">{deal.rating}</span>
+                                    <span className="text-xs font-semibold text-slate-600">({deal.soldCount})</span>
                                 </div>
 
                                 {/* Pricing Block */}
-                                <div className="mt-1 flex flex-col gap-0.5">
+                                <div className="mt-1 flex flex-col gap-1">
                                     <div className="flex items-baseline gap-1.5 flex-wrap">
                                         {/* Original price */}
-                                        <span className="text-xs text-gray-500 font-bold line-through decoration-gray-400">
-                                            AED {deal.originalPrice}
-                                        </span>
+                                        {originalPrice && <span className="text-xs font-semibold text-slate-500 line-through decoration-slate-400">AED {originalPrice}</span>}
 
                                         {/* Sell price */}
-                                        <span className="text-base font-black text-emerald-700">
-                                            AED {deal.price}
-                                        </span>
+                                        <span className="text-base font-black text-emerald-700">AED {deal.price}</span>
+
+                                        <span className="text-[11px] font-semibold text-slate-700">{getPriceUnitLabel(deal)}</span>
 
                                         {/* Discount badge */}
-                                        <span className="text-[11px] font-black text-emerald-800 bg-emerald-100 border border-emerald-200 px-1.5 py-0.5 rounded-sm">
-                                            -{discount}%
-                                        </span>
+                                        {discount > 0 && <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[11px] font-black text-emerald-800">-{discount}%</span>}
                                     </div>
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary-700">
+                                        View package <ArrowUpRight size={13} aria-hidden="true" />
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -182,12 +132,12 @@ export const FlashDeals: React.FC<FlashDealsProps> = ({ onSelect }) => {
 };
 
 const WishlistButton = ({ serviceId, serviceName }: { serviceId: string; serviceName: string }) => {
-    const [isWishlisted, setIsWishlisted] = useState(() => readWishlist().includes(serviceId));
+    const { wishlistIds, toggleWishlist } = useWishlist();
+    const isWishlisted = wishlistIds.includes(serviceId);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
-        const next = toggleWishlist(serviceId);
-        setIsWishlisted(next.includes(serviceId));
+        void toggleWishlist(serviceId);
     };
 
     return (
@@ -196,7 +146,7 @@ const WishlistButton = ({ serviceId, serviceName }: { serviceId: string; service
             onClick={handleClick}
             aria-label={isWishlisted ? `Remove ${serviceName} from wishlist` : `Add ${serviceName} to wishlist`}
             title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
-            className="absolute right-2.5 top-2.5 w-8 h-8 rounded-full bg-white border border-gray-200 flex items-center justify-center shadow-md hover:scale-110 active:scale-95 transition-all group/heart"
+            className="absolute right-2.5 top-2.5 flex h-8 w-8 items-center justify-center rounded-full bg-white shadow-md transition-all hover:scale-110 active:scale-95 group/heart"
         >
             <Heart size={15} className={isWishlisted ? 'text-red-600 fill-red-600' : 'text-gray-900 group-hover/heart:text-red-600 group-hover/heart:fill-red-600 transition-colors'} />
         </button>

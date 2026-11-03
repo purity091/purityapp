@@ -20,15 +20,15 @@ const Stars: React.FC<{ size?: number }> = ({ size = 14 }) => (
 );
 
 export const GoogleReviews: React.FC = () => (
-    <section id="reviews" className="scroll-mt-20 border-t border-gray-200 bg-white py-8 md:py-20">
+    <section id="reviews" className="scroll-mt-20 bg-white py-8 md:py-20">
         <div className="mx-auto w-full max-w-[1500px] px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-4 lg:mb-9 lg:gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-2xl">
-                    <div className="mb-3 inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-gray-700 md:mb-4 md:gap-2 md:px-3 md:py-1 md:text-[11px]">
+                    <div className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-gray-700 md:mb-4 md:gap-2 md:px-3 md:py-1 md:text-[11px]">
                         <CheckCircle2 size={13} className="text-emerald-700" />
                         Verified customer stories
                     </div>
-                    <h2 className="text-2xl font-black leading-tight tracking-tight text-gray-950 sm:text-4xl">
+                    <h2 className="text-2xl font-black leading-tight text-gray-950 sm:text-4xl">
                         Loved by homeowners across Dubai
                     </h2>
                     <p className="mt-2 max-w-xl text-[13px] font-semibold leading-6 text-gray-700 md:mt-3 md:text-base md:leading-7">
@@ -36,7 +36,7 @@ export const GoogleReviews: React.FC = () => (
                     </p>
                 </div>
 
-                <div className="flex flex-none items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 md:gap-3 md:rounded-xl md:px-4 md:py-3">
+                <div className="flex flex-none items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 shadow-sm md:gap-3 md:rounded-xl md:px-4 md:py-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-md bg-white text-amber-500 md:h-10 md:w-10 md:rounded-lg">
                         <Star size={17} className="md:h-5 md:w-5" fill="currentColor" />
                     </div>
@@ -58,7 +58,7 @@ export const GoogleReviews: React.FC = () => (
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.35, delay: index * 0.04 }}
-                        className="flex min-h-0 flex-col justify-between rounded-lg border border-gray-200 bg-white p-3 transition-colors hover:border-gray-300 hover:bg-gray-50 md:min-h-[220px] md:rounded-xl md:p-5"
+                        className="flex min-h-0 flex-col justify-between rounded-lg bg-gray-50 p-3 shadow-sm transition-colors hover:bg-gray-100 md:min-h-[220px] md:rounded-xl md:p-5"
                     >
                         <div>
                             <div className="flex items-center justify-between gap-3">
@@ -70,8 +70,8 @@ export const GoogleReviews: React.FC = () => (
                             <p className="mt-3 text-xs font-medium leading-5 text-gray-800 md:mt-4 md:text-sm md:leading-6">“{review.text}”</p>
                         </div>
 
-                        <div className="mt-4 flex items-center gap-2 border-t border-gray-200 pt-3 md:mt-5 md:gap-3 md:pt-4">
-                            <SafeImage src={review.avatar} alt={review.name} className="h-8 w-8 rounded-full border border-gray-200 bg-gray-100 md:h-9 md:w-9" />
+                        <div className="mt-4 flex items-center gap-2 pt-3 md:mt-5 md:gap-3 md:pt-4">
+                            <SafeImage src={review.avatar} alt={review.name} className="h-8 w-8 rounded-full bg-gray-100 md:h-9 md:w-9" />
                             <div className="min-w-0 flex-1">
                                 <h3 className="truncate text-xs font-black text-gray-950">{review.name}</h3>
                                 <p className="truncate text-[11px] font-semibold text-gray-600">{review.location} · <span className="text-primary-800">{review.service}</span></p>

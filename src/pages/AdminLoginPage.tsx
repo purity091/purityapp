@@ -3,7 +3,10 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
-import { ShieldCheck, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { isSupabaseConfigured } from '../lib/supabase';
+
+const isLocalDevelopment = import.meta.env.DEV && !isSupabaseConfigured();
 
 export const AdminLoginPage: React.FC = () => {
     const [email, setEmail] = useState('');
@@ -30,12 +33,10 @@ export const AdminLoginPage: React.FC = () => {
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 px-4">
             <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 border border-gray-200">
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <ShieldCheck className="w-8 h-8 text-primary-600" />
-                    </div>
+                    <img src="/logo.png" alt="Purity Cleaning Services" width={80} height={80} className="mx-auto mb-4 h-20 w-20 rounded-2xl object-contain shadow-lg" />
                     <h1 className="text-3xl font-bold text-gray-900">Admin Portal</h1>
                     <p className="text-gray-500 text-sm mt-2">Purity Management System</p>
-                    <p className="text-xs text-amber-600 mt-2 font-medium">Local demo mode — backend not connected</p>
+                    <p className="text-xs text-amber-600 mt-2 font-medium">{isSupabaseConfigured() ? 'Supabase admin authentication' : isLocalDevelopment ? 'Local development mode' : 'Admin authentication is unavailable'}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -82,11 +83,7 @@ export const AdminLoginPage: React.FC = () => {
                     </Button>
                 </form>
 
-                <div className="mt-6 text-center">
-                    <p className="text-xs text-gray-400">
-                        Demo credentials are stored locally in this browser.
-                    </p>
-                </div>
+                {isLocalDevelopment && <div className="mt-6 text-center"><p className="text-xs text-gray-400">Development credentials are available only in local development.</p></div>}
             </div>
         </div>
     );

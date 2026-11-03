@@ -1,14 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Home, LayoutGrid, ClipboardList, CircleHelp, Star } from 'lucide-react';
+import { Check, ClipboardList, CircleHelp, Home, LayoutGrid, UserRound } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const MobileNav: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [activeSection, setActiveSection] = useState(() => location.hash.replace('#', ''));
     const previousPathRef = useRef(location.pathname);
     const sectionNavigationRef = useRef(false);
     const isActive = (path: string) => location.pathname === path;
+    const accountActive = ['/dashboard', '/profile', '/notifications', '/wishlist'].includes(location.pathname);
+    const accountLabel = user?.fullName?.trim() || user?.email?.split('@')[0]?.trim() || user?.phone || 'Account';
 
     useEffect(() => {
         setActiveSection(location.hash.replace('#', ''));
@@ -73,8 +77,23 @@ export const MobileNav: React.FC = () => {
                     onClick={goHome}
                 />
 
-                <NavItem to="/reviews" icon={<Star size={18} />} label="Reviews" active={isActive('/reviews')} />
                 <NavItem to="/bookings" icon={<ClipboardList size={18} />} label="Bookings" active={isActive('/bookings')} />
+                {user?.role === 'customer' ? (
+                    <NavItem
+                        to="/dashboard"
+                        icon={<span className="relative"><UserRound size={18} /><span className="absolute -right-2 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-white bg-emerald-500 text-white"><Check size={8} strokeWidth={4} /></span></span>}
+                        label={accountLabel}
+                        active={accountActive}
+                    />
+                ) : (
+                    <NavItem
+                        to={location.pathname}
+                        icon={<UserRound size={18} />}
+                        label="Sign in"
+                        active={false}
+                        onClick={() => navigate(location.pathname, { state: { openAuth: true, from: location.pathname } })}
+                    />
+                )}
             </div>
         </div>
     );

@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Purity API documentation for mobile application developers">
+  <title>Purity API Documentation</title>
+  <style>
+    :root{--bg:#f6f8fb;--panel:#fff;--ink:#172033;--muted:#637083;--line:#dfe5ee;--brand:#0f766e;--brand-2:#115e59;--blue:#2563eb;--green:#15803d;--amber:#a16207;--red:#b91c1c;--code:#111827;--code-ink:#e5e7eb;--shadow:0 8px 28px rgba(15,23,42,.07)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font-family:Tahoma,"Segoe UI",Arial,sans-serif;line-height:1.75}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}.wrap{max-width:1280px;margin:auto;padding:0 22px}.hero{background:linear-gradient(135deg,#0f766e,#164e63);color:#fff;padding:42px 0 34px}.hero h1{margin:0 0 8px;font-size:clamp(28px,4vw,46px);letter-spacing:-.5px}.hero p{margin:0;max-width:900px;color:#d9fffa}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.badge{display:inline-flex;align-items:center;border:1px solid rgba(255,255,255,.28);border-radius:999px;padding:3px 11px;font-size:13px;background:rgba(255,255,255,.1)}.layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:24px;align-items:start}.toc{position:sticky;top:16px;margin-top:24px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow)}.toc strong{display:block;margin-bottom:8px}.toc a{display:block;padding:5px 7px;border-radius:7px;color:#334155;font-size:13px}.toc a:hover{background:#ecfdf5;color:var(--brand-2);text-decoration:none}.content{min-width:0;padding:24px 0 70px}.section{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:24px;margin-bottom:20px;box-shadow:var(--shadow)}h2{font-size:25px;margin:0 0 12px;color:#0f4c5c;border-bottom:1px solid var(--line);padding-bottom:8px}h3{font-size:19px;margin:24px 0 8px;color:#164e63}h4{font-size:16px;margin:18px 0 6px}p{margin:8px 0}ul,ol{margin:8px 0 14px;padding-right:24px}.note,.success,.warning,.danger{border-right:4px solid;padding:12px 15px;margin:14px 0;border-radius:8px}.note{background:#eff6ff;border-color:#3b82f6}.success{background:#f0fdf4;border-color:var(--green)}.warning{background:#fffbeb;border-color:#d97706}.danger{background:#fef2f2;border-color:var(--red)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}.card{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfdff}.card h4{margin:0 0 4px}.method{display:inline-block;border-radius:5px;padding:1px 8px;font:bold 12px Consolas,monospace;color:#fff;direction:ltr}.get{background:#15803d}.post{background:#2563eb}.patch{background:#b45309}.delete{background:#b91c1c}.rpc{background:#7c3aed}.endpoint{font-family:Consolas,monospace;direction:ltr;unicode-bidi:embed;color:#111827;font-size:14px}.ltr{direction:ltr;text-align:left;unicode-bidi:embed}.code-wrap{position:relative;margin:10px 0 16px}.copy{position:absolute;top:7px;left:7px;border:1px solid #4b5563;background:#374151;color:#fff;border-radius:5px;padding:3px 8px;font-size:11px;cursor:pointer}.copy:hover{background:#4b5563}pre{direction:ltr;text-align:left;overflow:auto;background:var(--code);color:var(--code-ink);padding:16px;border-radius:9px;margin:0;font:13px/1.65 Consolas,"Courier New",monospace;white-space:pre}.inline{direction:ltr;unicode-bidi:embed;background:#eef2f7;border:1px solid #dbe2ea;border-radius:4px;padding:1px 5px;font:12px Consolas,monospace;color:#1e293b}table{width:100%;border-collapse:collapse;margin:10px 0 18px;font-size:13px;background:#fff}th,td{border:1px solid var(--line);padding:8px 10px;vertical-align:top;text-align:right}th{background:#f1f5f9;color:#334155;white-space:nowrap}td code{direction:ltr;unicode-bidi:embed;font:12px Consolas,monospace}.scroll{overflow-x:auto}.small{font-size:13px;color:var(--muted)}.status{font-weight:bold;color:var(--green)}.status.warn{color:var(--amber)}.status.bad{color:var(--red)}details{border:1px solid var(--line);border-radius:9px;margin:10px 0;background:#fff}summary{cursor:pointer;padding:10px 13px;font-weight:bold;color:#164e63}details>div{padding:0 13px 12px}.search{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-bottom:10px;font:inherit}.footer{color:var(--muted);font-size:12px;text-align:center;padding:16px 0 30px}.source{font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:10px;margin-top:14px}@media(max-width:900px){.layout{display:block}.toc{position:static}.toc nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px}.section{padding:18px}.wrap{padding:0 12px}table{min-width:680px}}
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <h1>Purity API Documentation</h1>
+      <p>التوثيق المرجعي لمطور تطبيقات iOS وAndroid. هذا الملف يصف العقد الفعلي الموجود في المشروع، وليس API افتراضية غير مطبقة.</p>
+      <div class="meta">
+        <span class="badge">الإصدار: 1.0</span>
+        <span class="badge">تاريخ المراجعة: 2026-11-03</span>
+        <span class="badge">Backend: Supabase</span>
+        <span class="badge">اللغة: Arabic UI / English API identifiers</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap layout">
+    <aside class="toc">
+      <strong>محتويات الوثيقة</strong>
+      <input id="search" class="search" placeholder="بحث داخل العناوين..." aria-label="بحث">
+      <nav>
+        <a href="#overview">1. نظرة عامة</a>
+        <a href="#setup">2. إعداد الاتصال</a>
+        <a href="#security">3. الأمان</a>
+        <a href="#auth">4. المصادقة</a>
+        <a href="#bookings">5. الحجوزات</a>
+        <a href="#notifications">6. الإشعارات</a>
+        <a href="#wishlist">7. المفضلة</a>
+        <a href="#catalog">8. الكتالوج والعروض</a>
+        <a href="#rpc">9. RPC</a>
+        <a href="#realtime">10. Realtime</a>
+        <a href="#errors">11. الأخطاء</a>
+        <a href="#mobile">12. تطبيق الجوال</a>
+        <a href="#limitations">13. القيود الحالية</a>
+        <a href="#checklist">14. Checklist</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <section id="overview" class="section searchable">
+        <h2>1. النظرة العامة والمعمارية</h2>
+        <div class="danger"><strong>الحكم المختصر:</strong> لا توجد REST API مخصصة مكتوبة داخل المشروع. التطبيق يستخدم واجهات Supabase الرسمية مباشرة: Auth وPostgREST وRealtime. يوجد endpoint واحد فقط باسم <code class="inline">/api/keepalive</code> وهو endpoint داخلي لـ Vercel ولا يستخدمه تطبيق الجوال.</div>
+        <div class="grid">
+          <div class="card"><h4>تسجيل الدخول</h4><p>Supabase Auth باستخدام البريد وكلمة المرور.</p></div>
+          <div class="card"><h4>البيانات</h4><p>Supabase PostgreSQL عبر REST تلقائي من PostgREST.</p></div>
+          <div class="card"><h4>التحديث الفوري</h4><p>Supabase Realtime على تغييرات جدول الحجوزات.</p></div>
+          <div class="card"><h4>الواجهة الحالية</h4><p>React/Vite/PWA. يمكن استخدام نفس Backend في Native Mobile.</p></div>
+        </div>
+        <h3>مصادر التنفيذ</h3>
+        <table><thead><tr><th>المسؤولية</th><th>الملف</th><th>ملاحظات</th></tr></thead><tbody>
+          <tr><td>إنشاء Supabase client</td><td><code>src/lib/supabase.ts</code></td><td>يستخدم <code>VITE_SUPABASE_URL</code> و<code>VITE_SUPABASE_ANON_KEY</code>.</td></tr>
+          <tr><td>Auth</td><td><code>src/context/AuthContext.tsx</code></td><td>sign up / sign in / password reset / account update.</td></tr>
+          <tr><td>Bookings</td><td><code>src/context/BookingContext.tsx</code></td><td>قراءة، إنشاء، تحديث إداري، حذف إداري، إشعارات، Realtime.</td></tr>
+          <tr><td>Database contract</td><td><code>supabase_bookings.sql</code></td><td>الحجوزات، profiles، notifications، admin audit log.</td></tr>
+          <tr><td>Secure application API</td><td><code>supabase_api.sql</code></td><td>التسعير، التحقق، إنشاء الحجز، ومنع التكرار.</td></tr>
+          <tr><td>Catalog contract</td><td><code>supabase_catalog.sql</code></td><td>الخدمات، الباقات، المناطق، العروض، redemption.</td></tr>
+          <tr><td>Wishlist contract</td><td><code>supabase_wishlist.sql</code></td><td>مفضلة العميل.</td></tr>
+        </tbody></table>
+      </section>
+
+      <section id="setup" class="section searchable">
+        <h2>2. إعداد الاتصال</h2>
+        <p>يحتاج المطور إلى قيمتين فقط داخل تطبيق الجوال. لا تضع service role key داخل تطبيق iOS أو Android. يجب تطبيق ملفات SQL بهذا الترتيب: bookings ثم wishlist ثم catalog ثم api.</p>
+        <table><thead><tr><th>المتغير</th><th>القيمة</th><th>هل يذهب للجوال؟</th></tr></thead><tbody>
+          <tr><td><code>SUPABASE_URL</code></td><td><code>https://&lt;project-ref&gt;.supabase.co</code></td><td>نعم، يمكن تضمينه.</td></tr>
+          <tr><td><code>SUPABASE_ANON_KEY</code> أو Publishable Key</td><td>المفتاح العام من Supabase Dashboard</td><td>نعم، مع RLS.</td></tr>
+          <tr><td><code>SUPABASE_SERVICE_ROLE_KEY</code></td><td>مفتاح إداري عالي الصلاحية</td><td><strong>ممنوع</strong> داخل الجوال.</td></tr>
+          <tr><td><code>CRON_SECRET</code></td><td>سر endpoint keepalive</td><td><strong>ممنوع</strong> داخل الجوال.</td></tr>
+        </tbody></table>
+        <h3>Base URLs</h3>
+        <table><thead><tr><th>الخدمة</th><th>Base URL</th></tr></thead><tbody>
+          <tr><td>REST / PostgREST</td><td><code class="endpoint">https://&lt;project-ref&gt;.supabase.co/rest/v1</code></td></tr>
+          <tr><td>Auth</td><td><code class="endpoint">https://&lt;project-ref&gt;.supabase.co/auth/v1</code></td></tr>
+          <tr><td>Realtime</td><td><code class="endpoint">wss://&lt;project-ref&gt;.supabase.co/realtime/v1</code></td></tr>
+          <tr><td>Edge Functions مستقبلًا</td><td><code class="endpoint">https://&lt;project-ref&gt;.supabase.co/functions/v1/&lt;function-name&gt;</code></td></tr>
+        </tbody></table>
+        <h3>Headers</h3>
+        <div class="code-wrap"><button class="copy" data-copy="headers">نسخ</button><pre id="headers">apikey: &lt;SUPABASE_ANON_KEY&gt;
+Authorization: Bearer &lt;ACCESS_TOKEN&gt;
+Content-Type: application/json
+Accept: application/json</pre></div>
+        <p class="small">في الطلبات العامة يمكن أن يكون Authorization هو anon key. في طلبات المستخدم المسجل يجب أن يكون Access Token الذي يعيده Auth، لأن RLS يعتمد على <code class="inline">auth.uid()</code>.</p>
+      </section>
+
+      <section id="security" class="section searchable">
+        <h2>3. نموذج الأمان والصلاحيات</h2>
+        <p>كل الجداول الحساسة مفعّل عليها Row Level Security. دور المستخدم لا يُستمد من بيانات يرسلها التطبيق، بل من JWT claim باسم <code class="inline">app_metadata.role</code>.</p>
+        <table><thead><tr><th>الدور</th><th>مصدر الدور</th><th>الوصول</th></tr></thead><tbody>
+          <tr><td>زائر</td><td>لا يوجد session</td><td>قراءة الكتالوج والعروض المنشورة فقط.</td></tr>
+          <tr><td>customer</td><td>أي مستخدم Auth بدون claim admin</td><td>بياناته الشخصية وحجوزاته وإشعاراته ومفضلته.</td></tr>
+          <tr><td>admin</td><td><code class="inline">auth.jwt() -&gt; 'app_metadata' -&gt;&gt; 'role' = 'admin'</code></td><td>إدارة الحجوزات والكتالوج والعروض وقراءة audit log.</td></tr>
+        </tbody></table>
+        <div class="warning"><strong>مهم:</strong> لا تستخدم <code class="inline">user_metadata.role</code> لتحديد صلاحيات المدير. يجب أن يكون الدور في <code class="inline">raw_app_meta_data</code> حتى لا يستطيع المستخدم تغييره بنفسه.</div>
+        <h3>إنشاء مستخدم مدير</h3>
+        <div class="code-wrap"><button class="copy" data-copy="admin-sql">نسخ</button><pre id="admin-sql">-- نفّذ من جلسة SQL إدارية فقط، وليس من التطبيق
+update auth.users
+set raw_app_meta_data = coalesce(raw_app_meta_data, '{}'::jsonb)
+  || '{"role":"admin"}'::jsonb
+where email = 'admin@example.com';</pre></div>
+        <p class="small">بعد تغيير الدور يحتاج المستخدم إلى تسجيل الدخول مجددًا أو تجديد JWT.</p>
+      </section>
+
+      <section id="auth" class="section searchable">
+        <h2>4. المصادقة Auth</h2>
+        <p>المسار القياسي للمطور هو استخدام Supabase SDK native. يمكن أيضًا استخدام HTTP مباشرة كما في الأمثلة.</p>
+        <h3>4.1 إنشاء حساب</h3>
+        <p><span class="method post">POST</span> <code class="endpoint">/auth/v1/signup</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="signup">نسخ</button><pre id="signup">{
+  "email": "customer@example.com",
+  "password": "StrongPassword123!",
+  "data": {
+    "full_name": "Customer Name",
+    "phone_number": "+971501234567"
+  }
+}</pre></div>
+        <ul><li>التطبيق الحالي يطبع رقم الإمارات إلى صيغة <code class="inline">+9715XXXXXXXX</code>.</li><li>البريد يستخدم للدخول واسترجاع كلمة المرور.</li><li>الهاتف يخزن داخل metadata وcustomer_profiles للتواصل، وليس تسجيل دخول بالهاتف.</li><li>إذا كان Email Confirmation مفعّلًا فلن يرجع session حتى تأكيد البريد.</li></ul>
+
+        <h3>4.2 تسجيل الدخول</h3>
+        <p><span class="method post">POST</span> <code class="endpoint">/auth/v1/token?grant_type=password</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="signin">نسخ</button><pre id="signin">{
+  "email": "customer@example.com",
+  "password": "StrongPassword123!"
+}</pre></div>
+        <p>الاستجابة تحتوي عادةً على <code class="inline">access_token</code> و<code class="inline">refresh_token</code> وبيانات المستخدم. خزّن session باستخدام secure storage في الجوال، وليس plain local storage.</p>
+
+        <h3>4.3 تحديث الحساب</h3>
+        <p><span class="method put">PUT</span> <code class="endpoint">/auth/v1/user</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="update-user">نسخ</button><pre id="update-user">{
+  "password": "NewStrongPassword123!",
+  "data": { "full_name": "New Name" }
+}</pre></div>
+
+        <h3>4.4 استرجاع كلمة المرور</h3>
+        <p><span class="method post">POST</span> <code class="endpoint">/auth/v1/recover</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="recover">نسخ</button><pre id="recover">{
+  "email": "customer@example.com"
+}</pre></div>
+        <div class="warning">رابط الاسترجاع الحالي في الويب مبني على <code class="inline">window.location.origin</code>. لتطبيق Native يجب إضافة Redirect URL مثل <code class="inline">purity://auth/reset</code> في Supabase Auth ثم تمريره من تطبيق الجوال.</div>
+
+        <h3>4.5 تسجيل الخروج</h3>
+        <p><span class="method post">POST</span> <code class="endpoint">/auth/v1/logout</code> مع Access Token.</p>
+      </section>
+
+      <section id="bookings" class="section searchable">
+        <h2>5. الحجوزات Bookings</h2>
+        <p>جدول قاعدة البيانات: <code class="inline">public.bookings</code>. العميل يقرأ حجوزاته فقط، والمدير يقرأ ويعدّل ويحذف كل الحجوزات.</p>
+        <h3>5.1 نموذج الحجز</h3>
+        <div class="scroll"><table><thead><tr><th>الحقل</th><th>النوع</th><th>مطلوب</th><th>الوصف</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td>uuid</td><td>يُنشأ تلقائيًا</td><td>معرف الحجز.</td></tr>
+          <tr><td><code>created_at</code></td><td>timestamptz</td><td>تلقائي</td><td>وقت الإنشاء UTC.</td></tr>
+          <tr><td><code>user_id</code></td><td>uuid</td><td>نعم للحجز الموثق</td><td>يجب أن يساوي subject في Access Token.</td></tr>
+          <tr><td><code>customer_name</code></td><td>text</td><td>نعم</td><td>اسم العميل.</td></tr>
+          <tr><td><code>phone_number</code></td><td>text</td><td>نعم</td><td>رقم التواصل.</td></tr>
+          <tr><td><code>neighborhood</code></td><td>text</td><td>نعم</td><td>المنطقة.</td></tr>
+          <tr><td><code>address</code></td><td>text</td><td>لا</td><td>العنوان التفصيلي.</td></tr>
+          <tr><td><code>latitude</code>, <code>longitude</code></td><td>double precision</td><td>لا</td><td>إحداثيات الموقع.</td></tr>
+          <tr><td><code>service_id</code></td><td>text</td><td>نعم</td><td>معرف الخدمة القادم من الكتالوج المحلي أو DB.</td></tr>
+          <tr><td><code>service_name</code></td><td>text</td><td>نعم</td><td>Snapshot لاسم الخدمة.</td></tr>
+          <tr><td><code>date</code>, <code>time</code></td><td>text</td><td>نعم</td><td>وقت الموعد؛ التطبيق الحالي يرسل نصًا.</td></tr>
+          <tr><td><code>hours</code></td><td>integer</td><td>نعم</td><td>عدد الساعات.</td></tr>
+          <tr><td><code>number_of_workers</code></td><td>integer</td><td>نعم</td><td>عدد العمال، default = 1.</td></tr>
+          <tr><td><code>number_of_rooms</code></td><td>integer</td><td>لا</td><td>عدد الغرف.</td></tr>
+          <tr><td><code>number_of_carpets</code></td><td>integer</td><td>لا</td><td>عدد السجاد.</td></tr>
+          <tr><td><code>number_of_single_mattresses</code></td><td>integer</td><td>لا</td><td>المراتب المفردة.</td></tr>
+          <tr><td><code>number_of_large_mattresses</code></td><td>integer</td><td>لا</td><td>المراتب الكبيرة.</td></tr>
+          <tr><td><code>number_of_sofa_seats</code></td><td>integer</td><td>لا</td><td>عدد مقاعد الكنبة.</td></tr>
+          <tr><td><code>number_of_curtains</code></td><td>integer</td><td>لا</td><td>عدد الستائر.</td></tr>
+          <tr><td><code>include_chemicals</code></td><td>boolean</td><td>لا</td><td>هل تشمل المواد الكيميائية، default = false.</td></tr>
+          <tr><td><code>notes</code></td><td>text</td><td>لا</td><td>ملاحظات العميل.</td></tr>
+          <tr><td><code>total_price</code></td><td>numeric</td><td>نعم</td><td>السعر الحالي المرسل من العميل؛ لا يُوثق به إنتاجيًا قبل إصلاح RPC.</td></tr>
+          <tr><td><code>status</code></td><td>text</td><td>تلقائي</td><td><code>pending</code> أو <code>confirmed</code> أو <code>completed</code> أو <code>cancelled</code>.</td></tr>
+        </tbody></table></div>
+
+        <h3>5.2 قراءة حجوزات العميل</h3>
+        <p><span class="method get">GET</span> <code class="endpoint">/rest/v1/bookings?select=*&amp;order=created_at.desc</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="get-bookings">نسخ</button><pre id="get-bookings">curl "https://&lt;project-ref&gt;.supabase.co/rest/v1/bookings?select=*&amp;order=created_at.desc" \
+  -H "apikey: &lt;ANON_KEY&gt;" \
+  -H "Authorization: Bearer &lt;ACCESS_TOKEN&gt;"</pre></div>
+        <p>RLS يعيد فقط الصفوف التي يكون فيها <code class="inline">user_id = auth.uid()</code>. لا حاجة لإرسال user_id في query filter، لكنه يمكن استخدامه لتحسين الوضوح.</p>
+
+        <h3>5.3 إنشاء حجز - RPC الآمنة</h3>
+        <p><span class="method rpc">RPC</span> <code class="endpoint">POST /rest/v1/rpc/create_booking</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="create-booking">نسخ</button><pre id="create-booking">{
+  "p_service_id": "10",
+  "p_customer_name": "Customer Name",
+  "p_phone_number": "+971501234567",
+  "p_neighborhood": "Dubai Marina",
+  "p_address": "Building / Street / Apartment",
+  "p_latitude": 25.0800,
+  "p_longitude": 55.1400,
+  "p_hours": 4,
+  "p_date": "2026-11-10",
+  "p_time": "9:00 AM – 12:00 PM",
+  "p_number_of_workers": 2,
+  "p_number_of_rooms": 0,
+  "p_number_of_carpets": 0,
+  "p_number_of_single_mattresses": 0,
+  "p_number_of_large_mattresses": 0,
+  "p_number_of_sofa_seats": 0,
+  "p_number_of_curtains": 0,
+  "p_include_chemicals": true,
+  "p_notes": "Please call before arrival",
+  "p_client_request_id": "&lt;UUID_OR_UNIQUE_REQUEST_ID&gt;"
+}</pre></div>
+        <p>لا ترسل <code class="inline">user_id</code> أو <code class="inline">status</code> أو <code class="inline">total_price</code>. يتم أخذ المستخدم من JWT، وتحديد الحالة إلى <code class="inline">pending</code>، وحساب السعر من <code class="inline">booking_pricing_rules</code>.</p>
+        <div class="code-wrap"><button class="copy" data-copy="create-booking-response">نسخ</button><pre id="create-booking-response">{
+  "id": "&lt;BOOKING_UUID&gt;",
+  "user_id": "&lt;AUTH_USER_ID&gt;",
+  "service_id": "10",
+  "service_name": "Regular Cleaning",
+  "total_price": 310,
+  "status": "pending",
+  "client_request_id": "&lt;UUID_OR_UNIQUE_REQUEST_ID&gt;"
+}</pre></div>
+        <div class="success"><strong>Idempotency:</strong> إذا أعيد إرسال نفس <code class="inline">p_client_request_id</code> للمستخدم نفسه، تعيد RPC الحجز الأصلي بدل إنشاء حجز ثانٍ.</div>
+        <details><summary>العقد القديم المباشر - ممنوع بعد تطبيق supabase_api.sql</summary><div>
+          <p>كان التطبيق يستخدم <code class="inline">POST /rest/v1/bookings</code> ويرسل السعر والحالة من العميل. تم إيقاف الإدخال المباشر للمستخدمين عبر <code class="inline">REVOKE INSERT</code> لأن هذا يسمح بالتلاعب بالسعر والحالة.</p>
+        </div></details>
+        <!-- legacy example intentionally removed from the active contract -->
+        <div class="danger"><strong>تحذير:</strong> يجب تطبيق <code class="inline">supabase_api.sql</code> قبل تشغيل النسخة الجديدة. إذا لم توجد RPC سيعيد التطبيق خطأ إعداد backend بدل حفظ حجز غير آمن.</div>
+        <div style="display:none"><pre>{
+  "user_id": "&lt;AUTH_USER_ID&gt;",
+  "customer_name": "Customer Name",
+  "phone_number": "+971501234567",
+  "service_id": "regular-cleaning",
+  "service_name": "Regular Cleaning",
+  "neighborhood": "Dubai Marina",
+  "address": "Building / Street / Apartment",
+  "latitude": 25.0800,
+  "longitude": 55.1400,
+  "hours": 4,
+  "date": "2026-11-10",
+  "time": "9:00 AM – 12:00 PM",
+  "number_of_workers": 2,
+  "number_of_rooms": 3,
+  "number_of_carpets": 1,
+  "number_of_single_mattresses": 0,
+  "number_of_large_mattresses": 0,
+  "number_of_sofa_seats": 5,
+  "number_of_curtains": 0,
+  "include_chemicals": true,
+  "notes": "Please call before arrival",
+  "total_price": 299,
+  "status": "pending"
+}</pre></div>
+        </div>
+
+        <h3>5.4 تحديث حالة الحجز - مدير فقط</h3>
+        <p><span class="method patch">PATCH</span> <code class="endpoint">/rest/v1/bookings?id=eq.&lt;BOOKING_ID&gt;</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="status-update">نسخ</button><pre id="status-update">{
+  "status": "confirmed"
+}</pre></div>
+        <p>القيم المسموحة: <code class="inline">pending</code>، <code class="inline">confirmed</code>، <code class="inline">completed</code>، <code class="inline">cancelled</code>. يطلق التغيير إشعارًا للعميل وسجل تدقيق للمدير.</p>
+
+        <h3>5.5 حذف حجز - مدير فقط</h3>
+        <p><span class="method delete">DELETE</span> <code class="endpoint">/rest/v1/bookings?id=eq.&lt;BOOKING_ID&gt;</code></p>
+        <p>يحفظ trigger سجل حذف في <code class="inline">admin_booking_audit_log</code> إذا كان JWT للمنفذ يحمل دور admin.</p>
+
+        <h3>5.6 قواعد الحالة في واجهة التطبيق</h3>
+        <table><thead><tr><th>الحالة</th><th>المعنى</th><th>من يغيرها</th></tr></thead><tbody>
+          <tr><td><code>pending</code></td><td>تم استلام طلب الحجز بانتظار التأكيد.</td><td>الإنشاء / المدير.</td></tr>
+          <tr><td><code>confirmed</code></td><td>تم قبول الحجز.</td><td>المدير.</td></tr>
+          <tr><td><code>completed</code></td><td>تم تنفيذ الخدمة.</td><td>المدير.</td></tr>
+          <tr><td><code>cancelled</code></td><td>تم إلغاء الحجز.</td><td>المدير حاليًا.</td></tr>
+        </tbody></table>
+      </section>
+
+      <section id="notifications" class="section searchable">
+        <h2>6. الإشعارات</h2>
+        <p>الجدول: <code class="inline">public.notifications</code>. يتم إنشاء إشعار تلقائيًا عند إنشاء الحجز أو تغيير حالته عبر database trigger.</p>
+        <h3>6.1 نموذج الإشعار</h3>
+        <table><thead><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr></thead><tbody>
+          <tr><td><code>id</code></td><td>uuid</td><td>معرف الإشعار.</td></tr>
+          <tr><td><code>user_id</code></td><td>uuid</td><td>صاحب الإشعار.</td></tr>
+          <tr><td><code>booking_id</code></td><td>uuid nullable</td><td>الحجز المرتبط.</td></tr>
+          <tr><td><code>title</code></td><td>text</td><td>عنوان الإشعار.</td></tr>
+          <tr><td><code>message</code></td><td>text</td><td>نص الإشعار.</td></tr>
+          <tr><td><code>kind</code></td><td>text</td><td>حاليًا غالبًا <code>booking</code>.</td></tr>
+          <tr><td><code>created_at</code></td><td>timestamptz</td><td>وقت الإنشاء.</td></tr>
+          <tr><td><code>read_at</code></td><td>timestamptz nullable</td><td>null يعني غير مقروء.</td></tr>
+        </tbody></table>
+        <h3>6.2 القراءة والتعليم كمقروء</h3>
+        <p><span class="method get">GET</span> <code class="endpoint">/rest/v1/notifications?select=*&amp;order=created_at.desc&amp;limit=30</code></p>
+        <p><span class="method patch">PATCH</span> <code class="endpoint">/rest/v1/notifications?id=eq.&lt;NOTIFICATION_ID&gt;</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="read-notification">نسخ</button><pre id="read-notification">{ "read_at": "2026-11-03T10:30:00.000Z" }</pre></div>
+        <p>RLS يمنع المستخدم من قراءة أو تحديث إشعار مستخدم آخر.</p>
+      </section>
+
+      <section id="wishlist" class="section searchable">
+        <h2>7. المفضلة Wishlist</h2>
+        <p>الجدول: <code class="inline">public.wishlist_items</code>. المفتاح الأساسي مركب من <code class="inline">user_id + item_id</code>.</p>
+        <table><thead><tr><th>الحقل</th><th>النوع</th><th>الوصف</th></tr></thead><tbody>
+          <tr><td><code>user_id</code></td><td>uuid</td><td>يجب أن يساوي المستخدم الحالي.</td></tr>
+          <tr><td><code>item_id</code></td><td>text</td><td>معرف خدمة/باقة من الكتالوج أو fallback catalog.</td></tr>
+          <tr><td><code>created_at</code></td><td>timestamptz</td><td>وقت الإضافة.</td></tr>
+        </tbody></table>
+        <p><span class="method get">GET</span> <code class="endpoint">/rest/v1/wishlist_items?select=item_id&amp;order=created_at.asc</code></p>
+        <p><span class="method post">POST</span> <code class="endpoint">/rest/v1/wishlist_items</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="wishlist-add">نسخ</button><pre id="wishlist-add">{ "user_id": "&lt;AUTH_USER_ID&gt;", "item_id": "regular-cleaning" }</pre></div>
+        <p><span class="method delete">DELETE</span> <code class="endpoint">/rest/v1/wishlist_items?user_id=eq.&lt;AUTH_USER_ID&gt;&amp;item_id=eq.&lt;ITEM_ID&gt;</code></p>
+      </section>
+
+      <section id="catalog" class="section searchable">
+        <h2>8. الكتالوج والعروض</h2>
+        <p>ملف schema: <code class="inline">supabase_catalog.sql</code>. البيانات العامة المنشورة قابلة للقراءة من الزائر، بينما الإدارة محمية بدور admin.</p>
+        <h3>8.1 الجداول العامة</h3>
+        <table><thead><tr><th>الجدول</th><th>الغرض</th><th>قراءة الزائر</th></tr></thead><tbody>
+          <tr><td><code>catalog_categories</code></td><td>تصنيفات هرمية للخدمات.</td><td>الفعّال فقط.</td></tr>
+          <tr><td><code>catalog_items</code></td><td>الخدمات والباقات.</td><td><code>status = published</code> فقط.</td></tr>
+          <tr><td><code>catalog_item_variants</code></td><td>نسخ الخدمة وتسعيرها.</td><td>الفعّال لخدمة منشورة.</td></tr>
+          <tr><td><code>catalog_item_media</code></td><td>صور وفيديوهات.</td><td>وسائط خدمات منشورة.</td></tr>
+          <tr><td><code>service_areas</code></td><td>مناطق الخدمة.</td><td>المناطق الفعّالة.</td></tr>
+          <tr><td><code>catalog_item_areas</code></td><td>ربط الخدمات بالمناطق.</td><td>الروابط الفعّالة.</td></tr>
+          <tr><td><code>deals</code></td><td>عروض زمنية.</td><td>published وضمن starts_at/ends_at.</td></tr>
+          <tr><td><code>deal_items</code></td><td>الخدمات المرتبطة بالعرض.</td><td>عناصر العروض الحية.</td></tr>
+        </tbody></table>
+        <h3>8.2 الحقول الأساسية لـ catalog_items</h3>
+        <table><thead><tr><th>الحقل</th><th>الوصف</th></tr></thead><tbody>
+          <tr><td><code>id</code>, <code>category_id</code></td><td>UUID ومعرف التصنيف.</td></tr>
+          <tr><td><code>item_type</code></td><td><code>service</code> أو <code>package</code>.</td></tr>
+          <tr><td><code>status</code></td><td><code>draft</code> أو <code>published</code> أو <code>paused</code> أو <code>archived</code>.</td></tr>
+          <tr><td><code>slug</code>, <code>name</code></td><td>معرف نصي فريد واسم العرض.</td></tr>
+          <tr><td><code>short_description</code>, <code>description</code></td><td>النصوص التسويقية.</td></tr>
+          <tr><td><code>base_price</code>, <code>compare_at_price</code></td><td>السعر الحالي والسعر المقارن.</td></tr>
+          <tr><td><code>currency</code></td><td>الافتراضي AED.</td></tr>
+          <tr><td><code>price_unit</code></td><td>مثل per hour أو per package.</td></tr>
+          <tr><td><code>rating</code>, <code>review_count</code>, <code>total_bookings</code></td><td>بيانات العرض والإحصاءات.</td></tr>
+          <tr><td><code>metadata</code></td><td>JSONB لحقول العرض مثل image وfeatures وoffer_tag.</td></tr>
+        </tbody></table>
+        <h3>8.3 أمثلة قراءة</h3>
+        <p><span class="method get">GET</span> <code class="endpoint">/rest/v1/catalog_items?select=*&amp;status=eq.published&amp;order=sort_order.asc</code></p>
+        <p><span class="method get">GET</span> <code class="endpoint">/rest/v1/deals?select=*&amp;status=eq.published&amp;order=sort_order.asc</code></p>
+        <div class="warning">الواجهة الحالية تستخدم الكتالوج المحلي كـ fallback إذا فشل استدعاء قاعدة البيانات. تطبيق الجوال يجب أن يتعامل مع response فارغ أو مؤقتًا يقرأ الكتالوج من DB فقط بعد التأكد من استيراد البيانات.</div>
+      </section>
+
+      <section id="rpc" class="section searchable">
+        <h2>9. RPC والعمليات الذرية</h2>
+        <h3>9.1 إحصاءات الحجوزات - admin فقط</h3>
+        <p><span class="method rpc">RPC</span> <code class="endpoint">POST /rest/v1/rpc/get_booking_stats</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="stats">نسخ</button><pre id="stats">{}</pre></div>
+        <div class="code-wrap"><button class="copy" data-copy="stats-response">نسخ</button><pre id="stats-response">[
+  {
+    "total": 120,
+    "pending": 18,
+    "confirmed": 44,
+    "completed": 51,
+    "cancelled": 7
+  }
+]</pre></div>
+        <p>إذا لم يكن المستخدم admin يرجع خطأ <code class="inline">Admin access required</code>.</p>
+
+        <h3>9.2 حجز عرض - authenticated</h3>
+        <p><span class="method rpc">RPC</span> <code class="endpoint">POST /rest/v1/rpc/claim_deal</code></p>
+        <div class="code-wrap"><button class="copy" data-copy="claim-deal">نسخ</button><pre id="claim-deal">{
+  "p_deal_id": "&lt;DEAL_UUID&gt;",
+  "p_booking_id": "&lt;BOOKING_UUID_OR_NULL&gt;",
+  "p_quantity": 1,
+  "p_code": "OPTIONALCODE"
+}</pre></div>
+        <p>القيمة المعادة هي UUID من <code class="inline">deal_redemptions.id</code>. تتحقق العملية من:</p>
+        <ol><li>وجود session.</li><li>أن العرض منشور وحالي وغير منتهي.</li><li>صلاحية promo code إن أرسل.</li><li>ملكية الحجز للمستخدم.</li><li>حد المستخدم والمخزون.</li><li>إنشاء redemption وتخفيض المخزون داخل transaction.</li></ol>
+        <div class="warning">التنفيذ الحالي يسجل <code class="inline">discount_amount = 0</code> عند claim. لا تعتبر الخصم محسوبًا بالكامل حتى يتم تحديث منطق التسعير.</div>
+        <h3>9.3 جداول العروض الخاصة</h3>
+        <table><thead><tr><th>الجدول</th><th>الوصول</th><th>ملاحظات</th></tr></thead><tbody>
+          <tr><td><code>deal_codes</code></td><td>admin فقط</td><td>إدارة الأكواد والمخزون المستخدم.</td></tr>
+          <tr><td><code>deal_redemptions</code></td><td>العميل يقرأ سجلاته فقط</td><td>الإضافة تكون عبر claim_deal، وليس insert مباشر موصى به.</td></tr>
+          <tr><td><code>booking_deals</code></td><td>العميل يقرأ ما يرتبط بحجزه</td><td>Snapshot لسعر العرض.</td></tr>
+        </tbody></table>
+      </section>
+
+      <section id="realtime" class="section searchable">
+        <h2>10. Realtime</h2>
+        <p>التطبيق الحالي يشترك في تغييرات جدول <code class="inline">public.bookings</code>:</p>
+        <ul><li>العميل: filter = <code class="inline">user_id=eq.&lt;USER_ID&gt;</code>.</li><li>المدير: كل تغييرات الجدول.</li><li>بعد أي تغيير يعاد تحميل الحجوزات والإشعارات.</li></ul>
+        <div class="code-wrap"><button class="copy" data-copy="realtime-js">نسخ</button><pre id="realtime-js">const channel = supabase
+  .channel(`customer_updates_${userId}`)
+  .on('postgres_changes', {
+    event: '*',
+    schema: 'public',
+    table: 'bookings',
+    filter: `user_id=eq.${userId}`
+  }, (payload) =&gt; {
+    // refetch bookings and notifications
+  })
+  .subscribe();</pre></div>
+        <p class="small">لا يوجد Push Notification في هذا العقد. Realtime يعمل عندما يكون التطبيق مفتوحًا أو الاتصال بالخدمة قائمًا.</p>
+      </section>
+
+      <section id="errors" class="section searchable">
+        <h2>11. الأخطاء والاستجابة</h2>
+        <p>REST API تعيد أخطاء Supabase القياسية، وغالبًا بالشكل التالي:</p>
+        <div class="code-wrap"><button class="copy" data-copy="error">نسخ</button><pre id="error">{
+  "code": "42501",
+  "details": null,
+  "hint": null,
+  "message": "new row violates row-level security policy"
+}</pre></div>
+        <table><thead><tr><th>الحالة/الكود</th><th>السبب المحتمل</th><th>تصرف تطبيق الجوال</th></tr></thead><tbody>
+          <tr><td>401 / 403</td><td>جلسة منتهية أو RLS يمنع العملية.</td><td>اعمل refresh للـ session، ثم اطلب تسجيل الدخول عند الحاجة.</td></tr>
+          <tr><td>409</td><td>تعارض unique مثل wishlist أو رقم الهاتف.</td><td>اعرض رسالة مفهومة ولا تعيد الإنشاء بلا فحص.</td></tr>
+          <tr><td>400</td><td>حقل ناقص أو نوع غير صحيح.</td><td>تحقق محليًا قبل الإرسال.</td></tr>
+          <tr><td>42501</td><td>RLS policy رفضت الطلب.</td><td>لا تحاول تجاوزها بإرسال user_id مختلف.</td></tr>
+          <tr><td>429</td><td>حدود Auth أو ضغط/إساءة استخدام.</td><td>backoff وإعادة المحاولة بحذر.</td></tr>
+          <tr><td>5xx / network</td><td>تعطل Supabase أو الشبكة.</td><td>لا تنشئ حجزًا محليًا على أنه محفوظ؛ استخدم idempotency بعد إضافة backend مناسب.</td></tr>
+        </tbody></table>
+        <div class="success"><strong>منع التكرار:</strong> عقد الحجز الجديد يستخدم <code class="inline">p_client_request_id</code>. أعد استخدام نفس القيمة عند إعادة المحاولة بعد timeout.</div>
+      </section>
+
+      <section id="mobile" class="section searchable">
+        <h2>12. تعليمات تطبيق الجوال</h2>
+        <h3>12.1 دورة التشغيل الموصى بها</h3>
+        <ol><li>أنشئ Supabase client من URL وanon/publishable key.</li><li>استدعِ <code class="inline">getSession()</code> عند بدء التطبيق.</li><li>استمع إلى تغييرات Auth لتحديث حالة المستخدم.</li><li>بعد الدخول، استخدم Access Token تلقائيًا مع REST أو SDK.</li><li>لا تثق بالسعر المحسوب في التطبيق؛ اعرضه للمستخدم فقط.</li><li>عند انتهاء session، استخدم refresh token أو اطلب login.</li><li>عند logout امسح session من Secure Storage.</li></ol>
+        <h3>12.2 مثال TypeScript باستخدام Supabase SDK</h3>
+        <div class="code-wrap"><button class="copy" data-copy="sdk-example">نسخ</button><pre id="sdk-example">import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const { data: auth, error: loginError } =
+  await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+if (loginError) throw loginError;
+
+const { data: bookings, error } = await supabase
+  .from('bookings')
+  .select('*')
+  .order('created_at', { ascending: false });
+
+if (error) throw error;</pre></div>
+        <h3>12.3 متطلبات Deep Link</h3>
+        <table><thead><tr><th>الوظيفة</th><th>إعداد مطلوب</th></tr></thead><tbody>
+          <tr><td>Password reset</td><td>Redirect URL في Supabase + Universal Link/App Link أو custom scheme.</td></tr>
+          <tr><td>OAuth مستقبلًا</td><td>إضافة redirect scheme خاص بالتطبيق.</td></tr>
+          <tr><td>Push notifications</td><td>FCM/APNs + Edge Function أو backend server لإرسال الإشعارات.</td></tr>
+        </tbody></table>
+        <h3>12.4 صلاحيات الهاتف</h3>
+        <ul><li>الموقع الجغرافي اختياري؛ يستخدم فقط للحصول على latitude/longitude للحجز.</li><li>تطبيق الجوال يجب أن يطلب permission للموقع قبل الحجز، مع السماح بإدخال العنوان يدويًا.</li><li>لا ترسل مفاتيح خرائط أو أسرار server من التطبيق إلا إذا كانت public ومقيدة بالنطاق.</li></ul>
+      </section>
+
+      <section id="limitations" class="section searchable">
+        <h2>13. القيود الحالية التي يجب أن يعرفها المطور</h2>
+        <table><thead><tr><th>الأولوية</th><th>المشكلة</th><th>الأثر</th><th>الحل المطلوب</th></tr></thead><tbody>
+          <tr><td class="status">تم الإصلاح</td><td>تم نقل التحقق والسعر والحالة إلى <code>create_booking</code>.</td><td>يجب تطبيق migration الجديدة على Supabase.</td><td>لا تستخدم الإدخال المباشر؛ استخدم RPC فقط.</td></tr>
+          <tr><td class="status">تم الإصلاح</td><td>تمت إضافة RPC أعمال آمنة وidempotency للحجز.</td><td>يجب تطبيق <code>supabase_api.sql</code> وتثبيت العقد الجديد.</td><td>استخدم <code>create_booking</code> ولا تستخدم insert المباشر.</td></tr>
+          <tr><td class="status warn">عالية</td><td>إعادة كلمة المرور مرتبطة حاليًا بعنوان الويب.</td><td>لن يعمل Native reset بدون deep link.</td><td>تسجيل redirect URLs للجوال وتنفيذ handler.</td></tr>
+          <tr><td class="status warn">عالية</td><td>الإشعارات الحالية داخلية وRealtime فقط.</td><td>لا تصل Push عند إغلاق التطبيق.</td><td>إضافة FCM/APNs وخدمة إرسال server-side.</td></tr>
+          <tr><td class="status warn">متوسطة</td><td>الكتالوج قد يعود إلى بيانات TypeScript المحلية.</td><td>اختلاف بيانات الجوال عن الويب إذا لم تهاجر البيانات.</td><td>استيراد catalog والتعامل مع version/cache.</td></tr>
+          <tr><td class="status warn">متوسطة</td><td>حقل date/time نصي وليس timestamp موحدًا.</td><td>مشاكل timezone وsorting والتذكير.</td><td>توحيد contract على ISO 8601 وtimezone Dubai.</td></tr>
+          <tr><td class="status warn">منخفضة</td><td>لا توجد اختبارات API أو contract tests.</td><td>خطر كسر تطبيق الجوال عند تعديل schema.</td><td>إضافة integration tests وOpenAPI/contract versioning.</td></tr>
+        </tbody></table>
+      </section>
+
+      <section id="checklist" class="section searchable">
+        <h2>14. قائمة تسليم لمطور تطبيق الجوال</h2>
+        <div class="success"><strong>قبل بدء التطوير:</strong> أعطِ المطور Supabase URL وanon key فقط، وطبّق ملفات SQL بالترتيب: bookings ثم wishlist ثم catalog ثم api، وتأكد من أن host يعمل من شبكة الهاتف.</div>
+        <ul>
+          <li>تفعيل Email provider في Supabase Auth.</li>
+          <li>تحديد سياسة Email Confirmation المطلوبة.</li>
+          <li>تسجيل redirect URLs الخاصة بـ iOS وAndroid.</li>
+          <li>اختبار customer login وrefresh وlogout.</li>
+          <li>اختبار RLS بحسابين مختلفين: كل عميل يرى بياناته فقط.</li>
+          <li>اختبار إنشاء حجز وظهور notification تلقائيًا.</li>
+          <li>اختبار admin status update وaudit log.</li>
+          <li>اختبار انقطاع الشبكة وعدم تكرار الحجز.</li>
+          <li>عدم وضع service role key أو CRON_SECRET داخل التطبيق.</li>
+          <li>الاتفاق على versioning قبل تغيير أسماء الحقول أو أنواعها.</li>
+        </ul>
+        <h3>ترتيب العمل الموصى به قبل الإنتاج</h3>
+        <ol><li>إصلاح اتصال Supabase والتحقق من schema في المشروع الصحيح.</li><li>تأمين create booking عبر RPC/Edge Function وحساب السعر على الخادم.</li><li>إضافة idempotency وvalidation للخدمات والمناطق والتواريخ.</li><li>إضافة deep links وPush notifications.</li><li>إضافة contract tests وتثبيت إصدار API.</li></ol>
+        <p class="source">هذه الوثيقة مبنية على الكود الحالي وملفات SQL في مستودع Purity. عند تغيير schema أو الصلاحيات يجب تحديث هذا الملف بالتزامن.</p>
+      </section>
+
+      <div class="footer">Purity API Documentation · Generated as a standalone HTML file · لا يحتوي هذا الملف على أي مفتاح سري.</div>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll('[data-copy]').forEach(function(button){
+      button.addEventListener('click', function(){
+        var id = button.getAttribute('data-copy');
+        var node = document.getElementById(id);
+        if (!node) return;
+        navigator.clipboard.writeText(node.innerText).then(function(){
+          var old = button.innerText; button.innerText = 'تم النسخ';
+          setTimeout(function(){ button.innerText = old; }, 1200);
+        });
+      });
+    });
+    var search = document.getElementById('search');
+    search.addEventListener('input', function(){
+      var value = search.value.trim().toLowerCase();
+      document.querySelectorAll('.searchable').forEach(function(section){
+        section.style.display = !value || section.innerText.toLowerCase().indexOf(value) !== -1 ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

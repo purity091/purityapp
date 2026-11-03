@@ -16,14 +16,14 @@ export const FAQSection: React.FC = () => {
     ];
 
     return (
-        <section id="faq" className="scroll-mt-20 border-t border-gray-200 bg-white py-8 md:py-20">
+    <section id="faq" className="scroll-mt-20 bg-white py-8 md:py-20">
             <div className="mx-auto grid w-full max-w-[1500px] grid-cols-1 gap-5 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
                 <div className="self-start lg:col-span-4 lg:pt-2">
-                    <div className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-gray-700 md:gap-2 md:px-3 md:py-1 md:text-[11px]">
+                    <div className="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-gray-700 md:gap-2 md:px-3 md:py-1 md:text-[11px]">
                         <HelpCircle size={13} className="text-primary-700" />
                         Clear & honest
                     </div>
-                    <h2 className="mt-3 max-w-md text-2xl font-black leading-tight tracking-tight text-gray-950 sm:text-4xl md:mt-5">
+                    <h2 className="mt-3 max-w-md text-2xl font-black leading-tight text-gray-950 sm:text-4xl md:mt-5">
                         Answers before you book.
                     </h2>
                     <p className="mt-3 max-w-md text-[13px] font-semibold leading-6 text-gray-700 md:mt-4 md:text-base md:leading-7">
@@ -35,7 +35,7 @@ export const FAQSection: React.FC = () => {
                     {faqs.map((faq, index) => {
                         const isOpen = openIndex === index;
                         return (
-                            <div key={faq.question} className={`h-fit overflow-hidden rounded-lg border bg-white transition-colors md:rounded-xl ${isOpen ? 'border-primary-300' : 'border-gray-200 hover:border-gray-300'}`}>
+                            <div key={faq.question} className={`h-fit overflow-hidden rounded-lg bg-gray-50 shadow-sm transition-colors md:rounded-xl ${isOpen ? 'bg-primary-50' : 'hover:bg-gray-100'}`}>
                                 <button
                                     type="button"
                                     onClick={() => setOpenIndex(isOpen ? null : index)}
@@ -60,7 +60,7 @@ export const FAQSection: React.FC = () => {
                                             transition={{ duration: 0.2 }}
                                             className="overflow-hidden"
                                         >
-                                            <p className="border-t border-gray-100 px-3 pb-3 pt-2 pl-9 text-[11px] font-medium leading-5 text-gray-700 md:pr-5 md:text-sm md:leading-6">
+                                            <p className="px-3 pb-3 pt-2 pl-9 text-[11px] font-medium leading-5 text-gray-700 md:pr-5 md:text-sm md:leading-6">
                                                 {faq.answer}
                                             </p>
                                         </motion.div>

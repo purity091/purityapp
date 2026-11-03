@@ -19,15 +19,14 @@ if (supabaseEnabled && supabaseUrl === 'https://placeholder.supabase.co') {
 // Frontend-only mode is the safe default; enable Supabase explicitly when it is ready.
 const isConfigured = supabaseEnabled && supabaseUrl !== 'https://placeholder.supabase.co' && supabaseAnonKey !== 'placeholder-key';
 
-// This app uses its own lightweight admin session in AuthContext. Supabase is
-// currently used only as a database client, so do not let GoTrue create or
-// refresh a browser auth session (which can contend for Navigator locks across
-// tabs and leave an unhandled LockAcquireTimeoutError in the console).
+// Keep the GoTrue session in the browser so customer accounts survive reloads.
+// AuthContext performs a single initial session read and then listens for
+// changes, keeping the number of auth requests small.
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        detectSessionInUrl: false,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
     },
 });
 export const isSupabaseConfigured = () => isConfigured;

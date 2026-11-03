@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Lock, MapPin } from 'lucide-react';
 
-const CITIES = ['Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Umm Al Quwain', 'Ras Al Khaimah', 'Fujairah'];
+const CITIES = ['Dubai'];
 
 interface CitySelectorProps {
     compact?: boolean;
@@ -35,10 +35,10 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 aria-label="Select service city"
-                className={`flex items-center gap-1.5 rounded-md border border-gray-300 bg-white text-gray-800 font-bold transition-colors hover:border-gray-500 hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/30 ${dense ? 'h-8 px-2.5 text-[11px]' : compact ? 'h-11 px-4 text-xs' : 'px-2.5 py-1.5 text-xs'}`}
+                className={`flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 transition-colors hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${dense ? 'h-10 px-2.5 text-[11px]' : compact ? 'h-11 px-4 text-xs' : 'px-2.5 py-1.5 text-xs'}`}
             >
-                <MapPin size={dense ? 13 : compact ? 14 : 12} className="text-gray-700" />
-                <span>Dubai, UAE</span>
+                <MapPin size={dense ? 13 : compact ? 14 : 12} className="text-primary-700" />
+                <span>Dubai</span>
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 <ChevronDown size={dense ? 13 : compact ? 14 : 12} className={`ml-0.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -46,7 +46,7 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
             {isOpen && (
                 <div role="listbox" aria-label="Service cities" className={`absolute top-full z-[60] mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/15 ${compact ? 'right-0 w-[min(20rem,calc(100vw-2rem))]' : 'left-0 w-72'}`}>
                     <div className="border-b border-gray-200 bg-gray-900 px-4 py-3">
-                        <p className="text-[11px] font-black uppercase tracking-widest text-white">Service location</p>
+                        <p className="text-[11px] font-black uppercase text-white">Service location</p>
                         <p className="mt-1 text-xs font-semibold text-gray-300">Choose your city</p>
                     </div>
 
@@ -79,7 +79,7 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
                     </div>
 
                     <div className="border-t border-gray-200 px-4 py-3 text-center">
-                        <p className="text-[11px] font-semibold leading-relaxed text-gray-600">We’re expanding across the UAE. More cities are coming soon.</p>
+                        <p className="text-[11px] font-semibold leading-relaxed text-gray-600">More cities are coming soon.</p>
                     </div>
                 </div>
             )}

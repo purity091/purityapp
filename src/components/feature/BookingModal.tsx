@@ -1,14 +1,16 @@
-// @ts-nocheck
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useRef, useState, useEffect } from 'react';
 import { Calendar, MapPin, Loader2, CheckCircle2, Heart, Share2, Star, Gift, Eye } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { Input, Select, TextArea } from '../ui/Input';
 import { useBookings, BookingFormData, CreateBookingData } from '../../context/BookingContext';
-import { Service, SAUDI_NEIGHBORHOODS, TIME_SLOTS } from '../../types';
-import { readWishlist, toggleWishlist } from '../../lib/wishlist';
+import { Service, TIME_SLOTS } from '../../types';
 import { SafeImage } from '../ui/SafeImage';
+import { normalizePhone, useAuth } from '../../context/AuthContext';
+import { useWishlist } from '../../context/WishlistContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { getPricePresentation, getPriceUnitLabel } from '../../lib/pricing';
+import { LocationPicker } from './LocationPicker';
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -34,6 +36,12 @@ const MATERIAL_SERVICE_NAMES = [
     'Wash and Iron',
     'Pet Sitting',
 ];
+
+const MAP_SELECTED_AREA = 'Map selected';
+const MIN_VIEWER_COUNT = 30;
+const MAX_VIEWER_COUNT = 50;
+
+const randomViewerCount = () => Math.floor(Math.random() * (MAX_VIEWER_COUNT - MIN_VIEWER_COUNT + 1)) + MIN_VIEWER_COUNT;
 
 const calculateBookingTotal = (service: Service, formData: BookingFormData) => {
     let total = service.price;
@@ -64,10 +72,16 @@ const calculateBookingTotal = (service: Service, formData: BookingFormData) => {
 
 export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, service }) => {
     const { addBooking } = useBookings();
+    const { user } = useAuth();
+    const { wishlistIds, toggleWishlist } = useWishlist();
+    const navigate = useNavigate();
     const [formData, setFormData] = useState<BookingFormData>({
         customerName: '',
         phoneNumber: '',
-        neighborhood: '',
+        neighborhood: MAP_SELECTED_AREA,
+        address: '',
+        latitude: null,
+        longitude: null,
         hours: 3,
         numberOfWorkers: 1,
         numberOfRooms: 1,
@@ -86,8 +100,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
     const [saveNotice, setSaveNotice] = useState('');
     const [shareNotice, setShareNotice] = useState('');
     const [showSuccess, setShowSuccess] = useState(false);
+    const [confirmedBookingPrice, setConfirmedBookingPrice] = useState<number | null>(null);
+    const bookingRequestIdRef = useRef<string | null>(null);
     const [activeDetailTab, setActiveDetailTab] = useState<'about' | 'needtoknow' | 'redeem' | 'reviews'>('about');
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [viewerCount, setViewerCount] = useState(randomViewerCount);
 
     const today = new Date();
     const todayStr = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().split('T')[0];
@@ -98,12 +115,17 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             setFormError('');
             setSaveNotice('');
             setShareNotice('');
+            setConfirmedBookingPrice(null);
             setActiveDetailTab('about');
-            setIsWishlisted(readWishlist().includes(service?.id || ''));
+            setAcceptedTerms(false);
+            bookingRequestIdRef.current = null;
             setFormData({
-                customerName: '',
-                phoneNumber: '',
-                neighborhood: '',
+                customerName: user?.fullName || '',
+                phoneNumber: user?.phone || '',
+                neighborhood: MAP_SELECTED_AREA,
+                address: '',
+                latitude: null,
+                longitude: null,
                 hours: 3,
                 numberOfWorkers: 1,
                 numberOfRooms: 1,
@@ -118,14 +140,35 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                 notes: '',
             });
         }
-    }, [isOpen, todayStr, service?.id]);
+    }, [isOpen, todayStr, service?.id, user?.fullName, user?.phone]);
+
+    useEffect(() => {
+        if (!isOpen) return;
+
+        setViewerCount(randomViewerCount());
+        const interval = window.setInterval(() => {
+            setViewerCount(current => {
+                const direction = Math.random() < 0.5 ? -1 : 1;
+                const change = Math.floor(Math.random() * 3) + 1;
+                return Math.min(MAX_VIEWER_COUNT, Math.max(MIN_VIEWER_COUNT, current + direction * change));
+            });
+        }, 7000);
+
+        return () => window.clearInterval(interval);
+    }, [isOpen, service?.id]);
 
     if (!service) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const normalizedPhone = formData.phoneNumber.replace(/[\s-]/g, '');
+        if (!user || user.role !== 'customer') {
+            onClose();
+            navigate('/account', { state: { from: '/' } });
+            return;
+        }
+
+        const normalizedPhone = normalizePhone(formData.phoneNumber);
         if (!formData.customerName.trim()) {
             setFormError('Please enter your full name.');
             return;
@@ -134,12 +177,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             setFormError('Please enter a valid UAE mobile number, for example 05XXXXXXXX.');
             return;
         }
-        if (!formData.neighborhood || !formData.date || !formData.time) {
-            setFormError('Please complete your area, date, and time before booking.');
+        if (!formData.address.trim() || formData.latitude === null || formData.longitude === null || !formData.date || !formData.time) {
+            setFormError('Please complete your service address, map location, date, and time before booking.');
             return;
         }
         if (formData.date < todayStr) {
             setFormError('Please select today or a future date for your appointment.');
+            return;
+        }
+        if (!acceptedTerms) {
+            setFormError('Please accept the Terms of Use and Privacy Policy before booking.');
             return;
         }
 
@@ -150,13 +197,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
 
         const bookingData: CreateBookingData = {
             ...formData,
+            phoneNumber: normalizedPhone,
             serviceId: service.id,
             serviceName: service.name,
             totalPrice: calculatedPrice
         };
 
         try {
-            const saveResult = await addBooking(bookingData);
+            bookingRequestIdRef.current ||= typeof crypto.randomUUID === 'function'
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+            const saveResult = await addBooking(bookingData, bookingRequestIdRef.current);
+            if (saveResult.error) {
+                setFormError(saveResult.error);
+                return;
+            }
+            bookingRequestIdRef.current = null;
+            setConfirmedBookingPrice(saveResult.booking?.totalPrice ?? calculatedPrice);
             setSaveNotice(saveResult.synced ? '' : 'Your booking is saved only on this device. Please complete WhatsApp confirmation so our team receives it.');
             setShowSuccess(true);
         } catch {
@@ -169,14 +226,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
     const handleWhatsappRedirect = () => {
         const isHourly = HOURLY_SERVICE_NAMES.includes(service.name);
         const isDaily = service.name === 'Babysitting At Home';
-        const calculatedPrice = calculateBookingTotal(service, formData);
+        const calculatedPrice = confirmedBookingPrice ?? calculateBookingTotal(service, formData);
 
         const messageLines = [
             `Hello, I would like to confirm my booking:`,
             `Service: ${service.name}`,
             `Name: ${formData.customerName}`,
             `Phone: ${formData.phoneNumber}`,
-            `Neighborhood: ${formData.neighborhood || 'N/A'}`,
+            `Service Address: ${formData.address || 'N/A'}`,
+            `Map Location: ${formData.latitude !== null && formData.longitude !== null ? `https://www.google.com/maps?q=${formData.latitude},${formData.longitude}` : 'N/A'}`,
             `Date & Time: ${formData.date} at ${formData.time}`
         ];
 
@@ -214,8 +272,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
     };
 
     const handleWishlist = () => {
-        const next = toggleWishlist(service.id);
-        setIsWishlisted(next.includes(service.id));
+        void toggleWishlist(service.id);
     };
 
     const handleShare = async () => {
@@ -238,18 +295,15 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
     };
 
     const finalTotalPrice = calculateBookingTotal(service, formData);
-    const originalPriceDisplay = service.originalPrice || Math.round(service.price * 1.45);
-    const discountPercentage = Math.round(((originalPriceDisplay - service.price) / originalPriceDisplay) * 100);
+    const isWishlisted = wishlistIds.includes(service.id);
+    const { originalPrice: originalPriceDisplay, discount: discountPercentage } = getPricePresentation(service);
+    const priceUnit = getPriceUnitLabel(service);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={showSuccess ? "Success" : service.name} isDismissible={false}>
-            <AnimatePresence mode="wait">
+            <>
                 {showSuccess ? (
-                    <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="py-3 space-y-4"
+                    <div className="animate-fade-in space-y-4 py-3"
                     >
                         {/* Header */}
                         <div className="flex flex-col items-center gap-2 text-center pb-4 border-b border-gray-100">
@@ -303,23 +357,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                         <p className="text-center text-[10px] text-gray-500 font-semibold">
                             Your booking is not final until confirmed via WhatsApp.
                         </p>
-                    </motion.div>
+                    </div>
                 ) : (
-                    <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-12 md:gap-6">
+                    <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 md:gap-6 lg:gap-8">
 
-                        {/* LEFT COLUMN: Groupon Detail View (Title, Subtitle, Image Gallery, Tabs, Descriptions) */}
-                        <div className="space-y-3 md:col-span-7 md:space-y-4">
+                        {/* LEFT COLUMN: Service explanation, image, tabs, and key details (50%). */}
+                        <div className="min-w-0 space-y-3 md:space-y-4">
                             {/* Service Header Info */}
                             <div className="space-y-2">
-                                <h2 className="text-lg font-black leading-tight tracking-tight text-gray-900 sm:text-2xl">
-                                    {service.name} <span className="text-emerald-700 font-extrabold text-lg sm:text-xl">(Up to {discountPercentage}% Off)</span>
+                                <h2 className="text-lg font-black leading-tight text-gray-900 sm:text-2xl">
+                                    {service.name} {discountPercentage > 0 && <span className="text-emerald-700 font-extrabold text-lg sm:text-xl">({discountPercentage}% Off)</span>}
                                 </h2>
 
                                 {/* Merchant & Location Bar */}
                                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-800 font-bold">
                                     <span className="text-gray-900 font-extrabold">Purity Home Services</span>
                                     <span>•</span>
-                                    <span className="text-gray-800">Dubai, UAE</span>
+                                    <span className="text-gray-800">Dubai</span>
                                     <span>•</span>
                                     <span className="text-gray-800 flex items-center gap-1">
                                         <MapPin size={12} className="text-rose-500 inline" /> All Neighborhoods
@@ -437,7 +491,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
 
                                 {activeDetailTab === 'redeem' && (
                                     <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-gray-800">
-                                        <span className="font-extrabold text-gray-900 block">Available Across All Dubai Neighborhoods:</span>
+                                        <span className="font-extrabold text-gray-900 block">All Dubai Neighborhoods:</span>
                                         <p className="text-gray-700">Downtown Dubai, Dubai Marina, JBR, Palm Jumeirah, Business Bay, JLT, Arabian Ranches, Mirdif, and more.</p>
                                     </div>
                                 )}
@@ -456,26 +510,27 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                             </div>
                         </div>
 
-                        {/* RIGHT COLUMN: Groupon Booking & Pricing Side Panel (~42% width) */}
-                        <div className="space-y-3 md:col-span-5 md:space-y-4">
+                        {/* RIGHT COLUMN: Booking form and pricing (50%). */}
+                        <div className="min-w-0 space-y-3 md:space-y-4">
                             {/* Groupon Option Card Container */}
-                            <div className="relative space-y-2 rounded-xl border-2 border-primary-600/90 bg-white p-2.5 shadow-sm md:space-y-3 md:rounded-2xl md:p-4">
+                            <div className="relative space-y-2 rounded-xl border-2 border-primary-600/90 bg-primary-50/30 p-2.5 shadow-sm md:space-y-3 md:rounded-2xl md:p-4">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <span className="text-xs font-black text-gray-900 block leading-tight">{service.name}</span>
-                                        <span className="text-[10px] font-bold text-gray-700 block mt-0.5">Instant Online Booking</span>
+                                        <span className="block text-xs font-black leading-tight text-slate-950">{service.name}</span>
+                                        <span className="mt-0.5 block text-[10px] font-semibold text-slate-600">Instant Online Booking</span>
                                     </div>
                                     {/* Pricing Stack */}
                                     <div className="text-right">
                                         <div className="flex items-center justify-end gap-1.5">
-                                            <span className="text-xs text-gray-500 font-bold line-through">AED{originalPriceDisplay}</span>
-                                            <span className="text-base font-black text-emerald-700">AED{service.price}</span>
-                                            <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-1.5 py-0.5 rounded">-{discountPercentage}%</span>
+                                            {originalPriceDisplay && <span className="text-xs font-semibold text-slate-500 line-through">AED {originalPriceDisplay}</span>}
+                                            <span className="text-base font-black text-emerald-700">AED {service.price}</span>
+                                            <span className="text-[10px] font-semibold text-slate-700">{priceUnit}</span>
+                                            {discountPercentage > 0 && <span className="rounded-md border border-emerald-300 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-800">-{discountPercentage}%</span>}
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="text-[10px] font-bold text-gray-700 border-t border-gray-100 pt-2 flex items-center justify-between">
+                                <div className="flex items-center justify-between border-t border-primary-100 pt-2 text-[10px] font-semibold text-slate-700">
                                     <span>120+ bought</span>
                                     <span className="text-emerald-700 font-extrabold">Instant Confirmation</span>
                                 </div>
@@ -484,7 +539,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                             {/* Booking Form Inputs (100% UNTOUCHED INPUT COMPONENTS!) */}
                             <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm md:space-y-3 md:rounded-2xl md:p-4">
                                 <div className="border-b border-gray-100 pb-2 flex items-center justify-between">
-                                    <h4 className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-gray-900 md:text-xs">
+                                    <h4 className="flex items-center gap-1.5 text-[11px] font-black uppercase text-gray-900 md:text-xs">
                                         <Calendar size={13} className="text-primary-600 md:h-3.5 md:w-3.5" /> Enter Booking Details
                                     </h4>
                                     <span className="text-[10px] font-bold text-gray-500">Step 1 of 1</span>
@@ -511,20 +566,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                             type="tel"
                                             value={formData.phoneNumber}
                                             onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
+                                            disabled={!!user?.phone}
                                             required
                                         />
                                     </div>
 
-                                    {/* Row 2: Location */}
-                                    <Select
-                                        label="Neighborhood"
-                                        value={formData.neighborhood}
-                                        onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
-                                        options={[
-                                            { value: '', label: 'Select Area' },
-                                            ...SAUDI_NEIGHBORHOODS.map(n => ({ value: n, label: n }))
-                                        ]}
+                                    <Input
+                                        label="Service Address"
+                                        placeholder="Building, villa, apartment, street..."
+                                        value={formData.address}
+                                        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                         required
+                                    />
+
+                                    <LocationPicker
+                                        latitude={formData.latitude}
+                                        longitude={formData.longitude}
+                                        onChange={({ latitude, longitude }) => setFormData({ ...formData, latitude, longitude })}
                                     />
 
                                     {/* Row 3: Date & Time */}
@@ -632,11 +690,16 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                         <strong className="text-base font-black text-primary-700">{finalTotalPrice.toFixed(2)} AED</strong>
                                     </div>
 
+                                    <label className="flex items-start gap-2 text-[11px] font-medium leading-5 text-gray-600">
+                                        <input type="checkbox" checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)} className="mt-1 h-4 w-4 accent-primary-700" required />
+                                        <span>I agree to the <Link to="/terms" target="_blank" className="font-black text-primary-700 underline">Terms of Use</Link> and <Link to="/privacy" target="_blank" className="font-black text-primary-700 underline">Privacy Policy</Link>.</span>
+                                    </label>
+
                                     {/* Urgency Counter & Submit Button */}
                                     <div className="pt-2 space-y-2 border-t border-gray-100">
                                         <div className="flex items-center justify-center gap-1.5 bg-amber-50/80 text-amber-900 border border-amber-200/80 py-1.5 px-3 rounded-xl text-[11px] font-black text-center shadow-2xs">
                                             <Eye size={13} className="text-amber-600 flex-none" />
-                                            <span>Over 150 viewed today, so act now!</span>
+                                            <span>Over {viewerCount} viewed today, so act now!</span>
                                         </div>
 
                                         <Button
@@ -653,7 +716,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
 
                     </div>
                 )}
-            </AnimatePresence>
+            </>
         </Modal>
     );
 };

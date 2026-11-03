@@ -7,12 +7,12 @@ import { useNavigate } from 'react-router-dom';
 export const HappinessSection: React.FC = () => {
     const navigate = useNavigate();
     const commitmentPoints = [
-        { icon: <Star size={21} className="text-amber-600" fill="currentColor" />, title: '5-Star Elite Rating', desc: 'Top-rated cleaning leadership in Dubai.', bg: 'bg-amber-50 border-amber-200' },
-        { icon: <Award size={21} className="text-indigo-700" />, title: 'Full Commitment', desc: 'Dedicated expertise for ultimate home comfort.', bg: 'bg-indigo-50 border-indigo-200' },
-        { icon: <ShieldCheck size={21} className="text-emerald-700" />, title: 'Satisfaction Guarantee', desc: 'Complete re-clean if anything is not 100% perfect.', bg: 'bg-emerald-50 border-emerald-200' },
-        { icon: <ShieldCheck size={21} className="text-rose-700" />, title: 'Fully Insured', desc: 'Your home is protected at all times.', bg: 'bg-rose-50 border-rose-200' },
-        { icon: <UserCheck size={21} className="text-blue-700" />, title: 'Background-Checked Pros', desc: 'Verified, trained, and hotel-grade staff.', bg: 'bg-blue-50 border-blue-200' },
-        { icon: <Zap size={21} className="text-amber-700" fill="currentColor" />, title: 'Unmatched Quality', desc: 'Consistent excellence for every visit.', bg: 'bg-amber-50 border-amber-200' },
+        { icon: <Star size={21} className="text-amber-600" fill="currentColor" />, title: '5-Star Elite Rating', desc: 'Top-rated cleaning leadership in Dubai.', bg: 'bg-amber-50' },
+        { icon: <Award size={21} className="text-indigo-700" />, title: 'Full Commitment', desc: 'Dedicated expertise for ultimate home comfort.', bg: 'bg-indigo-50' },
+        { icon: <ShieldCheck size={21} className="text-emerald-700" />, title: 'Satisfaction Guarantee', desc: 'Complete re-clean if anything is not 100% perfect.', bg: 'bg-emerald-50' },
+        { icon: <ShieldCheck size={21} className="text-rose-700" />, title: 'Fully Insured', desc: 'Your home is protected at all times.', bg: 'bg-rose-50' },
+        { icon: <UserCheck size={21} className="text-blue-700" />, title: 'Background-Checked Pros', desc: 'Verified, trained, and hotel-grade staff.', bg: 'bg-blue-50' },
+        { icon: <Zap size={21} className="text-amber-700" fill="currentColor" />, title: 'Unmatched Quality', desc: 'Consistent excellence for every visit.', bg: 'bg-amber-50' },
     ];
 
     const scrollTo = (id: string) => {
@@ -26,7 +26,7 @@ export const HappinessSection: React.FC = () => {
     };
 
     return (
-        <section id="happiness" className="scroll-mt-20 border-t border-gray-200 bg-white py-8 md:py-20">
+        <section id="happiness" className="scroll-mt-20 bg-white py-8 md:py-20">
             <div className="mx-auto grid w-full max-w-[1500px] grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-14 lg:px-8">
                 {/* Message and CTA */}
                 <div className="lg:col-span-4 lg:pt-3">
@@ -34,13 +34,13 @@ export const HappinessSection: React.FC = () => {
                         initial={{ opacity: 0, y: 10 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="mb-3 inline-flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-rose-800 md:mb-5 md:gap-2 md:px-3 md:py-1 md:text-[11px]"
+                        className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-rose-800 md:mb-5 md:gap-2 md:px-3 md:py-1 md:text-[11px]"
                     >
                         <Heart size={13} className="text-rose-700" fill="currentColor" />
                         Our commitment
                     </motion.div>
 
-                    <h2 className="max-w-lg text-3xl font-black leading-tight tracking-tight text-gray-950 sm:text-4xl">
+                    <h2 className="max-w-lg text-3xl font-black leading-tight text-gray-950 sm:text-4xl">
                         Your Happiness Is
                         <span className="block text-primary-700">Our First Priority.</span>
                     </h2>
@@ -72,9 +72,9 @@ export const HappinessSection: React.FC = () => {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.35, delay: index * 0.04 }}
                             viewport={{ once: true }}
-                            className="flex min-h-0 items-start gap-2 rounded-lg border border-gray-200 bg-white p-2.5 transition-colors hover:border-gray-300 hover:bg-gray-50 md:min-h-[108px] md:gap-3 md:rounded-xl md:p-4"
+                        className="flex min-h-0 items-start gap-2 rounded-lg bg-gray-50 p-2.5 shadow-sm transition-colors hover:bg-gray-100 md:min-h-[108px] md:gap-3 md:rounded-xl md:p-4"
                         >
-                            <div className={`flex h-8 w-8 flex-none items-center justify-center rounded-md border [&>svg]:h-4 [&>svg]:w-4 md:h-10 md:w-10 md:rounded-lg md:[&>svg]:h-[21px] md:[&>svg]:w-[21px] ${point.bg}`}>
+                            <div className={`flex h-8 w-8 flex-none items-center justify-center rounded-md [&>svg]:h-4 [&>svg]:w-4 md:h-10 md:w-10 md:rounded-lg md:[&>svg]:h-[21px] md:[&>svg]:w-[21px] ${point.bg}`}>
                                 {point.icon}
                             </div>
                             <div className="min-w-0 pt-0 md:pt-0.5">

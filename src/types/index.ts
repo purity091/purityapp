@@ -24,6 +24,9 @@ export interface Booking {
     serviceId: string;
     serviceName: string;
     neighborhood: string;
+    address: string;
+    latitude?: number | null;
+    longitude?: number | null;
     hours: number;
     date: string;
     time: string;

@@ -1,64 +1,58 @@
 import React from 'react';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { ArrowUpRight, Clock3, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import logo from '../../assets/logo.png';
+
+const legalLinks = [
+    { to: '/terms', label: 'Terms of use' },
+    { to: '/privacy', label: 'Privacy policy' },
+    { to: '/consumer-rights', label: 'Consumer rights' },
+    { to: '/cookies', label: 'Cookies' },
+];
 
 export const Footer: React.FC = () => (
-    <footer className="mt-auto border-t border-gray-800 bg-gray-900 pb-8 pt-12 text-white md:pt-14">
-        <div className="mx-auto w-full max-w-[1500px] px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 gap-10 border-b border-gray-800 pb-10 md:grid-cols-2 lg:grid-cols-12 lg:gap-12">
-                <div className="space-y-4 lg:col-span-6">
-                    <img src={logo} alt="Purity" width={58} height={40} className="h-10 w-auto object-contain" />
-                    <h2 className="text-xl font-black text-white">We are Purity.</h2>
-                    <p className="max-w-xl text-sm font-medium leading-7 text-gray-400">
-                        Purity Cleaning Services is the ideal choice for individuals and families looking for comfort, quality, and reliability.
-                    </p>
-                    <a
-                        href="https://consumerrights.gov.ae/ar/know-your-rights"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block pt-1 transition-opacity hover:opacity-80"
-                    >
-                        <img src="/consumer-rights.png" alt="Consumer Rights UAE" className="h-14 w-auto rounded-lg border border-white/10" />
+    <footer className="mt-auto border-t border-white/10 bg-slate-950 text-white">
+        <div className="mx-auto w-full max-w-[1500px] px-4 py-7 sm:px-6 md:py-9 lg:px-8">
+            <div className="grid gap-7 border-b border-white/10 pb-7 md:grid-cols-[1.3fr_0.8fr_1fr] md:gap-10">
+                <section className="max-w-md">
+                    <Link to="/" className="inline-flex items-center" aria-label="Purity home">
+                        <img src="/logo.png" alt="Purity Cleaning Services" width={48} height={48} className="h-10 w-10 rounded-xl object-contain" />
+                    </Link>
+                    <p className="mt-3 text-sm font-semibold leading-6 text-slate-400">Reliable home services in Dubai, delivered with care, clarity, and convenience.</p>
+                    <a href="https://consumerrights.gov.ae/ar/know-your-rights" target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-2 text-[10px] font-bold text-slate-400 transition hover:text-white">
+                        <img src="/consumer-rights.png" alt="Consumer Rights UAE" className="h-9 w-auto rounded-md border border-white/10" />
+                        <span>Know your consumer rights <ArrowUpRight size={12} /></span>
                     </a>
-                </div>
+                </section>
 
-                <div className="lg:col-span-3">
-                    <h3 className="mb-5 text-sm font-black uppercase tracking-wider text-primary-300">Contact us</h3>
-                    <div className="space-y-4 text-sm font-medium text-gray-300">
-                        <div className="flex items-center gap-3">
-                            <MapPin className="h-4 w-4 flex-none text-primary-300" />
-                            <span>Dubailand, Dubai</span>
-                        </div>
-                        <a href="https://wa.me/971544556106" className="flex items-center gap-3 transition-colors hover:text-white">
-                            <Phone className="h-4 w-4 flex-none text-primary-300" />
-                            <span dir="ltr">+971 54 455 6106</span>
-                        </a>
-                        <a href="mailto:info@purity-services.com" className="flex items-center gap-3 transition-colors hover:text-white">
-                            <Mail className="h-4 w-4 flex-none text-primary-300" />
-                            <span>info@purity-services.com</span>
-                        </a>
+                <nav aria-label="Footer navigation">
+                    <h2 className="text-[11px] font-black uppercase text-primary-300">Explore</h2>
+                    <div className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2 text-xs font-semibold text-slate-400">
+                        <Link to="/" className="transition hover:text-white">Home</Link>
+                        <Link to="/" state={{ scrollTo: 'services' }} className="transition hover:text-white">Services</Link>
+                        <Link to="/faq" className="transition hover:text-white">FAQ</Link>
+                        <a href="mailto:info@purity-services.com" className="transition hover:text-white">Support</a>
                     </div>
-                </div>
+                    <h2 className="mt-5 text-[11px] font-black uppercase text-primary-300">Legal</h2>
+                    <div className="mt-3 grid grid-cols-2 gap-x-5 gap-y-2 text-xs font-semibold text-slate-400">
+                        {legalLinks.map(link => <Link key={link.to} to={link.to} className="transition hover:text-white">{link.label}</Link>)}
+                    </div>
+                </nav>
 
-                <div className="lg:col-span-3">
-                    <h3 className="mb-5 text-sm font-black uppercase tracking-wider text-primary-300">Explore</h3>
-                    <ul className="space-y-3 text-sm font-medium text-gray-300">
-                        <li><Link to="/" className="transition-colors hover:text-white">Home</Link></li>
-                        <li><Link to="/" state={{ scrollTo: 'services' }} className="transition-colors hover:text-white">Services</Link></li>
-                        <li><a href="mailto:info@purity-services.com" className="transition-colors hover:text-white">Contact support</a></li>
-                    </ul>
-                    <div className="mt-6 border-t border-gray-800 pt-4 text-xs font-medium text-gray-400">
-                        <p className="font-bold text-gray-300">Operating hours</p>
-                        <p className="mt-1">Sun – Fri: 8 am – 8 pm</p>
-                        <p className="mt-1 text-red-300">Saturday: Closed</p>
+                <section>
+                    <h2 className="text-[11px] font-black uppercase text-primary-300">Contact</h2>
+                    <div className="mt-3 space-y-2.5 text-xs font-semibold text-slate-400">
+                        <div className="flex items-center gap-2.5"><MapPin size={14} className="flex-none text-primary-300" /><span>Dubai, UAE</span></div>
+                        <a href="https://wa.me/971544556106" className="flex items-center gap-2.5 transition hover:text-white"><MessageCircle size={14} className="flex-none text-emerald-400" /><span dir="ltr">+971 54 455 6106</span></a>
+                        <a href="mailto:info@purity-services.com" className="flex items-center gap-2.5 transition hover:text-white"><Mail size={14} className="flex-none text-primary-300" /><span>info@purity-services.com</span></a>
+                        <div className="flex items-center gap-2.5"><Clock3 size={14} className="flex-none text-primary-300" /><span>Sun–Fri · 8 AM–8 PM</span></div>
                     </div>
-                </div>
+                    <a href="https://wa.me/971544556106" className="mt-4 inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3 py-2 text-[11px] font-black text-white transition hover:bg-emerald-400"><Phone size={13} /> Chat on WhatsApp</a>
+                </section>
             </div>
 
-            <div className="flex flex-col items-start justify-between gap-3 pt-6 text-xs font-medium text-gray-500 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2 pt-5 text-[10px] font-semibold text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                 <p>© {new Date().getFullYear()} Purity. All rights reserved.</p>
-                <p>Pure home. Wise decision.</p>
+                <p className="text-slate-600">Pure home. Wise decision.</p>
             </div>
         </div>
     </footer>

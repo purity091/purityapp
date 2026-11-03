@@ -1,6 +1,4 @@
-// @ts-nocheck
 import React, { useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -35,40 +33,20 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
 
     const isMobile = window.innerWidth < 768;
 
-    const desktopVariants = {
-        hidden: { opacity: 0, scale: 0.95, y: 20 },
-        visible: { opacity: 1, scale: 1, y: 0 },
-        exit: { opacity: 0, scale: 0.95, y: 20 }
-    };
-
-    const mobileVariants = {
-        hidden: { opacity: 0, y: "100%" },
-        visible: { opacity: 1, y: 0 },
-        exit: { opacity: 0, y: "100%" }
-    };
-
     return (
-        <AnimatePresence>
+        <>
             {isOpen && (
                 <>
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                    <div
                         onClick={() => isDismissible && onClose()}
-                        className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm ${!isDismissible ? 'cursor-default' : 'cursor-pointer'}`}
+                        className={`fixed inset-0 z-[100] animate-fade-in bg-black/60 backdrop-blur-sm ${!isDismissible ? 'cursor-default' : 'cursor-pointer'}`}
                     />
-                    <div className="fixed inset-0 z-[60] flex items-end justify-center pointer-events-none p-0 md:items-center md:p-4">
-                        <motion.div
-                            variants={isMobile ? mobileVariants : desktopVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    <div className="fixed inset-0 z-[100] flex items-end justify-center pointer-events-none p-0 md:items-center md:p-4">
+                        <div
                             role="dialog"
                             aria-modal="true"
                             aria-labelledby="modal-title"
-                            className="relative flex max-h-[94vh] w-full flex-col overflow-hidden rounded-t-3xl border border-gray-200 bg-white shadow-2xl pointer-events-auto md:max-h-[88vh] md:max-w-5xl md:rounded-2xl"
+                            className={`relative flex max-h-[94vh] w-full flex-col overflow-hidden rounded-t-3xl border border-gray-200 bg-white shadow-2xl pointer-events-auto ${isMobile ? 'animate-slide-up' : 'animate-fade-in'} md:max-h-[88vh] md:max-w-6xl md:rounded-2xl`}
                         >
                             {/* Mobile Drag Handle */}
                             <div className="md:hidden w-full flex justify-center pt-2.5 pb-1 flex-none bg-white">
@@ -76,7 +54,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
                             </div>
 
                             <div className="flex items-center justify-between px-3 py-2.5 sm:px-5 md:py-3 border-b border-gray-100 bg-white flex-none">
-                                <h3 id="modal-title" className="text-base font-extrabold text-gray-900 tracking-tight truncate pr-2">{title}</h3>
+                                <h3 id="modal-title" className="text-base font-extrabold text-gray-900 truncate pr-2">{title}</h3>
                                 <button
                                     onClick={onClose}
                                     aria-label="Close dialog"
@@ -89,11 +67,11 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
                             <div className="p-3 overflow-y-auto flex-1 min-h-0 md:p-4">
                                 {children}
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
                 </>
             )}
-        </AnimatePresence>
+        </>
     );
 };
 
