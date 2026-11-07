@@ -35,12 +35,6 @@ export const useAuth = () => {
     return context;
 };
 
-const ADMIN_STORAGE_KEY = 'purity_user';
-const ADMIN_CREDENTIALS = {
-    email: import.meta.env.VITE_ADMIN_EMAIL || '',
-    password: import.meta.env.VITE_ADMIN_PASSWORD || '',
-};
-const localAdminMode = import.meta.env.DEV && Boolean(ADMIN_CREDENTIALS.email && ADMIN_CREDENTIALS.password);
 const authRedirectUrl = import.meta.env.VITE_AUTH_REDIRECT_URL || `${window.location.origin}/?reset=1`;
 
 export const normalizePhone = (value: string) => {
@@ -72,20 +66,8 @@ const toAppUser = (user: SupabaseUser, role?: AccountRole): AppUser => ({
     role: role || (user.app_metadata?.role === 'admin' ? 'admin' : 'customer'),
 });
 
-const readSavedAdmin = (): AppUser | null => {
-    try {
-        const saved = localStorage.getItem(ADMIN_STORAGE_KEY);
-        if (!saved) return null;
-        const parsed = JSON.parse(saved) as AppUser;
-        return parsed.role === 'admin' ? parsed : null;
-    } catch {
-        localStorage.removeItem(ADMIN_STORAGE_KEY);
-        return null;
-    }
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<AppUser | null>(() => localAdminMode ? readSavedAdmin() : null);
+    const [user, setUser] = useState<AppUser | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [authReady, setAuthReady] = useState(!isSupabaseConfigured());
     const [passwordRecovery, setPasswordRecovery] = useState(false);
@@ -180,40 +162,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    // The existing admin area remains available, but production admin users should be Supabase users with app_metadata.role = admin.
+    // Admin access is always authenticated through Supabase app_metadata.role = admin.
     const login = async (email: string, password: string) => {
-        if (isSupabaseConfigured()) {
-            setIsLoading(true);
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
-                if (error || !data.user) return { success: false, message: getAuthErrorMessage(error, 'Could not sign in.') };
-                if (data.user.app_metadata?.role !== 'admin') {
-                    await supabase.auth.signOut();
-                    return { success: false, message: 'This account does not have admin access.' };
-                }
-                setUser(toAppUser(data.user, 'admin'));
-                return { success: true };
-            } catch {
-                return { success: false, message: 'Could not connect to authentication. Please try again.' };
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        if (!localAdminMode) return { success: false, message: 'Admin authentication is not configured for this environment.' };
-
+        if (!isSupabaseConfigured()) return { success: false, message: 'Supabase authentication is not configured for this environment.' };
         setIsLoading(true);
         try {
-            await new Promise(resolve => setTimeout(resolve, 350));
-            if (!ADMIN_CREDENTIALS.email || !ADMIN_CREDENTIALS.password) {
-                return { success: false, message: 'Admin login is not configured for this environment' };
+            const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+            if (error || !data.user) return { success: false, message: getAuthErrorMessage(error, 'Could not sign in.') };
+            if (data.user.app_metadata?.role !== 'admin') {
+                await supabase.auth.signOut();
+                return { success: false, message: 'This account does not have admin access.' };
             }
-            if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
-                return { success: false, message: 'Invalid email or password' };
-            }
-            const admin: AppUser = { email, id: 'local-admin', role: 'admin' };
-            setUser(admin);
-            localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(admin));
+            setUser(toAppUser(data.user, 'admin'));
             return { success: true };
         } catch {
             return { success: false, message: 'Could not complete admin sign in. Please try again.' };
@@ -245,7 +205,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const logout = async () => {
         if (isSupabaseConfigured()) await supabase.auth.signOut();
-        localStorage.removeItem(ADMIN_STORAGE_KEY);
         setPasswordRecovery(false);
         setUser(null);
     };

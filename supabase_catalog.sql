@@ -47,7 +47,8 @@ create table if not exists public.catalog_items (
   sort_order integer not null default 0,
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default timezone('utc'::text, now()),
-  updated_at timestamptz not null default timezone('utc'::text, now())
+  updated_at timestamptz not null default timezone('utc'::text, now()),
+  deleted_at timestamptz
 );
 
 create table if not exists public.catalog_item_variants (
@@ -126,6 +127,7 @@ create table if not exists public.deals (
   created_by uuid references auth.users(id) on delete set null,
   created_at timestamptz not null default timezone('utc'::text, now()),
   updated_at timestamptz not null default timezone('utc'::text, now()),
+  deleted_at timestamptz,
   check (ends_at is null or ends_at > starts_at),
   check (discount_type <> 'percentage' or discount_value <= 100),
   check (inventory_total is null or inventory_remaining is null or inventory_remaining <= inventory_total)

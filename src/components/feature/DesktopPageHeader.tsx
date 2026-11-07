@@ -3,17 +3,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     Search, Flame, ChevronDown,
     Home, Sofa, Sparkles, Briefcase, Heart, Shirt, Tag,
-    Grid3X3, ClipboardList, X, Calendar, SlidersHorizontal, Bell, UserRound
+    Grid3X3, ClipboardList, X, Calendar, SlidersHorizontal, Bell, UserRound, ShoppingCart, Store
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Booking, CATEGORIES, Service } from '../../types';
+import { CATEGORIES, Service } from '../../types';
 import { CitySelector } from './CitySelector';
 import { SafeImage } from '../ui/SafeImage';
 import { useAuth } from '../../context/AuthContext';
 import { useBookings } from '../../context/BookingContext';
 import { useCatalog } from '../../context/CatalogContext';
-import { PwaInstallButton } from '../layout/PwaInstallButton';
+import { AppDownloadButton } from './AppDownloadButton';
 import { getPriceUnitLabel } from '../../lib/pricing';
 import { NotificationPopover } from './NotificationPopover';
 import { useWishlist } from '../../context/WishlistContext';
@@ -43,11 +43,6 @@ interface DesktopPageHeaderProps {
 }
 
 // LocalStorage Bookings Helpers (read-only mirror from BookingContext)
-const LS_BOOKINGS_KEY = 'purity_bookings';
-const readBookings = (): Booking[] => {
-    try { return JSON.parse(localStorage.getItem(LS_BOOKINGS_KEY) || '[]') as Booking[]; } catch { return []; }
-};
-
 const formatServicePrice = (service: Service) => `${service.price} AED · ${getPriceUnitLabel(service)}`;
 
 export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
@@ -63,21 +58,13 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
     const location = useLocation();
     const navigate = useNavigate();
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const [savedBookings, setSavedBookings] = useState<Booking[]>(readBookings);
     const { user } = useAuth();
     const { wishlistIds, toggleWishlist } = useWishlist();
     const { bookings, notifications, notificationsLoading, unreadNotificationCount, markNotificationRead, markAllNotificationsRead } = useBookings();
     const { services, packages } = useCatalog();
     const wishlistCatalog = [...services, ...packages];
 
-    // Refresh localStorage reads when panels open
-    const refreshLocals = () => {
-        setSavedBookings(bookings);
-    };
-
-    useEffect(() => {
-        setSavedBookings(bookings);
-    }, [bookings]);
+    const savedBookings = bookings;
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -87,19 +74,6 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
         };
         document.addEventListener('mousedown', fn);
         return () => document.removeEventListener('mousedown', fn);
-    }, []);
-
-    useEffect(() => {
-        const refreshLocalBadges = () => {
-            setSavedBookings(readBookings());
-        };
-
-        window.addEventListener('storage', refreshLocalBadges);
-        window.addEventListener('purity:bookings-updated', refreshLocalBadges);
-        return () => {
-            window.removeEventListener('storage', refreshLocalBadges);
-            window.removeEventListener('purity:bookings-updated', refreshLocalBadges);
-        };
     }, []);
 
     const servicesByCategory = CATEGORIES.reduce((acc, cat) => {
@@ -156,13 +130,13 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                         <img src="/logo.png" alt="Purity Cleaning Services" width={40} height={40} className="h-9 w-9 rounded-lg object-contain" />
                     </Link>
                     <div className="ml-auto flex items-center gap-1.5">
-                        <button type="button" onClick={() => { refreshLocals(); setOpenDropdown(openDropdown === 'wishlist' ? null : 'wishlist'); }} aria-label="Open wishlist" aria-expanded={openDropdown === 'wishlist'} title="Wishlist"
+                        <button type="button" onClick={() => { setOpenDropdown(openDropdown === 'wishlist' ? null : 'wishlist'); }} aria-label="Open wishlist" aria-expanded={openDropdown === 'wishlist'} title="Wishlist"
                             className={`relative flex h-9 w-9 items-center justify-center rounded-lg border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 ${openDropdown === 'wishlist' ? 'border-rose-700 bg-rose-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-rose-300 hover:bg-rose-50'}`}>
                             <Heart size={15} className={openDropdown === 'wishlist' ? 'fill-white' : 'text-rose-500'} />
                             {wishlistIds.length > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-rose-600 px-0.5 text-[8px] font-black text-white">{wishlistIds.length}</span>}
                         </button>
                          {user?.role === 'customer' && <button type="button" onClick={() => setOpenDropdown(openDropdown === 'notifications' ? null : 'notifications')} aria-haspopup="dialog" aria-expanded={openDropdown === 'notifications'} aria-label="Open notifications" title="Notifications" className="relative flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 bg-white text-primary-700 transition-colors hover:border-primary-400 hover:bg-primary-50"><Bell size={15} />{unreadNotificationCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-600 px-0.5 text-[8px] font-black text-white">{unreadNotificationCount}</span>}</button>}
-                        <PwaInstallButton compact />
+                         <AppDownloadButton compact />
                         <button type="button" onClick={() => { setIsMobileSearchOpen(value => !value); setOpenDropdown(null); }} aria-label="Search services" aria-expanded={isMobileSearchOpen} title="Search"
                             className={`flex h-9 w-9 items-center justify-center rounded-lg border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${isMobileSearchOpen ? 'border-primary-700 bg-primary-700 text-white' : 'border-slate-200 bg-white text-slate-700 hover:border-primary-300 hover:bg-primary-50'}`}>
                             <Search size={15} />
@@ -395,8 +369,20 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
 
                 {/* 3. MY WISHLIST & MY BOOKINGS */}
                  <div className="relative flex shrink-0 items-center gap-1.5">
-                     <PwaInstallButton />
-                     {user?.role === 'customer' ? <div className="relative">
+                      <AppDownloadButton />
+                      <span className="mx-1 hidden h-7 w-px bg-slate-200 xl:block" aria-hidden="true" />
+                      <button
+                          type="button"
+                          onClick={() => scrollTo('offers')}
+                          title="Partner with Purity"
+                          className="hidden h-10 items-center gap-1.5 rounded-lg px-2.5 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 hover:text-primary-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 xl:flex"
+                      >
+                          <Store size={16} />
+                          <span>Partner with Purity</span>
+                      </button>
+                      <span className="mx-1 hidden h-7 w-px bg-slate-200 xl:block" aria-hidden="true" />
+                      <div className="order-5">
+                      {user?.role === 'customer' ? <div className="relative">
                          <button
                              type="button"
                              onClick={() => setOpenDropdown(openDropdown === 'account' ? null : 'account')}
@@ -405,7 +391,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                              className={`flex h-10 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${openDropdown === 'account' ? 'border-slate-950 bg-slate-950 text-white shadow-sm' : 'border-slate-200 bg-white text-slate-700 hover:border-primary-300 hover:bg-primary-50'}`}
                          >
                              <UserRound size={14} className={openDropdown === 'account' ? 'text-white' : 'text-primary-600'} />
-                             <span>My account</span>
+                              <span className="hidden 2xl:inline">My account</span>
                              <ChevronDown size={12} className={`transition-transform ${openDropdown === 'account' ? 'rotate-180' : ''}`} />
                          </button>
                          <AnimatePresence>
@@ -442,12 +428,13 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                  </div>
                              </motion.div>}
                          </AnimatePresence>
-                     </div> : <button type="button" onClick={openCustomerAuth} className="flex h-10 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30"><UserRound size={14} className="text-primary-600" />Sign in</button>}
-                      {user?.role === 'customer' && <button type="button" onClick={() => setOpenDropdown(openDropdown === 'notifications' ? null : 'notifications')} aria-haspopup="dialog" aria-expanded={openDropdown === 'notifications'} aria-label="Open notifications" title="Notifications" className={`relative flex h-10 w-10 items-center justify-center rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${openDropdown === 'notifications' ? 'border-primary-700 bg-primary-700 text-white' : 'border-slate-200 bg-white text-primary-700 hover:border-primary-300 hover:bg-primary-50'}`}><Bell size={15} />{unreadNotificationCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-black text-white">{unreadNotificationCount}</span>}</button>}
+                      </div> : <button type="button" onClick={openCustomerAuth} className="flex h-10 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30"><UserRound size={14} className="text-primary-600" /><span className="hidden 2xl:inline">Sign in</span></button>}
+                      </div>
+                      {user?.role === 'customer' && <button type="button" onClick={() => setOpenDropdown(openDropdown === 'notifications' ? null : 'notifications')} aria-haspopup="dialog" aria-expanded={openDropdown === 'notifications'} aria-label="Open notifications" title="Notifications" className={`order-3 relative flex h-10 w-10 items-center justify-center rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${openDropdown === 'notifications' ? 'border-primary-700 bg-primary-700 text-white' : 'border-slate-200 bg-white text-primary-700 hover:border-primary-300 hover:bg-primary-50'}`}><Bell size={15} />{unreadNotificationCount > 0 && <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-0.5 text-[9px] font-black text-white">{unreadNotificationCount}</span>}</button>}
                     {/* My Wishlist Button */}
-                    <div className="relative">
+                     <div className="relative order-2">
                         <button
-                            onClick={() => { refreshLocals(); setOpenDropdown(openDropdown === 'wishlist' ? null : 'wishlist'); }}
+                            onClick={() => { setOpenDropdown(openDropdown === 'wishlist' ? null : 'wishlist'); }}
                             aria-haspopup="menu"
                             aria-expanded={openDropdown === 'wishlist'}
                             className={`flex h-10 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/30 ${
@@ -457,7 +444,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                             }`}
                         >
                             <Heart size={13} className={openDropdown === 'wishlist' ? 'text-white fill-white' : 'text-rose-500'} />
-                            <span>Wishlist</span>
+                            <span className="hidden 2xl:inline">Wishlist</span>
                             {wishlistIds.length > 0 && (
                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
                                     openDropdown === 'wishlist' ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-700'
@@ -518,9 +505,9 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                     {user?.role === 'customer' && openDropdown === 'notifications' && <NotificationPopover notifications={notifications} notificationsLoading={notificationsLoading} onMarkRead={markNotificationRead} onMarkAllRead={markAllNotificationsRead} onClose={() => setOpenDropdown(null)} />}
 
                     {/* My Bookings Button */}
-                    <div className="relative">
+                    <div className="relative order-4">
                         <button
-                            onClick={() => { refreshLocals(); setOpenDropdown(openDropdown === 'bookings' ? null : 'bookings'); }}
+                            onClick={() => { setOpenDropdown(openDropdown === 'bookings' ? null : 'bookings'); }}
                             aria-haspopup="menu"
                             aria-expanded={openDropdown === 'bookings'}
                             className={`flex h-10 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${
@@ -529,8 +516,8 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                     : 'border-slate-200 bg-white text-slate-700 hover:border-primary-300 hover:bg-primary-50'
                             }`}
                         >
-                            <ClipboardList size={13} className={openDropdown === 'bookings' ? 'text-white' : 'text-primary-600'} />
-                            <span>My Bookings</span>
+                            <ShoppingCart size={15} className={openDropdown === 'bookings' ? 'text-white' : 'text-slate-800'} />
+                            <span className="hidden xl:inline">My Bookings</span>
                             {savedBookings.length > 0 && (
                                 <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
                                     openDropdown === 'bookings' ? 'bg-white/20 text-white' : 'bg-primary-100 text-primary-700'

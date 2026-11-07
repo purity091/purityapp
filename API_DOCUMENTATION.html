@@ -506,5 +506,16 @@ if (error) throw error;</pre></div>
       });
     });
   </script>
+      <section id="soft-delete" class="section searchable">
+        <h2>15. سياسة الاحتفاظ بالبيانات والحذف المنطقي</h2>
+        <p>Supabase هو المصدر الوحيد لبيانات التطبيق. لا يستخدم التطبيق تخزين المتصفح للحجوزات أو المفضلة أو الكتالوج، ولا ينفذ حذفًا فعليًا لسجلات التطبيق.</p>
+        <ul>
+          <li>تستخدم الجداول عمود <code>deleted_at</code> لإخفاء السجل مع الاحتفاظ به.</li>
+          <li>أرشفة الحجز تتم بتحديث السجل إلى <code>deleted_at</code> مع الاحتفاظ ببيانات العميل وسجل التدقيق.</li>
+          <li>إزالة المفضلة تتم عبر <code>set_wishlist_item</code> ولا تستخدم <code>DELETE</code>.</li>
+          <li>تمنع قاعدة البيانات أي <code>DELETE</code> مباشر على جداول التطبيق من خلال Trigger وصلاحيات SQL.</li>
+          <li>يجب تطبيق <code>supabase_soft_delete.sql</code> بعد مخططات bookings وwishlist وcatalog وapi.</li>
+        </ul>
+      </section>
 </body>
 </html>

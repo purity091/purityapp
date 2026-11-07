@@ -20,11 +20,11 @@ npm run build
 
 Copy `.env.example` to a local ignored `.env` file when environment configuration is needed. Never commit real credentials or deployment secrets.
 
-The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql` and `supabase_api.sql`. Apply them in that order. Supabase mode is enabled only when `VITE_USE_SUPABASE=true` and the public URL and anonymous key are configured.
+The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql` and `supabase_soft_delete.sql`. Apply them in that order. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled only when `VITE_USE_SUPABASE=true` and the public URL and anonymous key are configured.
 
 ## Customer accounts and PWA
 
-Customer accounts use Supabase Auth with a required email, UAE mobile number, and password. The email is used for sign-in and password recovery; the mobile number is stored only for service communication. Run all four SQL migrations in the Supabase SQL Editor, then configure these Vite variables in the production environment:
+Customer accounts use Supabase Auth with a required email, UAE mobile number, and password. The email is used for sign-in and password recovery; the mobile number is stored only for service communication. Run all five SQL migrations in the Supabase SQL Editor, then configure these Vite variables in the production environment:
 
 ```bash
 VITE_USE_SUPABASE=true
@@ -39,7 +39,15 @@ The admin bookings screen uses server-side filtering, exact counts, and 25-row p
 
 For the existing admin dashboard, create an admin user in Supabase Auth and set `raw_app_meta_data.role` to `admin` using a privileged SQL session. The frontend never receives a service key.
 
-The scalable catalog schema is in `supabase_catalog.sql`. It supports hierarchical categories, services, packages, service variants, multiple media assets, service areas, time-bound deals, bundle contents, coupon codes, inventory, per-customer limits, atomic redemptions, and historical booking price snapshots. The current UI still uses the local TypeScript catalog as a fallback; catalog migration can be enabled after importing the existing services and packages into `catalog_items` and `deals`.
+The scalable catalog schema is in `supabase_catalog.sql`. It supports hierarchical categories, services, packages, service variants, multiple media assets, service areas, time-bound deals, bundle contents, coupon codes, inventory, per-customer limits, atomic redemptions, and historical booking price snapshots. Supabase is the only source for application data; the UI does not fall back to a local catalog when the database is unavailable.
+
+All application tables use `deleted_at` for retention. The frontend never performs a hard delete. Booking archive uses an update, wishlist archive uses `set_wishlist_item`, and the database trigger rejects direct `DELETE` statements on application tables.
+
+## Postman collection for mobile development
+
+The complete mobile API collection is available in `Purity-Supabase.postman_collection.json`, with a separate environment in `Purity-Supabase.postman_environment.json`. Import both files into Postman, select the environment, fill `supabase_url` and `anon_key`, then run `01 - Authentication > Sign In`. The test script stores `access_token`, `refresh_token` and `user_id` automatically for the remaining requests.
+
+The collection covers authentication, published catalog, deals, categories, service areas, customer profile, secure booking RPC, customer bookings, notifications, wishlist soft-delete, admin booking management, statistics and audit logs. Do not give the mobile developer `SUPABASE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY` or `CRON_SECRET`.
 
 ## Supabase keepalive
 

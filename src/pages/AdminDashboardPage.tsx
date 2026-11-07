@@ -178,19 +178,19 @@ export const AdminDashboardPage: React.FC = () => {
     }, [updateBookingStatus]);
 
     const handleDelete = useCallback(async (booking: Booking) => {
-        if (!window.confirm('Delete this booking permanently?')) return;
+        if (!window.confirm('Archive this booking? The record and customer information will be retained and hidden from active lists.')) return;
         setFeedback(null);
         setDeletingBookingId(booking.id);
         try {
             const result = await deleteBooking(booking.id);
             if (!result.success) {
-                setFeedback({ type: 'error', message: result.error || 'Could not delete this booking.' });
+                setFeedback({ type: 'error', message: result.error || 'Could not archive this booking.' });
                 return;
             }
             if (selectedBookingId === booking.id) setSelectedBookingId(null);
-            setFeedback({ type: 'success', message: 'Booking deleted successfully.' });
+            setFeedback({ type: 'success', message: 'Booking archived successfully. The record was retained.' });
         } catch {
-            setFeedback({ type: 'error', message: 'Could not delete this booking. Please try again.' });
+            setFeedback({ type: 'error', message: 'Could not archive this booking. Please try again.' });
         } finally {
             setDeletingBookingId(null);
         }
@@ -248,7 +248,7 @@ export const AdminDashboardPage: React.FC = () => {
                 {booking.status === 'confirmed' && <button type="button" disabled={isBusy} onClick={() => changeStatus(booking, 'completed')} className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white transition hover:bg-emerald-700 disabled:cursor-wait disabled:opacity-60" title="Mark booking as completed">
                     {isBusy ? <RefreshCw size={14} className="animate-spin" /> : <CheckCircle2 size={14} />} Complete
                 </button>}
-                <button type="button" disabled={deletingBookingId === booking.id} onClick={() => handleDelete(booking)} className="inline-flex items-center justify-center rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-50" title="Delete booking" aria-label="Delete booking">
+                <button type="button" disabled={deletingBookingId === booking.id} onClick={() => handleDelete(booking)} className="inline-flex items-center justify-center rounded-lg p-2 text-red-500 transition hover:bg-red-50 disabled:cursor-wait disabled:opacity-50" title="Archive booking" aria-label="Archive booking">
                      {deletingBookingId === booking.id ? <RefreshCw size={15} className="animate-spin" /> : <Trash2 size={15} />}
                 </button>
             </div>

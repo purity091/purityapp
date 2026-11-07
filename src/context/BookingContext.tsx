@@ -116,6 +116,7 @@ interface BookingDbRow {
     total_price: number;
     status: BookingStatus;
     created_at: string;
+    deleted_at?: string | null;
 }
 
 interface NotificationDbRow {
@@ -146,26 +147,9 @@ interface AdminPageCursor {
 }
 
 const BookingContext = createContext<BookingContextType | undefined>(undefined);
-const LS_KEY = 'purity_bookings';
 const ADMIN_PAGE_SIZE = 25;
 const EMPTY_ADMIN_STATS: BookingStats = { total: 0, pending: 0, confirmed: 0, completed: 0, cancelled: 0 };
-const ADMIN_BOOKING_SELECT = 'id, created_at, user_id, customer_name, phone_number, neighborhood, address, latitude, longitude, service_id, service_name, date, time, hours, number_of_workers, number_of_rooms, number_of_carpets, number_of_single_mattresses, number_of_large_mattresses, number_of_sofa_seats, number_of_curtains, include_chemicals, notes, total_price, status';
-
-const readFromLS = (key = LS_KEY): Booking[] => {
-    try {
-        const saved = localStorage.getItem(key);
-        return saved ? JSON.parse(saved) : [];
-    } catch {
-        return [];
-    }
-};
-
-const writeToLS = (bookings: Booking[], key = LS_KEY) => {
-    try {
-        localStorage.setItem(key, JSON.stringify(bookings));
-        window.dispatchEvent(new Event('purity:bookings-updated'));
-    } catch { /* local cache is optional */ }
-};
+const ADMIN_BOOKING_SELECT = 'id, created_at, user_id, customer_name, phone_number, neighborhood, address, latitude, longitude, service_id, service_name, date, time, hours, number_of_workers, number_of_rooms, number_of_carpets, number_of_single_mattresses, number_of_large_mattresses, number_of_sofa_seats, number_of_curtains, include_chemicals, notes, total_price, status, deleted_at';
 
 const getBookingErrorMessage = (error: { code?: string; message?: string } | null | undefined) => {
     const code = error?.code || '';
@@ -234,7 +218,7 @@ export const useBookings = () => {
 
 export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
-    const [bookings, setBookings] = useState<Booking[]>(() => isSupabaseConfigured() ? [] : readFromLS());
+    const [bookings, setBookings] = useState<Booking[]>([]);
     const [notifications, setNotifications] = useState<CustomerNotification[]>([]);
     const [loading, setLoading] = useState(false);
     const [notificationsLoading, setNotificationsLoading] = useState(false);
@@ -248,8 +232,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const adminStatsLoadedRef = useRef(false);
     const adminStatsRef = useRef(adminStats);
     const adminPageCursorsRef = useRef<Record<number, AdminPageCursor | null>>({ 1: null });
-    const storageKey = isSupabaseConfigured() && user?.id ? `${LS_KEY}_${user.id}` : LS_KEY;
-
     adminStatsRef.current = adminStats;
 
     const setAdminPage = useCallback((page: number) => {
@@ -290,6 +272,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const { data, error } = await supabase
                 .from('notifications')
                 .select('id, booking_id, title, message, kind, created_at, read_at')
+                .is('deleted_at', null)
                 .order('created_at', { ascending: false })
                 .limit(30);
 
@@ -311,7 +294,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const fetchBookings = useCallback(async () => {
         const requestId = ++bookingsRequestIdRef.current;
         if (!isSupabaseConfigured()) {
-            setBookings(readFromLS(storageKey));
+            setBookings([]);
             setAdminError(null);
             setLoading(false);
             return;
@@ -338,6 +321,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             let query = supabase
                 .from('bookings')
                 .select(ADMIN_BOOKING_SELECT, shouldCountRows ? { count: 'exact' } : {})
+                .is('deleted_at', null)
                 .order(adminFilters.sortBy, { ascending: sortAscending });
             if (adminFilters.sortBy === 'date') query = query.order('time', { ascending: sortAscending });
             query = query.order('id', { ascending: sortAscending });
@@ -368,7 +352,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             if (error) {
                 console.error('Error fetching bookings:', error);
                 if (isAdmin) setAdminError('Could not load bookings. Check your connection and try again.');
-                setBookings(isAdmin ? [] : readFromLS(storageKey));
+                setBookings([]);
                 if (isAdmin && shouldFetchStats) {
                     setAdminTotal(0);
                     setAdminStats(EMPTY_ADMIN_STATS);
@@ -421,15 +405,12 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 } else {
                     setAdminTotal(mapped.length);
                 }
-                if (!isAdmin) {
-                    writeToLS(mapped, storageKey);
-                }
             }
         } catch (error) {
             if (requestId === bookingsRequestIdRef.current) {
                 console.error('Could not refresh bookings:', error);
                 if (user.role === 'admin') setAdminError('Could not load bookings. Check your connection and try again.');
-                setBookings(user.role === 'admin' ? [] : readFromLS(storageKey));
+                setBookings([]);
                 if (user.role === 'admin' && shouldFetchStats) {
                     setAdminTotal(0);
                     adminStatsRef.current = EMPTY_ADMIN_STATS;
@@ -440,7 +421,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } finally {
             if (requestId === bookingsRequestIdRef.current) setLoading(false);
         }
-    }, [adminFilters, adminPage, storageKey, user]);
+    }, [adminFilters, adminPage, user]);
 
     const refreshBookings = useCallback(async () => {
         await fetchBookings();
@@ -494,14 +475,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const addBooking = async (newBookingData: CreateBookingData, requestId?: string) => {
         if (!isSupabaseConfigured()) {
-            if (!import.meta.env.DEV) {
-                return { synced: false, error: 'Booking service is temporarily unavailable. Please try again later.' };
-            }
-            const newBooking: Booking = { ...newBookingData, id: Math.random().toString(36).slice(2, 11), status: 'pending', createdAt: new Date().toISOString() };
-            const updated = [newBooking, ...bookings];
-            setBookings(updated);
-            writeToLS(updated);
-            return { synced: false, booking: newBooking };
+            return { synced: false, error: 'Booking service is temporarily unavailable. Please try again later.' };
         }
         if (!user || user.role !== 'customer') return { synced: false, error: 'Please sign in with your customer account first.' };
 
@@ -532,7 +506,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         const updated = [mapFromDb(data as BookingDbRow), ...bookings];
         setBookings(updated);
-        writeToLS(updated, storageKey);
         return { synced: true, booking: mapFromDb(data as BookingDbRow) };
     };
 
@@ -547,7 +520,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             && status !== adminFilters.status;
         const visibleBookings = shouldRemoveFromFilteredAdminList ? updated.filter(booking => booking.id !== id) : updated;
         setBookings(visibleBookings);
-        writeToLS(visibleBookings, storageKey);
         if (shouldRemoveFromFilteredAdminList) setAdminTotal(current => Math.max(0, current - 1));
 
         if (currentBooking.status !== status) {
@@ -572,7 +544,6 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } catch (error) {
             console.error('Error updating booking:', error);
             setBookings(previousBookings);
-            writeToLS(previousBookings, storageKey);
             if (shouldRemoveFromFilteredAdminList) setAdminTotal(current => current + 1);
             if (currentBooking.status !== status) {
                 setAdminStats(current => ({
@@ -592,25 +563,21 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
         if (isSupabaseConfigured() && user?.role === 'admin') {
             try {
-                const { data, error } = await supabase
-                    .from('bookings')
-                    .delete()
-                    .eq('id', id)
-                    .select('id')
-                    .maybeSingle();
+                const { data, error } = await supabase.rpc('soft_delete_booking', {
+                    p_booking_id: id,
+                });
 
                 if (error || !data) {
-                    throw new Error(error?.message || 'Could not delete this booking.');
+                    throw new Error(error?.message || 'Could not archive this booking.');
                 }
             } catch (error) {
-                console.error('Error deleting booking:', error);
-                return { success: false, error: error instanceof Error ? error.message : 'Could not delete this booking.' };
+                console.error('Error archiving booking:', error);
+                return { success: false, error: error instanceof Error ? error.message : 'Could not archive this booking.' };
             }
         }
 
         const updated = bookings.filter(booking => booking.id !== id);
         setBookings(updated);
-        writeToLS(updated, storageKey);
         if (user?.role === 'admin') {
             setAdminTotal(current => Math.max(0, current - 1));
             setAdminStats(current => ({ ...current, total: Math.max(0, current.total - 1), [currentBooking.status]: Math.max(0, current[currentBooking.status] - 1) }));

@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Service } from '../types';
-import { services as fallbackServices } from '../data/services';
-import { packages as fallbackPackages } from '../data/packages';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import { useLocation } from 'react-router-dom';
 
@@ -105,12 +103,11 @@ const mapDeal = (row: DealRow): Service => {
 const fetchCatalog = async (): Promise<CatalogData | null> => {
     try {
         const [servicesResult, dealsResult] = await Promise.all([
-            supabase.from('catalog_items').select('id, slug, item_type, name, short_description, description, base_price, compare_at_price, price_unit, rating, total_bookings, sort_order, metadata, catalog_categories(name), catalog_item_media(url, alt_text, is_primary, sort_order)').eq('status', 'published').order('sort_order', { ascending: true }),
-            supabase.from('deals').select('id, slug, title, description, image_url, price, compare_at_price, currency, metadata, sort_order').eq('status', 'published').order('sort_order', { ascending: true }),
+            supabase.from('catalog_items').select('id, slug, item_type, name, short_description, description, base_price, compare_at_price, price_unit, rating, total_bookings, sort_order, metadata, catalog_categories(name), catalog_item_media(url, alt_text, is_primary, sort_order)').eq('status', 'published').is('deleted_at', null).order('sort_order', { ascending: true }),
+            supabase.from('deals').select('id, slug, title, description, image_url, price, compare_at_price, currency, metadata, sort_order').eq('status', 'published').is('deleted_at', null).order('sort_order', { ascending: true }),
         ]);
         if (servicesResult.error || dealsResult.error) {
-            console.warn('Catalog database is not ready; using the local catalog fallback.', servicesResult.error || dealsResult.error);
-            return null;
+            throw servicesResult.error || dealsResult.error;
         }
         const databaseItems = (servicesResult.data || []) as CatalogRow[];
         const databaseServices = databaseItems.filter((item) => item.item_type === 'service').map(mapCatalogItem);
@@ -118,11 +115,11 @@ const fetchCatalog = async (): Promise<CatalogData | null> => {
         const databaseDeals = ((dealsResult.data || []) as DealRow[]).map(mapDeal);
         const databasePackagesAndDeals = [...databasePackages, ...databaseDeals];
         return {
-            services: databaseServices.length ? databaseServices : fallbackServices,
-            packages: databasePackagesAndDeals.length ? databasePackagesAndDeals : fallbackPackages,
+            services: databaseServices,
+            packages: databasePackagesAndDeals,
         };
     } catch (error) {
-        console.warn('Could not load the catalog; using the local catalog fallback.', error);
+        console.error('Could not load the catalog from Supabase.', error);
         return null;
     }
 };
@@ -130,7 +127,7 @@ const fetchCatalog = async (): Promise<CatalogData | null> => {
 export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const location = useLocation();
     const isAdminRoute = location.pathname.startsWith('/admin');
-    const [catalog, setCatalog] = useState<CatalogData>({ services: fallbackServices, packages: fallbackPackages });
+    const [catalog, setCatalog] = useState<CatalogData>({ services: [], packages: [] });
     const [loading, setLoading] = useState(isSupabaseConfigured() && !isAdminRoute);
     const [usingDatabase, setUsingDatabase] = useState(false);
 
@@ -146,11 +143,15 @@ export const CatalogProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 if (!active) return;
                 if (data) {
                     setCatalog(data);
-                    setUsingDatabase(data.services !== fallbackServices || data.packages !== fallbackPackages);
+                    setUsingDatabase(true);
                 }
             })
             .catch(error => {
-                if (active) console.warn('Catalog request failed; keeping the local catalog fallback.', error);
+                if (active) {
+                    console.error('Catalog request failed; Supabase is the only catalog source.', error);
+                    setCatalog({ services: [], packages: [] });
+                    setUsingDatabase(false);
+                }
             })
             .finally(() => {
                 if (active) setLoading(false);

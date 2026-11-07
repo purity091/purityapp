@@ -21,7 +21,8 @@ create table if not exists public.booking_pricing_rules (
   chemical_eligible boolean not null default false,
   chemical_fee numeric(12,2) not null default 30 check (chemical_fee >= 0),
   is_active boolean not null default true,
-  updated_at timestamptz not null default timezone('utc'::text, now())
+  updated_at timestamptz not null default timezone('utc'::text, now()),
+  deleted_at timestamptz
 );
 
 insert into public.booking_pricing_rules (
@@ -145,7 +146,7 @@ begin
 
   select * into rule
   from public.booking_pricing_rules as pricing
-  where pricing.service_key = requested_service_key and pricing.is_active
+  where pricing.service_key = requested_service_key and pricing.is_active and pricing.deleted_at is null
   limit 1;
 
   if not found then
@@ -153,7 +154,8 @@ begin
     -- Variable pricing must be configured in booking_pricing_rules first.
     select id, slug, name, base_price into catalog_item
     from public.catalog_items
-    where status = 'published' and (id::text = requested_service_key or slug = requested_service_key)
+    where status = 'published' and deleted_at is null
+      and (id::text = requested_service_key or slug = requested_service_key)
     limit 1;
     if found then
       resolved_name := catalog_item.name;
@@ -162,6 +164,7 @@ begin
       select id, slug, title, price into deal_item
       from public.deals
       where status = 'published'
+        and deleted_at is null
         and starts_at <= now()
         and (ends_at is null or ends_at > now())
         and (id::text = requested_service_key or slug = requested_service_key)

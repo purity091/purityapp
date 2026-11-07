@@ -27,7 +27,8 @@ create table if not exists public.bookings (
   include_chemicals boolean default false,
   notes text,
   total_price numeric not null,
-  status text default 'pending' check (status in ('pending', 'confirmed', 'completed', 'cancelled'))
+  status text default 'pending' check (status in ('pending', 'confirmed', 'completed', 'cancelled')),
+  deleted_at timestamptz
 );
 
 alter table public.bookings add column if not exists user_id uuid references auth.users(id) on delete set null;

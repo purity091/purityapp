@@ -1,0 +1,373 @@
+{
+  "info": {
+    "name": "Purity Supabase API",
+    "description": "Postman collection for the Purity web and mobile clients. Uses Supabase Auth, PostgREST and RPC functions. Never place SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY in this collection. Application data is soft-deleted; there are intentionally no hard-delete requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.request.headers.upsert({ key: 'apikey', value: pm.variables.get('anon_key') });",
+          "if (pm.request.method !== 'GET' && pm.request.method !== 'HEAD') {",
+          "  pm.request.headers.upsert({ key: 'Content-Type', value: 'application/json' });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "supabase_url", "value": "https://YOUR_PROJECT_REF.supabase.co" },
+    { "key": "rest_url", "value": "{{supabase_url}}/rest/v1" },
+    { "key": "auth_url", "value": "{{supabase_url}}/auth/v1" },
+    { "key": "anon_key", "value": "" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "booking_id", "value": "" },
+    { "key": "notification_id", "value": "" },
+    { "key": "item_id", "value": "" },
+    { "key": "client_request_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "01 - Authentication",
+      "item": [
+        {
+          "name": "Sign Up",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [ { "key": "apikey", "value": "{{anon_key}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"ChangeThisPassword123!\",\n  \"data\": {\n    \"full_name\": \"Customer Name\",\n    \"phone_number\": \"+971501234567\"\n  }\n}"
+            },
+            "url": "{{auth_url}}/signup"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.user?.id) pm.environment.set('user_id', json.user.id);",
+                  "if (json.access_token) pm.environment.set('access_token', json.access_token);",
+                  "if (json.refresh_token) pm.environment.set('refresh_token', json.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sign In",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [ { "key": "apikey", "value": "{{anon_key}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"ChangeThisPassword123!\"\n}"
+            },
+            "url": "{{auth_url}}/token?grant_type=password"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) pm.environment.set('access_token', json.access_token);",
+                  "if (json.refresh_token) pm.environment.set('refresh_token', json.refresh_token);",
+                  "if (json.user?.id) pm.environment.set('user_id', json.user.id);",
+                  "pm.test('Sign in succeeded', () => pm.expect(json.access_token).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Session",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [ { "key": "apikey", "value": "{{anon_key}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": "{{auth_url}}/token?grant_type=refresh_token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.access_token) pm.environment.set('access_token', json.access_token);",
+                  "if (json.refresh_token) pm.environment.set('refresh_token', json.refresh_token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{auth_url}}/user"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [ "const json = pm.response.json(); if (json.id) pm.environment.set('user_id', json.id);" ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [ { "key": "apikey", "value": "{{anon_key}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"redirect_to\": \"https://your-domain.example/?reset=1\"\n}"
+            },
+            "url": "{{auth_url}}/recover"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Public Catalog",
+      "item": [
+        {
+          "name": "List Published Services and Packages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/catalog_items?select=id,slug,item_type,name,short_description,description,base_price,compare_at_price,currency,price_unit,rating,review_count,total_bookings,sort_order,metadata,catalog_categories(name),catalog_item_media(url,alt_text,is_primary,sort_order)&status=eq.published&deleted_at=is.null&order=sort_order.asc"
+          }
+        },
+        {
+          "name": "List Published Deals",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/deals?select=id,slug,title,subtitle,description,terms,image_url,status,starts_at,ends_at,discount_type,discount_value,price,compare_at_price,currency,inventory_remaining,per_user_limit,audience,is_featured,sort_order,metadata&status=eq.published&deleted_at=is.null&order=sort_order.asc"
+          }
+        },
+        {
+          "name": "List Active Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/catalog_categories?select=id,parent_id,slug,name,description,sort_order,is_active&is_active=eq.true&deleted_at=is.null&order=sort_order.asc"
+          }
+        },
+        {
+          "name": "List Active Service Areas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/service_areas?select=id,slug,name,city,country_code,is_active&is_active=eq.true&deleted_at=is.null&order=name.asc"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Customer",
+      "item": [
+        {
+          "name": "Get My Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/customer_profiles?select=user_id,email,phone_number,created_at,updated_at&user_id=eq.{{user_id}}&deleted_at=is.null"
+          }
+        },
+        {
+          "name": "Update My Profile",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Prefer", "value": "return=representation" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone_number\": \"+971501234567\"\n}"
+            },
+            "url": "{{rest_url}}/customer_profiles?user_id=eq.{{user_id}}&deleted_at=is.null"
+          }
+        },
+        {
+          "name": "Create Booking - Secure RPC",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_service_id\": \"10\",\n  \"p_customer_name\": \"Customer Name\",\n  \"p_phone_number\": \"+971501234567\",\n  \"p_neighborhood\": \"Dubai Marina\",\n  \"p_address\": \"Building and apartment details\",\n  \"p_latitude\": 25.0800,\n  \"p_longitude\": 55.1400,\n  \"p_hours\": 2,\n  \"p_date\": \"2030-01-15\",\n  \"p_time\": \"10:00\",\n  \"p_number_of_workers\": 1,\n  \"p_number_of_rooms\": null,\n  \"p_number_of_carpets\": null,\n  \"p_number_of_single_mattresses\": null,\n  \"p_number_of_large_mattresses\": null,\n  \"p_number_of_sofa_seats\": null,\n  \"p_number_of_curtains\": null,\n  \"p_include_chemicals\": false,\n  \"p_notes\": null,\n  \"p_client_request_id\": \"{{client_request_id}}\"\n}"
+            },
+            "url": "{{rest_url}}/rpc/create_booking"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.environment.set('client_request_id', pm.variables.replaceIn('{{$guid}}'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json.id) pm.environment.set('booking_id', json.id);",
+                  "pm.test('Booking is pending', () => pm.expect(json.status).to.eql('pending'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List My Active Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/bookings?select=id,created_at,customer_name,phone_number,neighborhood,address,latitude,longitude,service_id,service_name,date,time,hours,number_of_workers,number_of_rooms,number_of_carpets,number_of_single_mattresses,number_of_large_mattresses,number_of_sofa_seats,number_of_curtains,include_chemicals,notes,total_price,status&user_id=eq.{{user_id}}&deleted_at=is.null&order=created_at.desc"
+          }
+        },
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/notifications?select=id,booking_id,title,message,kind,created_at,read_at&user_id=eq.{{user_id}}&deleted_at=is.null&order=created_at.desc&limit=30"
+          }
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Prefer", "value": "return=representation" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"read_at\": \"{{$isoTimestamp}}\"\n}"
+            },
+            "url": "{{rest_url}}/notifications?id=eq.{{notification_id}}&user_id=eq.{{user_id}}&deleted_at=is.null"
+          }
+        },
+        {
+          "name": "Get My Wishlist",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/wishlist_items?select=user_id,item_id,created_at&user_id=eq.{{user_id}}&deleted_at=is.null&order=created_at.asc"
+          }
+        },
+        {
+          "name": "Save Wishlist Item",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_item_id\": \"{{item_id}}\",\n  \"p_saved\": true\n}"
+            },
+            "url": "{{rest_url}}/rpc/set_wishlist_item"
+          }
+        },
+        {
+          "name": "Archive Wishlist Item - Soft Delete",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_item_id\": \"{{item_id}}\",\n  \"p_saved\": false\n}"
+            },
+            "url": "{{rest_url}}/rpc/set_wishlist_item"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Admin",
+      "description": "Use an authenticated Supabase user whose app_metadata.role is admin. The collection never hard-deletes records.",
+      "item": [
+        {
+          "name": "List Active Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/bookings?select=id,created_at,user_id,customer_name,phone_number,neighborhood,address,latitude,longitude,service_id,service_name,date,time,hours,number_of_workers,number_of_rooms,number_of_carpets,number_of_single_mattresses,number_of_large_mattresses,number_of_sofa_seats,number_of_curtains,include_chemicals,notes,total_price,status&deleted_at=is.null&order=created_at.desc&limit=25"
+          }
+        },
+        {
+          "name": "Get Booking Statistics",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{rest_url}}/rpc/get_booking_stats"
+          }
+        },
+        {
+          "name": "Update Booking Status",
+          "request": {
+            "method": "PATCH",
+            "header": [ { "key": "Prefer", "value": "return=representation" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\"\n}"
+            },
+            "url": "{{rest_url}}/bookings?id=eq.{{booking_id}}&deleted_at=is.null"
+          }
+        },
+        {
+          "name": "Archive Booking - Soft Delete",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"p_booking_id\": \"{{booking_id}}\"\n}"
+            },
+            "url": "{{rest_url}}/rpc/soft_delete_booking"
+          }
+        },
+        {
+          "name": "Get Booking Audit Log",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{rest_url}}/admin_booking_audit_log?select=id,booking_id,admin_user_id,customer_name,service_name,action,from_status,to_status,created_at&order=created_at.desc&limit=100"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@ create table if not exists public.wishlist_items (
   user_id uuid not null references auth.users(id) on delete cascade,
   item_id text not null,
   created_at timestamptz not null default timezone('utc'::text, now()),
+  deleted_at timestamptz,
   primary key (user_id, item_id)
 );
 

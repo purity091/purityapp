@@ -1,6 +1,5 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
-import { readWishlist, wishlistStorageKey, writeWishlist } from '../lib/wishlist';
 import { useAuth } from './AuthContext';
 
 interface WishlistContextValue {
@@ -21,17 +20,14 @@ const getErrorMessage = (error: { message?: string } | null | undefined) => erro
 export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const { user } = useAuth();
     const customerId = user?.role === 'customer' ? user.id : undefined;
-    const storageKey = wishlistStorageKey(customerId);
-    const [wishlistIds, setWishlistIds] = useState<string[]>(() => readWishlist());
+    const [wishlistIds, setWishlistIds] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const requestIdRef = useRef(0);
 
     const refreshWishlist = useCallback(async () => {
         const requestId = ++requestIdRef.current;
-        const cachedIds = readWishlist(storageKey);
-        setWishlistIds(cachedIds);
-
         if (!isSupabaseConfigured() || !customerId) {
+            setWishlistIds([]);
             setLoading(false);
             return;
         }
@@ -42,40 +38,25 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 .from('wishlist_items')
                 .select('item_id')
                 .eq('user_id', customerId)
+                .is('deleted_at', null)
                 .order('created_at', { ascending: true });
 
             if (error) {
                 console.error('Error fetching wishlist:', error);
+                setWishlistIds([]);
                 return;
             }
 
             const remoteIds = ((data || []) as WishlistRow[]).map(row => row.item_id);
-            const guestIds = readWishlist();
-            const idsToMigrate = guestIds.filter(id => !remoteIds.includes(id));
-
-            if (idsToMigrate.length > 0) {
-                const { error: migrationError } = await supabase
-                    .from('wishlist_items')
-                    .upsert(idsToMigrate.map(itemId => ({ user_id: customerId, item_id: itemId })), { onConflict: 'user_id,item_id' });
-
-                if (!migrationError) {
-                    remoteIds.push(...idsToMigrate);
-                    writeWishlist([], wishlistStorageKey());
-                } else {
-                    console.error('Error migrating local wishlist:', migrationError);
-                }
-            }
-
             if (requestId !== requestIdRef.current) return;
             const uniqueIds = [...new Set(remoteIds)];
             setWishlistIds(uniqueIds);
-            writeWishlist(uniqueIds, storageKey);
         } catch (error) {
             console.error('Could not refresh wishlist:', error);
         } finally {
             if (requestId === requestIdRef.current) setLoading(false);
         }
-    }, [customerId, storageKey]);
+    }, [customerId]);
 
     useEffect(() => {
         void refreshWishlist();
@@ -87,22 +68,23 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             ? previousIds.filter(id => id !== itemId)
             : [...previousIds, itemId];
 
-        setWishlistIds(nextIds);
-        writeWishlist(nextIds, storageKey);
+        if (!isSupabaseConfigured() || !customerId) {
+            return { success: false, error: 'Please sign in with your customer account first.' };
+        }
 
-        if (!isSupabaseConfigured() || !customerId) return { success: true };
+        setWishlistIds(nextIds);
 
         try {
-            const result = previousIds.includes(itemId)
-                ? await supabase.from('wishlist_items').delete().eq('user_id', customerId).eq('item_id', itemId)
-                : await supabase.from('wishlist_items').upsert({ user_id: customerId, item_id: itemId }, { onConflict: 'user_id,item_id' });
+            const result = await supabase.rpc('set_wishlist_item', {
+                p_item_id: itemId,
+                p_saved: !previousIds.includes(itemId),
+            });
 
             if (result.error) throw result.error;
             return { success: true };
         } catch (error) {
             console.error('Error updating wishlist:', error);
             setWishlistIds(previousIds);
-            writeWishlist(previousIds, storageKey);
             return { success: false, error: getErrorMessage(error as { message?: string }) };
         }
     };
