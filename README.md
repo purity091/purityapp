@@ -20,7 +20,7 @@ npm run build
 
 Copy `.env.example` to `.private/.env` when local environment configuration is needed. The `.private/` folder is ignored by Git and Vite is configured to load environment files from it. Never commit real credentials or deployment secrets.
 
-The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql`, `supabase_soft_delete.sql` and `supabase_catalog_seed.sql`. Apply the first five in that order, then run `supabase_catalog_seed.sql` to import the current Purity services and legacy offers. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled only when `VITE_USE_SUPABASE=true` and the public URL and anonymous key are configured.
+The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql`, `supabase_soft_delete.sql` and `supabase_catalog_seed.sql`. Apply the first five in that order, then run `supabase_catalog_seed.sql` to import the current Purity services and legacy offers. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled when the public URL and anonymous key are configured; set `VITE_USE_SUPABASE=false` only for a deliberate frontend-only build.
 
 If an existing Supabase project reports `column ... deleted_at does not exist`, run `supabase_soft_delete_hotfix.sql` once in the Supabase SQL Editor, then run the complete `supabase_soft_delete.sql` file. The hotfix is repeatable and only adds missing columns/indexes; it does not delete or overwrite data.
 

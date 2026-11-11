@@ -3,7 +3,9 @@ import { createClient } from '@supabase/supabase-js';
 // القيم المؤقتة للتطوير - ستعمل بعد إضافة قيم Supabase الحقيقية
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-key';
-const supabaseEnabled = import.meta.env.VITE_USE_SUPABASE === 'true';
+// A valid Supabase URL and key are enough to enable the data source. The
+// explicit flag can still disable it for a deliberate frontend-only build.
+const supabaseEnabled = import.meta.env.VITE_USE_SUPABASE !== 'false';
 
 // تحذير في Console إذا لم تكن القيم موجودة
 if (supabaseEnabled && supabaseUrl === 'https://placeholder.supabase.co') {
