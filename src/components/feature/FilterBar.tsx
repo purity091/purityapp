@@ -72,7 +72,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
     return (
         <section className="border-b border-gray-200 bg-white" aria-label="Service filters">
-            <div className="mx-auto w-full max-w-[1600px] px-4 lg:px-6">
+            <div className="mx-auto w-full max-w-[1200px] px-4 lg:px-6">
                 <div className="flex min-h-[44px] items-center gap-1.5 overflow-x-auto py-1.5 whitespace-nowrap [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <span className="inline-flex flex-none items-center gap-1 pr-1 text-[11px] font-extrabold text-gray-800">
                         <SlidersHorizontal size={13} className="text-gray-700" />

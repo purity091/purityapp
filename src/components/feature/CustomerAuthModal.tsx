@@ -8,7 +8,7 @@ interface CustomerAuthModalProps {
     isOpen: boolean;
     onClose: () => void;
     destination?: string;
-    initialMode?: 'login' | 'reset';
+    initialMode?: 'login' | 'signup' | 'reset';
 }
 
 export const CustomerAuthModal: React.FC<CustomerAuthModalProps> = ({ isOpen, onClose, destination = '/', initialMode = 'login' }) => {

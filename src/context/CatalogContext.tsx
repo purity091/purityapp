@@ -39,6 +39,7 @@ interface DealRow {
     currency?: string | null;
     metadata?: Record<string, unknown> | null;
     sort_order?: number | null;
+    is_featured?: boolean | null;
 }
 
 interface CatalogData {
@@ -48,6 +49,10 @@ interface CatalogData {
 
 const CatalogContext = createContext<CatalogContextValue | undefined>(undefined);
 let catalogRequest: Promise<CatalogData | null> | null = null;
+
+export const invalidateCatalogCache = () => {
+    catalogRequest = null;
+};
 
 const metadataString = (metadata: Record<string, unknown> | null | undefined, key: string) => {
     const value = metadata?.[key];
@@ -94,7 +99,7 @@ const mapDeal = (row: DealRow): Service => {
         category: metadataString(metadata, 'category') || 'Offers',
         rating: Number(metadata.rating || 0),
         offerTag: metadataString(metadata, 'offer_tag') || 'Limited offer',
-        isPopular: metadataBoolean(metadata, 'is_featured'),
+        isPopular: Boolean(row.is_featured || metadataBoolean(metadata, 'is_featured')),
         soldCount: Number(metadata.sold_count || 0),
         priceUnit: 'per package',
     };
@@ -102,9 +107,10 @@ const mapDeal = (row: DealRow): Service => {
 
 const fetchCatalog = async (): Promise<CatalogData | null> => {
     try {
+        const now = new Date().toISOString();
         const [servicesResult, dealsResult] = await Promise.all([
             supabase.from('catalog_items').select('id, slug, item_type, name, short_description, description, base_price, compare_at_price, price_unit, rating, total_bookings, sort_order, metadata, catalog_categories(name), catalog_item_media(url, alt_text, is_primary, sort_order)').eq('status', 'published').is('deleted_at', null).order('sort_order', { ascending: true }),
-            supabase.from('deals').select('id, slug, title, description, image_url, price, compare_at_price, currency, metadata, sort_order').eq('status', 'published').is('deleted_at', null).order('sort_order', { ascending: true }),
+            supabase.from('deals').select('id, slug, title, description, image_url, price, compare_at_price, currency, metadata, sort_order, is_featured').eq('status', 'published').is('deleted_at', null).lte('starts_at', now).or(`ends_at.is.null,ends_at.gt.${now}`).order('sort_order', { ascending: true }),
         ]);
         if (servicesResult.error || dealsResult.error) {
             throw servicesResult.error || dealsResult.error;

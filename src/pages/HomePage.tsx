@@ -10,7 +10,7 @@ import { FAQSection } from '../components/feature/FAQSection';
 import { BookingModal } from '../components/feature/BookingModal';
 import { useCatalog } from '../context/CatalogContext';
 import { Service, CATEGORIES } from '../types';
-import { SearchX, Sparkles, Grid3X3, SlidersHorizontal, X, ChevronRight } from 'lucide-react';
+import { SearchX, Sparkles, Grid3X3, SlidersHorizontal, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 interface HomeNavigationState {
@@ -119,7 +119,6 @@ export const HomePage: React.FC = () => {
                 totalDealsCount={filteredServices.length}
                 onServiceSelect={setSelectedService}
                 onCategorySelect={setSelectedCategory}
-                onOpenMobileTools={() => setIsMobileToolsOpen(true)}
             />
 
             <MobileBrowseControls
@@ -127,10 +126,10 @@ export const HomePage: React.FC = () => {
                 selectedCategory={selectedCategory}
                 priceRange={priceRange}
                 sortBy={sortBy}
-                totalResults={filteredServices.length}
                 onCategoryChange={setSelectedCategory}
                 onPriceRangeChange={setPriceRange}
                 onSortChange={setSortBy}
+                onOpenDrawer={() => setIsMobileToolsOpen(true)}
                 onClearAll={() => {
                     setSearchQuery('');
                     setSelectedCategory('All');
@@ -180,7 +179,7 @@ export const HomePage: React.FC = () => {
 
             {/* Catalogue content follows the unified page header */}
             <main className="w-full">
-                <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Flash Deals — show on both mobile and desktop */}
                     {!isSearching && selectedCategory === 'All' && (
@@ -310,11 +309,11 @@ interface MobileBrowseControlsProps {
     selectedCategory: string;
     priceRange: PriceRange;
     sortBy: SortOption;
-    totalResults: number;
     onCategoryChange: (category: string) => void;
     onPriceRangeChange: (range: PriceRange) => void;
     onSortChange: (sort: SortOption) => void;
     onClearAll: () => void;
+    onOpenDrawer?: () => void;
 }
 
 const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
@@ -322,91 +321,107 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
     selectedCategory,
     priceRange,
     sortBy,
-    totalResults,
     onCategoryChange,
     onPriceRangeChange,
     onSortChange,
     onClearAll,
+    onOpenDrawer,
 }) => {
-    const priceOptions: Array<{ value: PriceRange; label: string }> = [
-        { value: 'all', label: 'Any price' },
-        { value: 'under-150', label: 'Under AED 150' },
-        { value: '150-300', label: 'AED 150 - 300' },
-        { value: 'over-300', label: 'AED 300+' },
-    ];
-
-    const hasActiveFilters = Boolean(searchQuery.trim()) || selectedCategory !== 'All' || priceRange !== 'all';
-    const selectClass = 'block h-7 min-w-0 w-full rounded-md border border-gray-300 bg-white px-1.5 text-[10px] font-semibold text-gray-800 outline-none';
+    const hasActiveFilters = Boolean(searchQuery.trim()) || selectedCategory !== 'All' || priceRange !== 'all' || sortBy !== 'popular';
+    const activeFilterCount = (selectedCategory !== 'All' ? 1 : 0) + (priceRange !== 'all' ? 1 : 0) + (sortBy !== 'popular' ? 1 : 0);
 
     return (
-        <div className="md:hidden bg-white" aria-label="Mobile service navigation and filters">
-            <nav className="flex items-center gap-1 px-4 pt-2.5 pb-1 text-[11px] leading-4" aria-label="Breadcrumb">
-                <div className="flex min-w-0 items-center gap-1">
-                    <Link to="/" className="shrink-0 font-semibold text-gray-500">Home</Link>
-                    <ChevronRight size={12} className="shrink-0 text-gray-400" aria-hidden="true" />
-                    <span className="shrink-0 font-bold text-gray-900">Services</span>
-                    {selectedCategory !== 'All' && (
-                        <>
-                            <ChevronRight size={12} className="shrink-0 text-gray-400" aria-hidden="true" />
-                            <span className="truncate font-semibold text-primary-700">{selectedCategory}</span>
-                        </>
+        <div className="md:hidden bg-white border-b border-slate-100" aria-label="Mobile service categories and filters">
+            {/* Horizontal Scrollable Category & Filter Pill Bar */}
+            <div className="flex items-center gap-1.5 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                {/* 1. Filter Drawer Trigger Chip */}
+                <button
+                    type="button"
+                    onClick={onOpenDrawer}
+                    className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition active:scale-95 ${
+                        activeFilterCount > 0
+                            ? 'border-primary-600 bg-primary-50 text-primary-900 ring-2 ring-primary-500/20'
+                            : 'border-slate-200 bg-slate-50 text-slate-800 hover:bg-slate-100'
+                    }`}
+                >
+                    <SlidersHorizontal size={12} className={activeFilterCount > 0 ? 'text-primary-700' : 'text-slate-600'} />
+                    <span>Filters</span>
+                    {activeFilterCount > 0 && (
+                        <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-700 text-[10px] font-black text-white px-1 leading-none">
+                            {activeFilterCount}
+                        </span>
                     )}
-                    {searchQuery.trim() && (
-                        <>
-                            <ChevronRight size={12} className="shrink-0 text-gray-400" aria-hidden="true" />
-                            <span className="truncate font-semibold text-gray-600">Search</span>
-                        </>
-                    )}
-                </div>
-                <span className="ml-auto shrink-0 text-[10px] font-semibold text-gray-500">{totalResults}</span>
-            </nav>
+                </button>
 
-            <div className={`grid gap-1.5 overflow-hidden px-4 pb-2 pt-1 ${hasActiveFilters ? 'grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_1.75rem]' : 'grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)]'}`}>
-                <label className="sr-only" htmlFor="mobile-category-filter">Category</label>
-                <select
-                    id="mobile-category-filter"
-                    aria-label="Filter by category"
-                    value={selectedCategory}
-                    onChange={(event) => onCategoryChange(event.target.value)}
-                    className={selectClass}
+                <span className="h-4 w-px bg-slate-200 shrink-0" aria-hidden="true" />
+
+                {/* 2. All Services Pill */}
+                <button
+                    type="button"
+                    onClick={() => onCategoryChange('All')}
+                    className={`flex h-8 shrink-0 items-center rounded-full px-3 text-xs font-bold transition active:scale-95 ${
+                        selectedCategory === 'All'
+                            ? 'bg-slate-950 text-white shadow-2xs'
+                            : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
                 >
-                    <option value="All">All services</option>
-                    {CATEGORIES.map((category) => <option key={category} value={category}>{category}</option>)}
-                </select>
+                    All Services
+                </button>
 
-                <label className="sr-only" htmlFor="mobile-price-filter">Price</label>
-                <select
-                    id="mobile-price-filter"
-                    aria-label="Filter by price"
-                    value={priceRange}
-                    onChange={(event) => onPriceRangeChange(event.target.value as PriceRange)}
-                    className={selectClass}
+                {/* 3. Category Pills */}
+                {CATEGORIES.map((cat) => {
+                    const isSelected = selectedCategory === cat;
+                    return (
+                        <button
+                            key={cat}
+                            type="button"
+                            onClick={() => onCategoryChange(cat)}
+                            className={`flex h-8 shrink-0 items-center rounded-full px-3 text-xs font-bold transition active:scale-95 ${
+                                isSelected
+                                    ? 'bg-primary-700 text-white shadow-2xs'
+                                    : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
+                            }`}
+                        >
+                            {cat}
+                        </button>
+                    );
+                })}
+
+                {/* 4. Quick Price Range Filter Chips */}
+                <button
+                    type="button"
+                    onClick={() => onPriceRangeChange(priceRange === 'under-150' ? 'all' : 'under-150')}
+                    className={`flex h-8 shrink-0 items-center rounded-full px-3 text-xs font-bold transition active:scale-95 ${
+                        priceRange === 'under-150'
+                            ? 'bg-emerald-700 text-white shadow-2xs'
+                            : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
                 >
-                    {priceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                </select>
+                    Under AED 150
+                </button>
 
-                <label className="sr-only" htmlFor="mobile-sort-filter">Sort</label>
-                <select
-                    id="mobile-sort-filter"
-                    aria-label="Sort services"
-                    value={sortBy}
-                    onChange={(event) => onSortChange(event.target.value as SortOption)}
-                    className={selectClass}
+                {/* 5. Quick Sort: Top Rated */}
+                <button
+                    type="button"
+                    onClick={() => onSortChange(sortBy === 'rating' ? 'popular' : 'rating')}
+                    className={`flex h-8 shrink-0 items-center rounded-full px-3 text-xs font-bold transition active:scale-95 ${
+                        sortBy === 'rating'
+                            ? 'bg-amber-600 text-white shadow-2xs'
+                            : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
+                    }`}
                 >
-                    <option value="popular">Most popular</option>
-                    <option value="price">Lowest price</option>
-                    <option value="rating">Top rated</option>
-                </select>
+                    Top Rated ★
+                </button>
 
+                {/* 6. Clear All chip if any filter is active */}
                 {hasActiveFilters && (
                     <button
                         type="button"
                         onClick={onClearAll}
-                        aria-label="Clear filters"
-                        title="Clear filters"
-                        className="flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 bg-white text-gray-700"
+                        className="flex h-8 shrink-0 items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 text-xs font-bold text-red-700 transition active:scale-95"
                     >
-                        <X size={12} />
+                        <span>Reset</span>
+                        <X size={12} strokeWidth={2.5} />
                     </button>
                 )}
             </div>

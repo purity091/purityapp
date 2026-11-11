@@ -35,12 +35,14 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 aria-label="Select service city"
-                className={`flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white font-semibold text-slate-700 transition-colors hover:border-primary-300 hover:bg-primary-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${dense ? 'h-10 px-2.5 text-[11px]' : compact ? 'h-11 px-4 text-xs' : 'px-2.5 py-1.5 text-xs'}`}
+                className={`flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-slate-50/80 font-semibold text-slate-700 transition-all hover:border-slate-300 hover:bg-white hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${
+                    dense ? 'h-8 px-2.5 text-[11px]' : compact ? 'h-9 px-3 text-xs' : 'h-8 px-2.5 text-xs'
+                }`}
             >
-                <MapPin size={dense ? 13 : compact ? 14 : 12} className="text-primary-700" />
+                <MapPin size={12} className="text-primary-700 shrink-0" />
                 <span>Dubai</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <ChevronDown size={dense ? 13 : compact ? 14 : 12} className={`ml-0.5 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
+                <ChevronDown size={11} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isOpen && (

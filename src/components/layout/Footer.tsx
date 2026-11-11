@@ -11,7 +11,7 @@ const legalLinks = [
 
 export const Footer: React.FC = () => (
     <footer className="mt-auto border-t border-white/10 bg-slate-950 text-white">
-        <div className="mx-auto w-full max-w-[1500px] px-4 py-7 sm:px-6 md:py-9 lg:px-8">
+        <div className="mx-auto w-full max-w-[1200px] px-4 py-7 sm:px-6 md:py-9 lg:px-8">
             <div className="grid gap-7 border-b border-white/10 pb-7 md:grid-cols-[1.3fr_0.8fr_1fr] md:gap-10">
                 <section className="max-w-md">
                     <Link to="/" className="inline-flex items-center" aria-label="Purity home">

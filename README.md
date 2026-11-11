@@ -20,7 +20,9 @@ npm run build
 
 Copy `.env.example` to a local ignored `.env` file when environment configuration is needed. Never commit real credentials or deployment secrets.
 
-The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql` and `supabase_soft_delete.sql`. Apply them in that order. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled only when `VITE_USE_SUPABASE=true` and the public URL and anonymous key are configured.
+The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql`, `supabase_soft_delete.sql` and `supabase_catalog_seed.sql`. Apply the first five in that order, then run `supabase_catalog_seed.sql` to import the current Purity services and legacy offers. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled only when `VITE_USE_SUPABASE=true` and the public URL and anonymous key are configured.
+
+If an existing Supabase project reports `column ... deleted_at does not exist`, run `supabase_soft_delete_hotfix.sql` once in the Supabase SQL Editor, then run the complete `supabase_soft_delete.sql` file. The hotfix is repeatable and only adds missing columns/indexes; it does not delete or overwrite data.
 
 ## Customer accounts and PWA
 
@@ -38,6 +40,8 @@ In Supabase Auth settings, enable Email provider. To keep registration without a
 The admin bookings screen uses server-side filtering, exact counts, and 25-row pagination; it does not load the complete bookings table into the browser.
 
 For the existing admin dashboard, create an admin user in Supabase Auth and set `raw_app_meta_data.role` to `admin` using a privileged SQL session. The frontend never receives a service key.
+
+Admin routes are `/admin` (login), `/admin/overview`, `/admin/dashboard` (bookings), `/admin/catalog` (services and packages), `/admin/deals` (offers), `/admin/customers`, and `/admin/audit-log`. Every protected route requires a Supabase Auth session whose `app_metadata.role` is `admin`.
 
 The scalable catalog schema is in `supabase_catalog.sql`. It supports hierarchical categories, services, packages, service variants, multiple media assets, service areas, time-bound deals, bundle contents, coupon codes, inventory, per-customer limits, atomic redemptions, and historical booking price snapshots. Supabase is the only source for application data; the UI does not fall back to a local catalog when the database is unavailable.
 

@@ -27,7 +27,7 @@ export const HappinessSection: React.FC = () => {
 
     return (
         <section id="happiness" className="scroll-mt-20 bg-white py-8 md:py-20">
-            <div className="mx-auto grid w-full max-w-[1500px] grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-14 lg:px-8">
+            <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-6 px-4 sm:px-6 lg:grid-cols-12 lg:gap-14 lg:px-8">
                 {/* Message and CTA */}
                 <div className="lg:col-span-4 lg:pt-3">
                     <motion.div

@@ -16,7 +16,6 @@ import {
     ArrowDown,
     ArrowDownUp,
     ArrowUp,
-    Bell,
     BriefcaseBusiness,
     CalendarDays,
     Check,
@@ -35,7 +34,6 @@ import {
     Phone,
     RefreshCw,
     Search,
-    Settings2,
     Tag,
     Trash2,
     UserRound,
@@ -70,12 +68,10 @@ const adminSortByColumn: Record<string, AdminBookingSort> = {
 const adminTabs = [
     { label: 'Bookings', icon: CalendarDays, to: '/admin/dashboard', soon: false },
     { label: 'Audit log', icon: ClipboardList, to: '/admin/audit-log', soon: false },
-    { label: 'Overview', icon: LayoutDashboard, to: null, soon: true },
-    { label: 'Services & packages', icon: BriefcaseBusiness, to: null, soon: true },
-    { label: 'Offers & deals', icon: Tag, to: null, soon: true },
-    { label: 'Announcements', icon: Bell, to: null, soon: true },
-    { label: 'Customers', icon: UsersRound, to: null, soon: true },
-    { label: 'Settings', icon: Settings2, to: null, soon: true },
+    { label: 'Overview', icon: LayoutDashboard, to: '/admin/overview', soon: false },
+    { label: 'Services', icon: BriefcaseBusiness, to: '/admin/catalog', soon: false },
+    { label: 'Offers & deals', icon: Tag, to: '/admin/deals', soon: false },
+    { label: 'Customers', icon: UsersRound, to: '/admin/customers', soon: false },
 ] as const;
 
 const formatDateTime = (value: string) => {
@@ -418,7 +414,7 @@ export const AdminDashboardPage: React.FC = () => {
     );
 };
 
-const AdminNavigation: React.FC = () => {
+export const AdminNavigation: React.FC = () => {
     const location = useLocation();
 
     return <>

@@ -18,8 +18,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
     const navigate = useNavigate();
     const { passwordRecovery, clearPasswordRecovery } = useAuth();
     const isHomePage = location.pathname === '/';
-    const appShell = 'mx-auto w-full md:w-[calc(100%-2rem)] max-w-[1500px]';
-    const routeState = (location.state || {}) as { openAuth?: boolean; from?: string };
+    const appShell = 'mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8';
+    const routeState = (location.state || {}) as { openAuth?: boolean; from?: string; authMode?: 'login' | 'signup' };
     const authRequested = Boolean(routeState.openAuth);
     const [isAuthOpen, setIsAuthOpen] = useState(authRequested || passwordRecovery);
 
@@ -36,25 +36,26 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
     return (
         <div dir="ltr" className="min-h-screen flex flex-col bg-white pb-20 md:pb-0">
             {!isHomePage && (
-                <div className={appShell}>
-                    <DesktopPageHeader
-                        searchQuery={mobileSearchQuery}
-                        onSearchChange={setMobileSearchQuery}
-                        onSearchSubmit={(query) => navigate('/', { state: { searchQuery: query } })}
-                        sortBy="popular"
-                        onSortChange={() => undefined}
-                        totalDealsCount={0}
-                        onServiceSelect={(service) => navigate('/', { state: { serviceId: service.id } })}
-                        onCategorySelect={(category) => navigate('/', { state: { selectedCategory: category } })}
-                        onOpenMobileTools={() => navigate('/', { state: { openMobileTools: true } })}
-                    />
-                </div>
+                <DesktopPageHeader
+                    searchQuery={mobileSearchQuery}
+                    onSearchChange={setMobileSearchQuery}
+                    onSearchSubmit={(query) => navigate('/', { state: { searchQuery: query } })}
+                    sortBy="popular"
+                    onSortChange={() => undefined}
+                    totalDealsCount={0}
+                    onServiceSelect={(service) => navigate('/', { state: { serviceId: service.id } })}
+                    onCategorySelect={(category) => navigate('/', { state: { selectedCategory: category } })}
+                />
             )}
 
             <main className="flex-grow pt-0">
-                <div className={appShell}>
-                    {children}
-                </div>
+                {isHomePage ? (
+                    children
+                ) : (
+                    <div className={appShell}>
+                        {children}
+                    </div>
+                )}
             </main>
 
             {!hideFooter && <div className="hidden md:block"><Footer /></div>}
@@ -65,7 +66,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
                 isOpen={isAuthOpen}
                 onClose={closeAuth}
                 destination={routeState.from || location.pathname}
-                initialMode={passwordRecovery ? 'reset' : 'login'}
+                initialMode={passwordRecovery ? 'reset' : (routeState.authMode || 'login')}
             />
         </div>
     );

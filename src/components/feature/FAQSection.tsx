@@ -17,7 +17,7 @@ export const FAQSection: React.FC = () => {
 
     return (
     <section id="faq" className="scroll-mt-20 bg-white py-8 md:py-20">
-            <div className="mx-auto grid w-full max-w-[1500px] grid-cols-1 gap-5 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+            <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-5 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
                 <div className="self-start lg:col-span-4 lg:pt-2">
                     <div className="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-gray-700 md:gap-2 md:px-3 md:py-1 md:text-[11px]">
                         <HelpCircle size={13} className="text-primary-700" />

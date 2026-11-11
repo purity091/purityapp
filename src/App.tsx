@@ -10,6 +10,10 @@ import { HomePage } from './pages/HomePage';
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage').then(({ AdminLoginPage }) => ({ default: AdminLoginPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(({ AdminDashboardPage }) => ({ default: AdminDashboardPage })));
 const AdminAuditLogPage = lazy(() => import('./pages/AdminAuditLogPage').then(({ AdminAuditLogPage }) => ({ default: AdminAuditLogPage })));
+const CatalogAdminPage = lazy(() => import('./pages/CatalogAdminPage').then(({ CatalogAdminPage }) => ({ default: CatalogAdminPage })));
+const AdminOverviewPage = lazy(() => import('./pages/AdminOverviewPage').then(({ AdminOverviewPage }) => ({ default: AdminOverviewPage })));
+const AdminCustomersPage = lazy(() => import('./pages/AdminCustomersPage').then(({ AdminCustomersPage }) => ({ default: AdminCustomersPage })));
+const AdminDealsPage = lazy(() => import('./pages/AdminDealsPage').then(({ AdminDealsPage }) => ({ default: AdminDealsPage })));
 const BookingsPage = lazy(() => import('./pages/BookingsPage').then(({ BookingsPage }) => ({ default: BookingsPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(({ ProfilePage }) => ({ default: ProfilePage })));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(({ NotificationsPage }) => ({ default: NotificationsPage })));
@@ -86,9 +90,10 @@ function App() {
             <Route path="/cookies" element={<Layout><LegalPage kind="cookies" /></Layout>} />
 
             {/* Admin Routes - Desktop optimized but accessible */}
-            <Route path="/admin" element={
-              <AdminLoginPage />
-            } />
+             <Route path="/admin" element={
+               <AdminLoginPage />
+             } />
+            <Route path="/admin/login" element={<Navigate to="/admin" replace />} />
 
             <Route path="/account" element={<Navigate to="/" replace state={{ openAuth: true, from: '/' }} />} />
 
@@ -97,9 +102,29 @@ function App() {
                 <AdminDashboardPage />
               </ProtectedRoute>
             } />
+            <Route path="/admin/overview" element={
+              <ProtectedRoute admin>
+                <AdminOverviewPage />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/audit-log" element={
               <ProtectedRoute admin>
                 <AdminAuditLogPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/catalog" element={
+              <ProtectedRoute admin>
+                <CatalogAdminPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/customers" element={
+              <ProtectedRoute admin>
+                <AdminCustomersPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/deals" element={
+              <ProtectedRoute admin>
+                <AdminDealsPage />
               </ProtectedRoute>
             } />
 

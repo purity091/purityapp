@@ -283,4 +283,7 @@ revoke delete on public.bookings, public.customer_profiles, public.notifications
   public.deals, public.deal_items, public.deal_codes, public.deal_redemptions,
   public.booking_deals from anon, authenticated, service_role;
 
+-- Make the new columns visible immediately to PostgREST clients.
+notify pgrst, 'reload schema';
+
 commit;

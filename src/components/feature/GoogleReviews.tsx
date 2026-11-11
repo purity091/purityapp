@@ -21,7 +21,7 @@ const Stars: React.FC<{ size?: number }> = ({ size = 14 }) => (
 
 export const GoogleReviews: React.FC = () => (
     <section id="reviews" className="scroll-mt-20 bg-white py-8 md:py-20">
-        <div className="mx-auto w-full max-w-[1500px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <div className="mb-6 flex flex-col gap-4 lg:mb-9 lg:gap-5 lg:flex-row lg:items-end lg:justify-between">
                 <div className="max-w-2xl">
                     <div className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-gray-700 md:mb-4 md:gap-2 md:px-3 md:py-1 md:text-[11px]">

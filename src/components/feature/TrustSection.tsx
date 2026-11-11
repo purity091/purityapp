@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 export const TrustSection: React.FC = () => (
     <section className="bg-white py-8 md:py-20">
-        <div className="mx-auto w-full max-w-[1500px] px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 items-stretch gap-5 lg:grid-cols-12 lg:gap-14">
                 <div className="flex flex-col justify-center lg:col-span-7">
                     <motion.div
