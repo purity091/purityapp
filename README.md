@@ -18,7 +18,7 @@ npm run lint
 npm run build
 ```
 
-Copy `.env.example` to a local ignored `.env` file when environment configuration is needed. Never commit real credentials or deployment secrets.
+Copy `.env.example` to `.private/.env` when local environment configuration is needed. The `.private/` folder is ignored by Git and Vite is configured to load environment files from it. Never commit real credentials or deployment secrets.
 
 The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql`, `supabase_soft_delete.sql` and `supabase_catalog_seed.sql`. Apply the first five in that order, then run `supabase_catalog_seed.sql` to import the current Purity services and legacy offers. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled only when `VITE_USE_SUPABASE=true` and the public URL and anonymous key are configured.
 
@@ -61,7 +61,7 @@ Add these environment variables to the Vercel project:
 
 ```text
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SECRET_KEY=your-server-only-secret-key
+SUPABASE_SECRET_KEY=replace-with-your-server-only-secret-key
 CRON_SECRET=your-long-random-cron-secret
 ```
 

@@ -49,6 +49,24 @@ export const normalizePhone = (value: string) => {
 const getAuthErrorMessage = (error: { code?: string; message?: string } | null | undefined, fallback: string) => {
     const code = error?.code?.toLowerCase();
     const message = error?.message?.toLowerCase() || '';
+    if (code === 'signup_disabled' || message.includes('signups not allowed')) {
+        return 'New account registration is currently disabled. Please contact support.';
+    }
+    if (code === 'email_address_invalid' || message.includes('invalid email')) {
+        return 'Please enter a valid email address.';
+    }
+    if (code === 'user_already_exists' || message.includes('already registered') || message.includes('already exists')) {
+        return 'This email is already registered. Sign in or use Forgot password.';
+    }
+    if (code === 'weak_password' || message.includes('password should be')) {
+        return 'Choose a stronger password with at least 6 characters.';
+    }
+    if (code === 'over_email_send_rate_limit' || message.includes('rate limit')) {
+        return 'Too many attempts. Please wait a few minutes and try again.';
+    }
+    if (message.includes('database error saving new user')) {
+        return 'The account database is not configured correctly. Please contact support.';
+    }
     if (code === 'email_not_confirmed' || message.includes('email not confirmed')) {
         return 'Please confirm your email address before signing in.';
     }

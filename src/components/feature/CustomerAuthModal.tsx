@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff, LockKeyhole, Mail, Phone, UserRound } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { normalizePhone, useAuth } from '../../context/AuthContext';
 import { Modal } from '../ui/Modal';
 
 interface CustomerAuthModalProps {
@@ -94,7 +94,7 @@ export const CustomerAuthModal: React.FC<CustomerAuthModalProps> = ({ isOpen, on
             setError('Please enter your mobile number.');
             return;
         }
-        if (mode === 'signup' && !/^(05\d{8}|\+9715\d{8})$/.test(phone.trim().replace(/[\s()-]/g, ''))) {
+        if (mode === 'signup' && !/^\+9715\d{8}$/.test(normalizePhone(phone))) {
             setError('Please enter a valid UAE mobile number, for example 05XXXXXXXX.');
             return;
         }
