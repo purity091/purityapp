@@ -610,14 +610,14 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
 
                         {/* ── ACCOUNT PILL & SIGN IN DROPDOWN ── */}
                         <div className="relative">
-                            {user?.role === 'customer' ? (
+                            {user ? (
                                 <>
                                     <button
                                         type="button"
                                         onClick={() => setOpenDropdown(openDropdown === 'account' ? null : 'account')}
                                         aria-haspopup="menu"
                                         aria-expanded={openDropdown === 'account'}
-                                        aria-label="My Account"
+                                        aria-label={user.role === 'admin' ? 'Admin account' : t('account')}
                                         className={`inline-flex h-10 items-center gap-2 rounded-full border px-3 text-xs font-bold transition-all shadow-2xs ${
                                             openDropdown === 'account'
                                                 ? 'border-primary-600 bg-primary-50 text-primary-950 ring-2 ring-primary-500/20'
@@ -627,7 +627,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-700 text-[11px] font-black text-white uppercase shadow-2xs">
                                             {user.fullName ? user.fullName.trim()[0] : (user.email ? user.email[0].toUpperCase() : 'U')}
                                         </div>
-                                        <span className="max-w-[100px] truncate">{user.fullName?.split(' ')[0] || 'My Account'}</span>
+                                        <span className="max-w-[100px] truncate">{user.role === 'admin' ? 'Admin' : user.fullName?.split(' ')[0] || t('account')}</span>
                                         <ChevronDown size={12} strokeWidth={2.5} className={`text-slate-400 transition-transform duration-200 ${openDropdown === 'account' ? 'rotate-180' : ''}`} />
                                     </button>
                                     <AnimatePresence>
@@ -644,18 +644,29 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                             {user.fullName ? user.fullName.trim()[0] : (user.email ? user.email[0].toUpperCase() : 'U')}
                                                         </div>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="truncate text-sm font-bold text-slate-950">{user.fullName || 'Valued Customer'}</p>
-                                                            <p className="truncate text-xs text-slate-500">{user.email || user.phone || 'Customer Account'}</p>
+                                                            <p className="truncate text-sm font-bold text-slate-950">{user.role === 'admin' ? 'Administrator' : user.fullName || 'Valued Customer'}</p>
+                                                            <p className="truncate text-xs text-slate-500">{user.email || user.phone || (user.role === 'admin' ? 'Admin Account' : 'Customer Account')}</p>
                                                         </div>
                                                     </div>
                                                     <div className="mt-2.5 flex items-center justify-between border-t border-slate-200/60 pt-2 text-[11px]">
                                                         <span className="inline-flex items-center gap-1 font-bold text-emerald-700">
-                                                            <CheckCircle2 size={12} /> Active Account
+                                                            <CheckCircle2 size={12} /> {user.role === 'admin' ? 'Admin access' : 'Active Account'}
                                                         </span>
-                                                        <span className="font-semibold text-slate-400">Purity Member</span>
+                                                        <span className="font-semibold text-slate-400">{user.role === 'admin' ? 'Purity Admin' : 'Purity Member'}</span>
                                                     </div>
                                                 </div>
                                                 <div className="p-2 space-y-0.5">
+                                                    {user.role === 'admin' ? (
+                                                        <>
+                                                            <Link to="/admin/dashboard" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
+                                                                <ShieldCheck size={16} className="text-primary-600" /> Admin dashboard
+                                                            </Link>
+                                                            <Link to="/admin/overview" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
+                                                                <Grid3X3 size={16} className="text-primary-600" /> Admin overview
+                                                            </Link>
+                                                        </>
+                                                    ) : (
+                                                        <>
                                                     <Link to="/dashboard" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
                                                         <Grid3X3 size={16} className="text-primary-600" /> {t('customerDashboard')}
                                                     </Link>
@@ -685,6 +696,8 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                     <Link to="/faq" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
                                                         <CircleHelp size={16} className="text-slate-500" /> {t('helpFaqs')}
                                                     </Link>
+                                                        </>
+                                                    )}
                                                 </div>
                                                 <div className="border-t border-slate-100 p-2">
                                                     <button
