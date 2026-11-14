@@ -12,6 +12,7 @@ import { useCatalog } from '../context/CatalogContext';
 import { Service, CATEGORIES } from '../types';
 import { SearchX, Sparkles, Grid3X3, SlidersHorizontal, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLanguage } from '../context/LanguageContext';
 
 interface HomeNavigationState {
     searchQuery?: string;
@@ -26,6 +27,7 @@ export const HomePage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { services } = useCatalog();
+    const { t } = useLanguage();
     const navigationState = (location.state || {}) as HomeNavigationState;
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -33,6 +35,7 @@ export const HomePage: React.FC = () => {
     const [sortBy, setSortBy] = useState<SortOption>('popular');
     const [priceRange, setPriceRange] = useState<PriceRange>('all');
     const [isMobileToolsOpen, setIsMobileToolsOpen] = useState(false);
+    const categoryLabels = useMemo(() => Object.fromEntries(CATEGORIES.map(category => [category, services.find(service => service.categoryKey === category)?.category || category])), [services]);
 
     useEffect(() => {
         const state = (location.state || {}) as HomeNavigationState;
@@ -72,7 +75,7 @@ export const HomePage: React.FC = () => {
         }
 
         if (selectedCategory !== 'All') {
-            result = result.filter(s => s.category === selectedCategory);
+            result = result.filter(s => (s.categoryKey || s.category) === selectedCategory);
         }
 
         if (priceRange === 'under-150') {
@@ -86,7 +89,13 @@ export const HomePage: React.FC = () => {
         if (sortBy === 'price') {
             result.sort((a, b) => a.price - b.price);
         } else if (sortBy === 'rating') {
-            result.sort((a, b) => b.rating - a.rating);
+            result.sort((a, b) => {
+                const aReviews = a.reviewCount || 0;
+                const bReviews = b.reviewCount || 0;
+                if ((bReviews > 0 ? 1 : 0) !== (aReviews > 0 ? 1 : 0)) return (bReviews > 0 ? 1 : 0) - (aReviews > 0 ? 1 : 0);
+                if (bReviews === 0 && aReviews === 0) return 0;
+                return b.rating - a.rating || bReviews - aReviews;
+            });
         } else {
             result.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0));
         }
@@ -97,8 +106,9 @@ export const HomePage: React.FC = () => {
     const servicesByCategory = useMemo(() => {
         const grouped: Record<string, Service[]> = {};
         for (const s of filteredServices) {
-            if (!grouped[s.category]) grouped[s.category] = [];
-            grouped[s.category].push(s);
+            const categoryKey = s.categoryKey || s.category;
+            if (!grouped[categoryKey]) grouped[categoryKey] = [];
+            grouped[categoryKey].push(s);
         }
         return grouped;
     }, [filteredServices]);
@@ -136,6 +146,7 @@ export const HomePage: React.FC = () => {
                     setPriceRange('all');
                     setSortBy('popular');
                 }}
+                categoryLabels={categoryLabels}
             />
 
             {/* Fast, visible controls for filtering and sorting the catalogue */}
@@ -156,6 +167,7 @@ export const HomePage: React.FC = () => {
                         setPriceRange('all');
                         setSortBy('popular');
                     }}
+                    categoryLabels={categoryLabels}
                 />
             </div>
 
@@ -175,6 +187,7 @@ export const HomePage: React.FC = () => {
                     setPriceRange('all');
                     setSortBy('popular');
                 }}
+                categoryLabels={categoryLabels}
             />
 
             {/* Catalogue content follows the unified page header */}
@@ -190,12 +203,12 @@ export const HomePage: React.FC = () => {
                     {isSearching && (
                         <div className="mb-6 pt-4">
                             <p className="text-xs font-bold text-gray-400 uppercase mb-1">
-                                Search Results
+                                {t('search')}
                             </p>
                             <h2 className="text-xl font-extrabold text-gray-900">
                                 {hasResults
-                                    ? `${filteredServices.length} result${filteredServices.length !== 1 ? 's' : ''} for "${searchQuery}"`
-                                    : `No results for "${searchQuery}"`
+                                    ? `${filteredServices.length} ${t('resultsFor')} "${searchQuery}"`
+                                    : `${t('noResultsFor')} "${searchQuery}"`
                                 }
                             </h2>
                         </div>
@@ -208,9 +221,9 @@ export const HomePage: React.FC = () => {
                                 <SearchX size={36} className="text-gray-400" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-extrabold text-gray-900">No services found</h3>
+                                <h3 className="text-xl font-extrabold text-gray-900">{t('noServices')}</h3>
                                 <p className="text-sm text-gray-500 mt-1 max-w-xs">
-                                    Try a different search term or browse all categories.
+                                    {t('noServices')} — {t('browseAllServices')}.
                                 </p>
                             </div>
                             <button
@@ -218,7 +231,7 @@ export const HomePage: React.FC = () => {
                                 className="bg-primary-600 text-white text-sm font-bold px-6 py-3 rounded-full flex items-center gap-2 hover:bg-primary-700 transition-colors shadow-sm"
                             >
                                 <Sparkles size={16} />
-                                Browse All Services
+                                {t('browseAllServices')}
                             </button>
                         </div>
                     ) : (
@@ -227,7 +240,7 @@ export const HomePage: React.FC = () => {
                                 Object.entries(servicesByCategory).map(([category, catServices]) => (
                                     <div id={`cat-${category}`} key={category}>
                                         <DiscoveryGrid
-                                            title={category}
+                                            title={catServices[0]?.category || category}
                                             services={catServices}
                                             onSelect={setSelectedService}
                                         />
@@ -241,7 +254,7 @@ export const HomePage: React.FC = () => {
                                     return (
                                         <div id={`cat-${category}`} key={category}>
                                             <DiscoveryGrid
-                                                title={category}
+                                            title={catServices[0]?.category || category}
                                                 services={catServices}
                                                 onSelect={setSelectedService}
                                             />
@@ -278,31 +291,34 @@ export const HomePage: React.FC = () => {
     );
 };
 
-const MobileInfoNavigation: React.FC = () => (
-    <section className="px-4 py-6" aria-label="More about Purity">
-        <p className="mb-3 text-[10px] font-black uppercase text-gray-500">More about Purity</p>
+const MobileInfoNavigation: React.FC = () => {
+    const { t } = useLanguage();
+    return (
+    <section className="px-4 py-6" aria-label={t('moreAbout')}>
+        <p className="mb-3 text-[10px] font-black uppercase text-gray-500">{t('moreAbout')}</p>
         <div className="grid grid-cols-3 gap-2">
             <Link to="/about" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
-                <span className="block truncate text-[11px] font-extrabold text-gray-900">Why Purity</span>
-                <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">Our standards</span>
+                <span className="block truncate text-[11px] font-extrabold text-gray-900">{t('whyPurity')}</span>
+                <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">{t('standards')}</span>
             </Link>
-            <Link to="/faq" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
-                <span className="block truncate text-[11px] font-extrabold text-gray-900">FAQ</span>
-                <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">Before booking</span>
+                <Link to="/faq" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
+                    <span className="block truncate text-[11px] font-extrabold text-gray-900">{t('helpFaqs')}</span>
+                <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">{t('beforeBooking')}</span>
             </Link>
             <Link to="/reviews" className="min-w-0 rounded-xl bg-gray-50 px-2 py-2.5 text-center shadow-sm">
-                <span className="block truncate text-[11px] font-extrabold text-gray-900">Reviews</span>
-                <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">Customer stories</span>
+                <span className="block truncate text-[11px] font-extrabold text-gray-900">{t('reviews')}</span>
+                <span className="mt-0.5 block text-[9px] font-semibold text-gray-500">{t('customerStories')}</span>
             </Link>
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2">
-            <Link to="/terms" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Terms of use</Link>
-            <Link to="/privacy" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Privacy policy</Link>
-            <Link to="/consumer-rights" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Consumer rights</Link>
-            <Link to="/cookies" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">Cookies</Link>
+            <Link to="/terms" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">{t('terms')}</Link>
+            <Link to="/privacy" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">{t('privacy')}</Link>
+            <Link to="/consumer-rights" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">{t('consumerRights')}</Link>
+            <Link to="/cookies" className="rounded-xl bg-gray-50 px-2 py-2.5 text-center text-[11px] font-extrabold text-gray-700 shadow-sm">{t('cookies')}</Link>
         </div>
     </section>
-);
+    );
+};
 
 interface MobileBrowseControlsProps {
     searchQuery: string;
@@ -314,6 +330,7 @@ interface MobileBrowseControlsProps {
     onSortChange: (sort: SortOption) => void;
     onClearAll: () => void;
     onOpenDrawer?: () => void;
+    categoryLabels: Record<string, string>;
 }
 
 const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
@@ -326,12 +343,14 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
     onSortChange,
     onClearAll,
     onOpenDrawer,
+    categoryLabels,
 }) => {
+    const { t } = useLanguage();
     const hasActiveFilters = Boolean(searchQuery.trim()) || selectedCategory !== 'All' || priceRange !== 'all' || sortBy !== 'popular';
     const activeFilterCount = (selectedCategory !== 'All' ? 1 : 0) + (priceRange !== 'all' ? 1 : 0) + (sortBy !== 'popular' ? 1 : 0);
 
     return (
-        <div className="md:hidden bg-white border-b border-slate-100" aria-label="Mobile service categories and filters">
+        <div className="md:hidden bg-white border-b border-slate-100" aria-label={`${t('services')} & ${t('filters')}`}>
             {/* Horizontal Scrollable Category & Filter Pill Bar */}
             <div className="flex items-center gap-1.5 overflow-x-auto px-3 py-2.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {/* 1. Filter Drawer Trigger Chip */}
@@ -345,7 +364,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
                     }`}
                 >
                     <SlidersHorizontal size={12} className={activeFilterCount > 0 ? 'text-primary-700' : 'text-slate-600'} />
-                    <span>Filters</span>
+                    <span>{t('filters')}</span>
                     {activeFilterCount > 0 && (
                         <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary-700 text-[10px] font-black text-white px-1 leading-none">
                             {activeFilterCount}
@@ -365,7 +384,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
                             : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                 >
-                    All Services
+                    {t('allServices')}
                 </button>
 
                 {/* 3. Category Pills */}
@@ -382,7 +401,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
                                     : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
                             }`}
                         >
-                            {cat}
+                            {categoryLabels[cat] || cat}
                         </button>
                     );
                 })}
@@ -397,7 +416,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
                             : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                 >
-                    Under AED 150
+                    {t('underAed150')}
                 </button>
 
                 {/* 5. Quick Sort: Top Rated */}
@@ -410,7 +429,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
                             : 'border border-slate-200/90 bg-white text-slate-700 hover:bg-slate-50'
                     }`}
                 >
-                    Top Rated ★
+                    {t('topRated')} ★
                 </button>
 
                 {/* 6. Clear All chip if any filter is active */}
@@ -420,7 +439,7 @@ const MobileBrowseControls: React.FC<MobileBrowseControlsProps> = ({
                         onClick={onClearAll}
                         className="flex h-8 shrink-0 items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2.5 text-xs font-bold text-red-700 transition active:scale-95"
                     >
-                        <span>Reset</span>
+                        <span>{t('reset')}</span>
                         <X size={12} strokeWidth={2.5} />
                     </button>
                 )}
@@ -440,6 +459,7 @@ interface MobileToolsDrawerProps {
     onPriceRangeChange: (range: PriceRange) => void;
     onSortChange: (sort: SortOption) => void;
     onClearAll: () => void;
+    categoryLabels: Record<string, string>;
 }
 
 const MobileToolsDrawer: React.FC<MobileToolsDrawerProps> = ({
@@ -453,15 +473,17 @@ const MobileToolsDrawer: React.FC<MobileToolsDrawerProps> = ({
     onPriceRangeChange,
     onSortChange,
     onClearAll,
+    categoryLabels,
 }) => {
+    const { t } = useLanguage();
     if (!isOpen) return null;
 
     const selectClass = 'mt-1 block h-9 w-full rounded-lg border border-gray-300 bg-gray-50 px-2.5 text-xs font-bold text-gray-900 outline-none focus:border-primary-600 focus:ring-2 focus:ring-primary-500/15';
     const priceOptions: Array<{ value: PriceRange; label: string }> = [
-        { value: 'all', label: 'Any price' },
-        { value: 'under-150', label: 'Under AED 150' },
-        { value: '150-300', label: 'AED 150 - 300' },
-        { value: 'over-300', label: 'AED 300+' },
+        { value: 'all', label: t('anyPrice') },
+        { value: 'under-150', label: t('underAed150') },
+        { value: '150-300', label: t('aed150to300') },
+        { value: 'over-300', label: t('overAed300') },
     ];
 
     const chooseCategory = (category: string) => {
@@ -474,15 +496,15 @@ const MobileToolsDrawer: React.FC<MobileToolsDrawerProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-[70] md:hidden" role="dialog" aria-modal="true" aria-label="Services and filters">
-            <button type="button" aria-label="Close services and filters" className="absolute inset-0 bg-black/35" onClick={onClose} />
+        <div className="fixed inset-0 z-[70] md:hidden" role="dialog" aria-modal="true" aria-label={`${t('services')} & ${t('filters')}`}>
+            <button type="button" aria-label={t('close')} className="absolute inset-0 bg-black/35" onClick={onClose} />
             <aside className="absolute right-0 top-0 flex h-full w-[min(88vw,22rem)] flex-col bg-white shadow-2xl">
                 <div className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-3">
                     <div className="flex items-center gap-2">
                         <SlidersHorizontal size={16} className="text-primary-700" />
-                        <h2 className="text-sm font-black text-gray-900">Services & Filters</h2>
+                        <h2 className="text-sm font-black text-gray-900">{t('services')} &amp; {t('filters')}</h2>
                     </div>
-                    <button type="button" onClick={onClose} aria-label="Close" className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    <button type="button" onClick={onClose} aria-label={t('close')} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200">
                         <X size={16} />
                     </button>
                 </div>
@@ -490,30 +512,30 @@ const MobileToolsDrawer: React.FC<MobileToolsDrawerProps> = ({
                 <div className="flex-1 overflow-y-auto px-3 py-3 pb-6">
                     <section>
                         <div className="mb-2 flex items-center justify-between">
-                            <h3 className="flex items-center gap-1.5 text-xs font-black text-gray-900"><Grid3X3 size={14} className="text-primary-700" /> Browse services</h3>
-                            <span className="text-[10px] font-bold text-gray-500">{totalResults} available</span>
+                            <h3 className="flex items-center gap-1.5 text-xs font-black text-gray-900"><Grid3X3 size={14} className="text-primary-700" /> {t('services')}</h3>
+                            <span className="text-[10px] font-bold text-gray-500">{totalResults} {t('available')}</span>
                         </div>
                         <div className="grid grid-cols-2 gap-1.5">
-                            <button type="button" onClick={() => chooseCategory('All')} className={`rounded-lg border px-2 py-2 text-left text-[11px] font-bold ${selectedCategory === 'All' ? 'border-primary-600 bg-primary-50 text-primary-900' : 'border-gray-200 bg-gray-50 text-gray-800'}`}>All services</button>
+                            <button type="button" onClick={() => chooseCategory('All')} className={`rounded-lg border px-2 py-2 text-left text-[11px] font-bold ${selectedCategory === 'All' ? 'border-primary-600 bg-primary-50 text-primary-900' : 'border-gray-200 bg-gray-50 text-gray-800'}`}>{t('allServices')}</button>
                             {CATEGORIES.map(category => (
-                                <button type="button" key={category} onClick={() => chooseCategory(category)} className={`truncate rounded-lg border px-2 py-2 text-left text-[11px] font-bold ${selectedCategory === category ? 'border-primary-600 bg-primary-50 text-primary-900' : 'border-gray-200 bg-gray-50 text-gray-800'}`}>{category}</button>
+                                <button type="button" key={category} onClick={() => chooseCategory(category)} className={`truncate rounded-lg border px-2 py-2 text-left text-[11px] font-bold ${selectedCategory === category ? 'border-primary-600 bg-primary-50 text-primary-900' : 'border-gray-200 bg-gray-50 text-gray-800'}`}>{categoryLabels[category] || category}</button>
                             ))}
                         </div>
                     </section>
 
                     <section className="mt-4 border-t border-gray-200 pt-3">
-                        <h3 className="mb-2 text-xs font-black text-gray-900">Refine results</h3>
+                        <h3 className="mb-2 text-xs font-black text-gray-900">{t('filters')}</h3>
                         <div className="space-y-2.5">
-                            <label className="block text-[10px] font-bold text-gray-600">Category<select aria-label="Filter by category" value={selectedCategory} onChange={(event) => onCategoryChange(event.target.value)} className={selectClass}><option value="All">All categories</option>{CATEGORIES.map(category => <option key={category} value={category}>{category}</option>)}</select></label>
-                            <label className="block text-[10px] font-bold text-gray-600">Price<select aria-label="Filter by price" value={priceRange} onChange={(event) => onPriceRangeChange(event.target.value as PriceRange)} className={selectClass}>{priceOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-                            <label className="block text-[10px] font-bold text-gray-600">Sort<select aria-label="Sort services" value={sortBy} onChange={(event) => onSortChange(event.target.value as SortOption)} className={selectClass}><option value="popular">Most popular</option><option value="price">Lowest price</option><option value="rating">Top rated</option></select></label>
+                            <label className="block text-[10px] font-bold text-gray-600">{t('categories')}<select aria-label={t('categories')} value={selectedCategory} onChange={(event) => onCategoryChange(event.target.value)} className={selectClass}><option value="All">{t('allCategories')}</option>{CATEGORIES.map(category => <option key={category} value={category}>{category}</option>)}</select></label>
+                            <label className="block text-[10px] font-bold text-gray-600">{t('anyPrice')}<select aria-label={t('anyPrice')} value={priceRange} onChange={(event) => onPriceRangeChange(event.target.value as PriceRange)} className={selectClass}>{priceOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+                            <label className="block text-[10px] font-bold text-gray-600">{t('sortBy')}<select aria-label={t('sortBy')} value={sortBy} onChange={(event) => onSortChange(event.target.value as SortOption)} className={selectClass}><option value="popular">{t('mostPopular')}</option><option value="price">{t('lowestPrice')}</option><option value="rating">{t('topRated')}</option></select></label>
                         </div>
                     </section>
                 </div>
 
                 <div className="flex shrink-0 gap-2 border-t border-gray-200 p-3">
-                    <button type="button" onClick={onClearAll} className="h-9 flex-1 rounded-lg border border-gray-300 text-xs font-bold text-gray-800 hover:bg-gray-50">Clear all</button>
-                    <button type="button" onClick={onClose} className="h-9 flex-1 rounded-lg bg-primary-700 text-xs font-bold text-white hover:bg-primary-800">Show results</button>
+                    <button type="button" onClick={onClearAll} className="h-9 flex-1 rounded-lg border border-gray-300 text-xs font-bold text-gray-800 hover:bg-gray-50">{t('clearAll')}</button>
+                    <button type="button" onClick={onClose} className="h-9 flex-1 rounded-lg bg-primary-700 text-xs font-bold text-white hover:bg-primary-800">{t('search')}</button>
                 </div>
             </aside>
         </div>

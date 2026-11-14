@@ -2,13 +2,19 @@ export type BookingStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
 
 export interface Service {
     id: string;
+    /** Stable database slug; business rules must use this instead of localized name. */
+    slug?: string;
     name: string;
     description: string;
     price: number;
     originalPrice?: number;
     image: string;
     category: string;
+    /** Stable English/category key used for filtering; category is localized for display. */
+    categoryKey?: string;
     rating: number;
+    /** Number of published, verified reviews behind the rating. */
+    reviewCount?: number;
     offerTag?: string;
     isPopular?: boolean;
     soldCount?: number;

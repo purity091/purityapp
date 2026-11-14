@@ -5,8 +5,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { CatalogProvider } from './context/CatalogContext';
 import { Layout } from './components/layout/Layout';
-import { HomePage } from './pages/HomePage';
+import { LanguageProvider } from './context/LanguageContext';
 
+const HomePage = lazy(() => import('./pages/HomePage').then(({ HomePage }) => ({ default: HomePage })));
 const AdminLoginPage = lazy(() => import('./pages/AdminLoginPage').then(({ AdminLoginPage }) => ({ default: AdminLoginPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then(({ AdminDashboardPage }) => ({ default: AdminDashboardPage })));
 const AdminAuditLogPage = lazy(() => import('./pages/AdminAuditLogPage').then(({ AdminAuditLogPage }) => ({ default: AdminAuditLogPage })));
@@ -14,6 +15,7 @@ const CatalogAdminPage = lazy(() => import('./pages/CatalogAdminPage').then(({ C
 const AdminOverviewPage = lazy(() => import('./pages/AdminOverviewPage').then(({ AdminOverviewPage }) => ({ default: AdminOverviewPage })));
 const AdminCustomersPage = lazy(() => import('./pages/AdminCustomersPage').then(({ AdminCustomersPage }) => ({ default: AdminCustomersPage })));
 const AdminDealsPage = lazy(() => import('./pages/AdminDealsPage').then(({ AdminDealsPage }) => ({ default: AdminDealsPage })));
+const AdminTranslationsPage = lazy(() => import('./pages/AdminTranslationsPage').then(({ AdminTranslationsPage }) => ({ default: AdminTranslationsPage })));
 const BookingsPage = lazy(() => import('./pages/BookingsPage').then(({ BookingsPage }) => ({ default: BookingsPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(({ ProfilePage }) => ({ default: ProfilePage })));
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage').then(({ NotificationsPage }) => ({ default: NotificationsPage })));
@@ -42,10 +44,11 @@ const PageLoader = () => (
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <WishlistProvider>
-          <CatalogProvider>
-            <BookingProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <WishlistProvider>
+            <CatalogProvider>
+              <BookingProvider>
             <Suspense fallback={<PageLoader />}>
               <Routes>
             {/* Public Routes with Mobile Layout */}
@@ -127,15 +130,21 @@ function App() {
                 <AdminDealsPage />
               </ProtectedRoute>
             } />
+            <Route path="/admin/translations" element={
+              <ProtectedRoute admin>
+                <AdminTranslationsPage />
+              </ProtectedRoute>
+            } />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </Suspense>
-            </BookingProvider>
-          </CatalogProvider>
-        </WishlistProvider>
-      </AuthProvider>
+              </BookingProvider>
+            </CatalogProvider>
+          </WishlistProvider>
+        </AuthProvider>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

@@ -94,22 +94,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!isSupabaseConfigured()) return;
 
         let mounted = true;
+        let authEventVersion = 0;
+
+        const applySession = (session: { user?: SupabaseUser | null } | null) => {
+            setUser(session?.user ? toAppUser(session.user) : null);
+        };
+
+        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+            if (!mounted) return;
+            authEventVersion += 1;
+            if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
+            if (event === 'SIGNED_OUT') setPasswordRecovery(false);
+            applySession(session);
+            setAuthReady(true);
+        });
+
         supabase.auth.getSession().then(({ data }) => {
             if (mounted) {
-                setUser(data.session?.user ? toAppUser(data.session.user) : null);
+                // Do not overwrite a newer SIGNED_IN/SIGNED_OUT event with a
+                // stale result from the initial session read.
+                if (authEventVersion === 0) applySession(data.session);
                 setAuthReady(true);
             }
         }).catch(() => {
             if (mounted) {
-                setUser(null);
+                if (authEventVersion === 0) setUser(null);
                 setAuthReady(true);
             }
-        });
-
-        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-            if (!mounted) return;
-            if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true);
-            setUser(session?.user ? toAppUser(session.user) : null);
         });
 
         return () => {
@@ -222,9 +233,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const logout = async () => {
-        if (isSupabaseConfigured()) await supabase.auth.signOut();
-        setPasswordRecovery(false);
-        setUser(null);
+        try {
+            if (isSupabaseConfigured()) await supabase.auth.signOut();
+        } catch (error) {
+            console.error('Could not complete remote sign out:', error);
+        } finally {
+            setPasswordRecovery(false);
+            setUser(null);
+        }
     };
 
     const clearPasswordRecovery = () => setPasswordRecovery(false);

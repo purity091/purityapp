@@ -20,13 +20,13 @@ npm run build
 
 Copy `.env.example` to `.private/.env` when local environment configuration is needed. The `.private/` folder is ignored by Git and Vite is configured to load environment files from it. Never commit real credentials or deployment secrets.
 
-The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql`, `supabase_soft_delete.sql` and `supabase_catalog_seed.sql`. Apply the first five in that order, then run `supabase_catalog_seed.sql` to import the current Purity services and legacy offers. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. Supabase mode is enabled when the public URL and anonymous key are configured; set `VITE_USE_SUPABASE=false` only for a deliberate frontend-only build.
+The Supabase schemas are in `supabase_bookings.sql`, `supabase_wishlist.sql`, `supabase_catalog.sql`, `supabase_api.sql`, `supabase_soft_delete.sql`, `supabase_catalog_seed.sql`, `supabase_multilingual_catalog.sql`, `supabase_catalog_translations_fr_seed.sql`, `supabase_catalog_translations_hi_seed.sql` and `supabase_reviews.sql`. Apply the first five schema files in that order, run `supabase_catalog_seed.sql` to import the current Purity services and legacy offers, then run `supabase_multilingual_catalog.sql` so English is backfilled for the imported records. Finally run the French and Hindi seed files when those languages are required, followed by `supabase_reviews.sql`. Both language seed files are idempotent and match records by stable `slug`; they never create duplicate services or offers and never delete data. `supabase_soft_delete.sql` is mandatory: it adds `deleted_at`, blocks hard deletes, and provides soft-delete RPCs. `supabase_multilingual_catalog.sql` adds translation tables for services, packages, categories and offers. `supabase_reviews.sql` removes legacy rating aggregates, permits one review only for the authenticated owner of a completed booking, calculates averages in PostgreSQL, and archives reviews with soft delete. Supabase mode is enabled when the public URL and anonymous key are configured; set `VITE_USE_SUPABASE=false` only for a deliberate frontend-only build.
 
 If an existing Supabase project reports `column ... deleted_at does not exist`, run `supabase_soft_delete_hotfix.sql` once in the Supabase SQL Editor, then run the complete `supabase_soft_delete.sql` file. The hotfix is repeatable and only adds missing columns/indexes; it does not delete or overwrite data.
 
 ## Customer accounts and PWA
 
-Customer accounts use Supabase Auth with a required email, UAE mobile number, and password. The email is used for sign-in and password recovery; the mobile number is stored only for service communication. Run all five SQL migrations in the Supabase SQL Editor, then configure these Vite variables in the production environment:
+Customer accounts use Supabase Auth with a required email, UAE mobile number, and password. The email is used for sign-in and password recovery; the mobile number is stored only for service communication. Run the five schema migrations, catalog seed, multilingual catalog migration, and the optional language seeds in the Supabase SQL Editor, then configure these Vite variables in the production environment:
 
 ```bash
 VITE_USE_SUPABASE=true
@@ -41,11 +41,17 @@ The admin bookings screen uses server-side filtering, exact counts, and 25-row p
 
 For the existing admin dashboard, create an admin user in Supabase Auth and set `raw_app_meta_data.role` to `admin` using a privileged SQL session. The frontend never receives a service key.
 
-Admin routes are `/admin` (login), `/admin/overview`, `/admin/dashboard` (bookings), `/admin/catalog` (services and packages), `/admin/deals` (offers), `/admin/customers`, and `/admin/audit-log`. Every protected route requires a Supabase Auth session whose `app_metadata.role` is `admin`.
+Admin routes are `/admin` (login), `/admin/overview`, `/admin/dashboard` (bookings), `/admin/catalog` (services and packages), `/admin/deals` (offers), `/admin/translations` (localized catalog content), `/admin/customers`, and `/admin/audit-log`. Every protected route requires a Supabase Auth session whose `app_metadata.role` is `admin`.
 
 The scalable catalog schema is in `supabase_catalog.sql`. It supports hierarchical categories, services, packages, service variants, multiple media assets, service areas, time-bound deals, bundle contents, coupon codes, inventory, per-customer limits, atomic redemptions, and historical booking price snapshots. Supabase is the only source for application data; the UI does not fall back to a local catalog when the database is unavailable.
 
 All application tables use `deleted_at` for retention. The frontend never performs a hard delete. Booking archive uses an update, wishlist archive uses `set_wishlist_item`, and the database trigger rejects direct `DELETE` statements on application tables.
+
+## Multilingual catalog
+
+The storefront detects `fr` and `hi` from the browser, allows manual selection, and keeps the choice in local storage. All languages remain LTR for now; English is the fallback. Catalog content is stored in `catalog_item_translations`, `deal_translations`, and `catalog_category_translations`. IDs, prices, images, availability, bookings and historical snapshots are shared; only customer-facing text is localized. The admin translation screen writes the selected language without creating duplicate services or offers.
+
+The mobile app should request the base catalog and translation rows for the selected language plus `en`, then prefer the selected language and fall back to English. The same rule is used by the web storefront, so both clients read one Supabase database and display the same published records.
 
 ## Postman collection for mobile development
 

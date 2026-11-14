@@ -18,6 +18,8 @@ import { AppDownloadButton } from './AppDownloadButton';
 import { getPriceUnitLabel } from '../../lib/pricing';
 import { NotificationPopover } from './NotificationPopover';
 import { useWishlist } from '../../context/WishlistContext';
+import { useLanguage } from '../../context/LanguageContext';
+import { LanguageSwitcher } from '../ui/LanguageSwitcher';
 
 const getCategoryIcon = (cat: string) => {
     switch (cat) {
@@ -42,7 +44,7 @@ interface DesktopPageHeaderProps {
     onCategorySelect: (cat: string) => void;
 }
 
-const formatServicePrice = (service: Service) => `${service.price} AED · ${getPriceUnitLabel(service)}`;
+const formatServicePrice = (service: Service, language: Parameters<typeof getPriceUnitLabel>[1]) => `${service.price} AED · ${getPriceUnitLabel(service, language)}`;
 
 export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
     searchQuery,
@@ -60,6 +62,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
     const { wishlistIds, toggleWishlist } = useWishlist();
     const { bookings, notifications, notificationsLoading, unreadNotificationCount, markNotificationRead, markAllNotificationsRead } = useBookings();
     const { services, packages } = useCatalog();
+    const { language, t } = useLanguage();
     const wishlistCatalog = [...services, ...packages];
 
     const savedBookings = bookings;
@@ -83,7 +86,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
     }, []);
 
     const servicesByCategory = CATEGORIES.reduce((acc, cat) => {
-        acc[cat] = services.filter(s => s.category === cat);
+        acc[cat] = services.filter(s => (s.categoryKey || s.category) === cat);
         return acc;
     }, {} as Record<string, typeof services>);
 
@@ -148,19 +151,20 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                         <img src="/logo.png" alt="Purity" width={32} height={32} className="h-8 w-8 rounded-lg object-contain shadow-2xs" />
                         <div className="flex flex-col">
                             <span className="font-black text-base tracking-tight text-slate-950 leading-none">Purity</span>
-                            <span className="text-[9px] font-semibold text-slate-400 leading-none mt-0.5">Services</span>
+                            <span className="text-[9px] font-semibold text-slate-400 leading-none mt-0.5">{t('services')}</span>
                         </div>
                     </Link>
 
                     {/* Uncluttered Essential Mobile Actions: Location + Search + Notifications */}
                     <div className="flex items-center gap-2">
                         <CitySelector dense />
+                        <LanguageSwitcher compact />
 
                         {/* Search toggle */}
                         <button
                             type="button"
                             onClick={() => { setIsMobileSearchOpen(v => !v); setOpenDropdown(null); }}
-                            aria-label="Search services"
+                            aria-label={t('services')}
                             aria-expanded={isMobileSearchOpen}
                             className={`flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-95 ${
                                 isMobileSearchOpen
@@ -175,7 +179,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                         <button
                             type="button"
                             onClick={toggleNotifications}
-                            aria-label="Notifications"
+                            aria-label={t('notifications')}
                             aria-expanded={openDropdown === 'notifications'}
                             className={`relative flex h-8 w-8 items-center justify-center rounded-full border transition-all active:scale-95 ${
                                 openDropdown === 'notifications'
@@ -203,7 +207,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 value={searchQuery}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') onSearchSubmit?.(searchQuery); }}
-                                placeholder="Search cleaning, sofa, deep clean..."
+                                placeholder={t('searchPlaceholder')}
                                 className="h-9 w-full rounded-full border border-slate-200 bg-white pl-9 pr-8 text-xs font-medium text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                                 autoFocus
                             />
@@ -211,7 +215,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => onSearchChange('')}
-                                    aria-label="Clear search"
+                                    aria-label={t('clearAll')}
                                     className="absolute right-2.5 top-1/2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded-full bg-slate-200 text-[10px] font-bold text-slate-600 hover:bg-slate-300"
                                 >
                                     ×
@@ -240,7 +244,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                             <img src="/logo.png" alt="Purity" width={38} height={38} className="h-9 w-9 rounded-xl object-contain shadow-2xs transition duration-200 group-hover:scale-105" />
                             <div className="flex flex-col">
                                 <span className="font-black text-lg tracking-tight text-slate-950 leading-none">Purity</span>
-                                <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase leading-none mt-1">Services</span>
+                                <span className="text-[10px] font-semibold text-slate-400 tracking-wider uppercase leading-none mt-1">{t('services')}</span>
                             </div>
                         </Link>
                         <CitySelector dense />
@@ -261,15 +265,15 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 value={searchQuery}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') onSearchSubmit?.(searchQuery); }}
-                                placeholder="Search cleaning, sofa, deep clean, maid..."
-                                aria-label="Search services"
+                                placeholder={t('searchPlaceholder')}
+                                aria-label={t('services')}
                                 className="h-full min-w-0 flex-1 bg-transparent pr-2 text-xs font-medium text-slate-900 outline-none placeholder:text-slate-400"
                             />
                             {searchQuery && (
                                 <button
                                     type="button"
                                     onClick={() => onSearchChange('')}
-                                    aria-label="Clear search"
+                                    aria-label={t('clearAll')}
                                     className="mr-1.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 hover:text-slate-800 transition"
                                 >
                                     <X size={11} strokeWidth={2.5} />
@@ -278,16 +282,17 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                             <button
                                 type="button"
                                 onClick={() => onSearchSubmit?.(searchQuery)}
-                                aria-label="Search"
+                                aria-label={t('search')}
                                 className="mr-1 flex h-8 px-3.5 shrink-0 items-center justify-center rounded-full bg-primary-700 text-xs font-bold text-white transition hover:bg-primary-800 active:scale-95 shadow-2xs"
                             >
-                                Search
+                                {t('search')}
                             </button>
                         </div>
                     </div>
 
                     {/* ── 3. RIGHT: BALANCED ACTIONS & USER PROFILE ── */}
                     <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                        <LanguageSwitcher />
 
                         {/* Services Mega-menu trigger */}
                         <div className="relative shrink-0">
@@ -303,7 +308,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 }`}
                             >
                                 <Grid3X3 size={15} className={openDropdown === 'services' ? 'text-primary-700' : 'text-slate-500'} />
-                                <span className="hidden lg:inline">Services</span>
+                                <span className="hidden lg:inline">{t('services')}</span>
                                 <ChevronDown size={12} strokeWidth={2.5} className={`text-slate-400 transition-transform duration-200 ${openDropdown === 'services' ? 'rotate-180' : ''}`} />
                             </button>
 
@@ -318,21 +323,21 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-900 px-5 py-3.5">
                                             <div>
                                                 <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-white">
-                                                    <Grid3X3 size={13} className="text-primary-300" /> Services &amp; Packages
+                                                    <Grid3X3 size={13} className="text-primary-300" /> {t('services')} &amp; {t('packages')}
                                                 </span>
-                                                <p className="mt-0.5 text-xs text-slate-400">Choose a service or a ready-made package for your home.</p>
+                                                <p className="mt-0.5 text-xs text-slate-400">{t('chooseServicePackage')}</p>
                                             </div>
                                             <span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold text-slate-300">
-                                                {services.length} services · {packages.length} packages
+                                                {services.length} {t('serviceCount')} · {packages.length} {t('packageCount')}
                                             </span>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-[1.15fr_0.85fr]">
                                             <div className="p-4 md:border-r md:border-slate-100">
                                                 <div className="mb-2.5 flex items-center justify-between">
-                                                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Categories</p>
+                                                <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">{t('categories')}</p>
                                                     <button type="button" onClick={handleAllServicesClick} className="text-xs font-bold text-primary-700 hover:text-primary-900">
-                                                        Browse all →
+                                                        {t('browseAll')}
                                                     </button>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-1.5">
@@ -343,15 +348,15 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                                 {getCategoryIcon(cat)}
                                                             </div>
                                                             <div className="min-w-0">
-                                                                <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-primary-700">{cat}</span>
-                                                                <span className="text-[10px] text-slate-500">{(servicesByCategory[cat] || []).length} services</span>
+                                                                <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-primary-700">{servicesByCategory[cat]?.[0]?.category || cat}</span>
+                                                                <span className="text-[10px] text-slate-500">{(servicesByCategory[cat] || []).length} {t('serviceCount')}</span>
                                                             </div>
                                                         </button>
                                                     ))}
                                                 </div>
 
                                                 <div className="mt-3.5 border-t border-slate-100 pt-3">
-                                                    <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">Most booked</p>
+                                                <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">{t('mostBooked')}</p>
                                                     <div className="grid grid-cols-2 gap-1.5">
                                                         {popularServices.slice(0, 4).map(service => (
                                                             <button key={service.id} type="button" role="menuitem" onClick={() => handleServiceClick(service)}
@@ -359,7 +364,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                                 <SafeImage src={service.image} alt="" className="h-8 w-8 shrink-0 rounded-lg object-cover" />
                                                                 <div className="min-w-0 flex-1">
                                                                     <span className="block truncate text-[11px] font-bold text-slate-900 group-hover:text-primary-700">{service.name}</span>
-                                                                    <span className="text-[10px] font-bold text-primary-700">{formatServicePrice(service)}</span>
+                                                                    <span className="text-[10px] font-bold text-primary-700">{formatServicePrice(service, language)}</span>
                                                                 </div>
                                                             </button>
                                                         ))}
@@ -370,10 +375,10 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                             <div className="bg-amber-50/30 p-4">
                                                 <div className="mb-2.5 flex items-center justify-between">
                                                     <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-amber-900">
-                                                        <Flame size={12} className="text-amber-500" /> Hot deals
+                                                        <Flame size={12} className="text-amber-500" /> {t('hotDeals')}
                                                     </p>
                                                     <button type="button" onClick={() => { setOpenDropdown(null); scrollTo('packages'); }} className="text-xs font-bold text-amber-900 hover:underline">
-                                                        View all →
+                                                        {t('viewAll')}
                                                     </button>
                                                 </div>
                                                 <div className="space-y-1.5">
@@ -383,7 +388,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                             <SafeImage src={pkg.image} alt="" className="h-9 w-9 shrink-0 rounded-lg object-cover" />
                                                             <span className="min-w-0 flex-1">
                                                                 <span className="block truncate text-[11px] font-bold text-slate-900">{pkg.name}</span>
-                                                                <span className="text-[10px] font-bold text-primary-700">{formatServicePrice(pkg)}</span>
+                                                                <span className="text-[10px] font-bold text-primary-700">{formatServicePrice(pkg, language)}</span>
                               </span>
                                                             {pkg.offerTag && (
                                                                 <span className="shrink-0 rounded-full border border-amber-200 bg-amber-100 px-1.5 py-0.5 text-[9px] font-bold text-amber-900">
@@ -416,8 +421,8 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 onClick={() => setOpenDropdown(openDropdown === 'wishlist' ? null : 'wishlist')}
                                 aria-haspopup="menu"
                                 aria-expanded={openDropdown === 'wishlist'}
-                                aria-label="My Wishlist"
-                                title="Wishlist"
+                                                aria-label={t('wishlist')}
+                                                title={t('wishlist')}
                                 className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
                                     openDropdown === 'wishlist'
                                         ? 'bg-rose-50 text-rose-600'
@@ -442,15 +447,15 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                     >
                                         <div className="flex items-center justify-between border-b border-slate-100 bg-rose-50 px-4 py-3.5">
                                             <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-rose-800">
-                                                <Heart size={12} fill="currentColor" /> My Wishlist
+                                                <Heart size={12} fill="currentColor" /> {t('wishlist')}
                                             </span>
                                             <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">{wishlistIds.length} saved</span>
                                         </div>
                                         {wishlistIds.length === 0 ? (
                                             <div className="px-4 py-8 text-center">
                                                 <Heart size={32} className="mx-auto mb-3 text-slate-200" strokeWidth={1} />
-                                                <p className="text-sm font-semibold text-slate-700">No saved services yet.</p>
-                                                <p className="mt-1 text-xs text-slate-400">Tap the heart icon on any service card.</p>
+                                                <p className="text-sm font-semibold text-slate-700">{t('noServices')}</p>
+                                                <p className="mt-1 text-xs text-slate-400">{t('tapHeart')}</p>
                                             </div>
                                         ) : (
                                             <div className="max-h-64 divide-y divide-slate-50 overflow-y-auto">
@@ -462,7 +467,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                             <SafeImage src={svc.image} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-slate-100 object-cover" />
                                                             <div className="min-w-0 flex-1">
                                                                 <p className="truncate text-xs font-bold text-slate-900">{svc.name}</p>
-                                                                <p className="text-[11px] font-semibold text-primary-700">{formatServicePrice(svc)}</p>
+                                                                <p className="text-[11px] font-semibold text-primary-700">{formatServicePrice(svc, language)}</p>
                                                             </div>
                                                             <button type="button" onClick={() => void toggleWishlist(id)} aria-label={`Remove ${svc.name}`}
                                                                 className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-rose-50 hover:text-rose-600 focus:outline-none">
@@ -475,7 +480,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                         )}
                                         <div className="border-t border-slate-100 px-4 py-2.5">
                                             <Link to="/wishlist" onClick={() => setOpenDropdown(null)} className="block text-center text-xs font-bold text-primary-700 hover:text-primary-900">
-                                                View all saved →
+                                                {t('viewAllSaved')} →
                                             </Link>
                                         </div>
                                     </motion.div>
@@ -490,8 +495,8 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 onClick={toggleNotifications}
                                 aria-haspopup="dialog"
                                 aria-expanded={openDropdown === 'notifications'}
-                                aria-label="Notifications"
-                                title="Notifications"
+                                aria-label={t('notifications')}
+                                title={t('notifications')}
                                 className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
                                     openDropdown === 'notifications'
                                         ? 'bg-primary-50 text-primary-700'
@@ -511,12 +516,12 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 ) : (
                                     <div role="dialog" className="absolute right-0 top-full z-[70] mt-3 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl shadow-slate-950/15">
                                         <div className="border-b border-slate-100 bg-primary-50 px-4 py-3.5">
-                                            <p className="text-[11px] font-black uppercase tracking-widest text-primary-800 flex items-center gap-2"><Bell size={13} /> Notifications</p>
+                                            <p className="text-[11px] font-black uppercase tracking-widest text-primary-800 flex items-center gap-2"><Bell size={13} /> {t('notifications')}</p>
                                         </div>
                                         <div className="px-4 py-8 text-center">
                                             <Bell size={32} className="mx-auto mb-3 text-slate-200" strokeWidth={1} />
-                                            <p className="text-sm font-semibold text-slate-700">Sign in to see notifications</p>
-                                            <p className="mt-1 text-xs text-slate-400">Booking updates and service alerts appear here.</p>
+                                            <p className="text-sm font-semibold text-slate-700">{t('signInToNotifications')}</p>
+                                            <p className="mt-1 text-xs text-slate-400">{t('bookingUpdates')}</p>
                                             <button type="button" onClick={() => { setOpenDropdown(null); openCustomerAuth('login'); }} className="mt-4 inline-flex items-center gap-2 rounded-full bg-primary-700 px-4 py-2 text-xs font-bold text-white hover:bg-primary-800">Sign in →</button>
                                         </div>
                                     </div>
@@ -557,14 +562,14 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                     >
                                         <div className="flex items-center justify-between border-b border-slate-100 bg-primary-50 px-4 py-3.5">
                                             <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-primary-800">
-                                                <ClipboardList size={12} /> My Bookings
+                                                <ClipboardList size={12} /> {t('myBookings')}
                                             </span>
-                                            <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-bold text-primary-700">{savedBookings.length} requests</span>
+                                            <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-bold text-primary-700">{savedBookings.length} {t('requests')}</span>
                                         </div>
                                         {savedBookings.length === 0 ? (
                                             <div className="px-4 py-8 text-center">
                                                 <ClipboardList size={32} className="mx-auto mb-3 text-slate-200" strokeWidth={1} />
-                                                <p className="text-sm font-semibold text-slate-700">No bookings yet.</p>
+                                                <p className="text-sm font-semibold text-slate-700">{t('noBookings')}</p>
                                                 <p className="mt-1 text-xs text-slate-400">Your confirmed bookings will appear here.</p>
                                             </div>
                                         ) : (
@@ -593,7 +598,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                         )}
                                         <div className="border-t border-slate-100 px-4 py-2.5">
                                             <Link to="/bookings" onClick={() => setOpenDropdown(null)} className="block text-center text-xs font-bold text-primary-700 hover:text-primary-900">
-                                                View all bookings →
+                                                {t('viewAllBookings')} →
                                             </Link>
                                         </div>
                                     </motion.div>
@@ -652,11 +657,11 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                 </div>
                                                 <div className="p-2 space-y-0.5">
                                                     <Link to="/dashboard" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
-                                                        <Grid3X3 size={16} className="text-primary-600" /> Customer dashboard
+                                                        <Grid3X3 size={16} className="text-primary-600" /> {t('customerDashboard')}
                                                     </Link>
                                                     <Link to="/bookings" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
                                                         <div className="flex items-center gap-3">
-                                                            <ClipboardList size={16} className="text-primary-600" /> My bookings
+                                                            <ClipboardList size={16} className="text-primary-600" /> {t('myBookings')}
                                                         </div>
                                                         {savedBookings.length > 0 && (
                                                             <span className="rounded-full bg-primary-100 px-2 py-0.5 text-[10px] font-bold text-primary-700">
@@ -665,7 +670,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                         )}
                                                     </Link>
                                                     <Link to="/profile" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
-                                                        <UserRound size={16} className="text-primary-600" /> Profile settings
+                                                        <UserRound size={16} className="text-primary-600" /> {t('profileSettings')}
                                                     </Link>
                                                     <Link to="/wishlist" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-rose-50 hover:text-rose-800">
                                                         <div className="flex items-center gap-3">
@@ -678,7 +683,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                         )}
                                                     </Link>
                                                     <Link to="/faq" onClick={() => setOpenDropdown(null)} role="menuitem" className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-slate-950">
-                                                        <CircleHelp size={16} className="text-slate-500" /> Help & FAQs
+                                                        <CircleHelp size={16} className="text-slate-500" /> {t('helpFaqs')}
                                                     </Link>
                                                 </div>
                                                 <div className="border-t border-slate-100 p-2">
@@ -689,7 +694,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                         className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700"
                                                     >
                                                         <LogOut size={16} />
-                                                        <span>Sign out</span>
+                                                        <span>{t('signOut')}</span>
                                                     </button>
                                                 </div>
                                             </motion.div>
@@ -700,21 +705,15 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                 <>
                                     <button
                                         type="button"
-                                        onClick={() => setOpenDropdown(openDropdown === 'account' ? null : 'account')}
-                                        aria-haspopup="menu"
-                                        aria-expanded={openDropdown === 'account'}
-                                        aria-label="Sign in"
-                                        className={`inline-flex h-10 items-center gap-2 rounded-full border px-3.5 text-xs font-bold transition-all shadow-2xs ${
-                                            openDropdown === 'account'
-                                                ? 'border-primary-600 bg-primary-50 text-primary-950 ring-2 ring-primary-500/20'
-                                                : 'border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50'
-                                        }`}
+                                        onClick={() => openCustomerAuth('login')}
+                                        aria-label={t('signIn')}
+                                        className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-xs font-bold text-slate-800 transition-all shadow-2xs hover:border-slate-300 hover:bg-slate-50"
                                     >
                                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-slate-600">
                                             <UserRound size={13} strokeWidth={2} />
                                         </div>
-                                        <span>Sign in</span>
-                                        <ChevronDown size={12} strokeWidth={2.5} className={`text-slate-400 transition-transform duration-200 ${openDropdown === 'account' ? 'rotate-180' : ''}`} />
+                                        <span>{t('signIn')}</span>
+                                        <ChevronDown size={12} strokeWidth={2.5} className="text-slate-400" />
                                     </button>
                                     <AnimatePresence>
                                         {openDropdown === 'account' && (
@@ -727,23 +726,23 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                 className="absolute right-0 top-full z-[70] mt-3 w-80 overflow-hidden rounded-2xl border border-neutral-200 bg-white text-left shadow-2xl shadow-slate-950/15"
                                             >
                                                 <div className="border-b border-slate-100 bg-gradient-to-b from-primary-50/70 to-white p-4">
-                                                    <p className="text-xs font-semibold text-slate-500">Welcome to Purity</p>
-                                                    <h4 className="mt-0.5 text-base font-extrabold text-slate-950">Book & manage services</h4>
+                                                    <p className="text-xs font-semibold text-slate-500">{t('home')}</p>
+                                                    <h4 className="mt-0.5 text-base font-extrabold text-slate-950">{t('bookManageServices')}</h4>
                                                     <button
                                                         type="button"
                                                         onClick={() => openCustomerAuth('login')}
                                                         className="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-primary-700 px-4 text-sm font-bold text-white shadow-sm transition-all hover:bg-primary-800 active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary-500/40"
                                                     >
-                                                        <UserRound size={16} /> Sign in
+                                                        <UserRound size={16} /> {t('signIn')}
                                                     </button>
                                                     <p className="mt-2.5 text-center text-xs text-slate-500">
-                                                        New customer?{' '}
+                                                        {t('newCustomer')}{' '}
                                                         <button
                                                             type="button"
                                                             onClick={() => openCustomerAuth('signup')}
                                                             className="font-bold text-primary-700 hover:text-primary-800 hover:underline focus:outline-none"
                                                         >
-                                                            Create account
+                                                            {t('createAccount')}
                                                         </button>
                                                     </p>
                                                 </div>
@@ -759,8 +758,8 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                             <ClipboardList size={16} />
                                                         </span>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-xs font-bold text-slate-900">My Bookings</p>
-                                                            <p className="text-[11px] text-slate-500 truncate">View and track appointments</p>
+                                                        <p className="text-xs font-bold text-slate-900">{t('myBookings')}</p>
+                                                            <p className="text-[11px] text-slate-500 truncate">{t('viewTrackAppointments')}</p>
                                                         </div>
                                                     </Link>
 
@@ -775,7 +774,7 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                         </span>
                                                         <div className="min-w-0 flex-1">
                                                             <p className="text-xs font-bold text-slate-900">Saved Wishlist</p>
-                                                            <p className="text-[11px] text-slate-500 truncate">Saved deals & favorite services</p>
+                                                            <p className="text-[11px] text-slate-500 truncate">{t('savedDealsFavorites')}</p>
                                                         </div>
                                                         {wishlistIds.length > 0 && (
                                                             <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold text-rose-700">
@@ -794,8 +793,8 @@ export const DesktopPageHeader: React.FC<DesktopPageHeaderProps> = ({
                                                             <CircleHelp size={16} />
                                                         </span>
                                                         <div className="min-w-0 flex-1">
-                                                            <p className="text-xs font-bold text-slate-900">Help & FAQs</p>
-                                                            <p className="text-[11px] text-slate-500 truncate">Common questions & support</p>
+                                                            <p className="text-xs font-bold text-slate-900">{t('helpFaqs')}</p>
+                                                            <p className="text-[11px] text-slate-500 truncate">{t('support')}</p>
                                                         </div>
                                                     </Link>
                                                 </div>

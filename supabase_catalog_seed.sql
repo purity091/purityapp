@@ -91,22 +91,22 @@ values
   ('event-services', 'Event Services', 80, true)
 on conflict (slug) do update set name = excluded.name, is_active = true;
 
-with seed(slug, legacy_id, name, description, base_price, compare_at_price, price_unit, category_slug, image_url, rating, total_bookings, sort_order) as (
+with seed(slug, legacy_id, name, description, base_price, compare_at_price, price_unit, category_slug, image_url, total_bookings, sort_order) as (
   values
-    ('deep-cleaning', 'deep-clean', 'Deep Cleaning', 'Intensive top-to-bottom cleaning for homes, offices and commercial spaces.', 45, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 5.0, 200, 10),
-    ('regular-cleaning', '10', 'Regular Cleaning', 'Reliable routine cleaning for homes and offices, scheduled daily, weekly or bi-weekly.', 35, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 4.8, 600, 20),
-    ('floor-cleaning', '1', 'Floor Cleaning', 'Professional cleaning for tile, marble, granite, vinyl, laminate, hardwood and concrete floors.', 200, 300, 'starts from', 'flooring', 'https://images.unsplash.com/photo-1581858726788-75bc0f6a1d65?auto=format&fit=crop&q=80&w=800', 4.9, 320, 30),
-    ('carpet-cleaning', '2', 'Carpet Cleaning', 'Deep sanitation that removes dust mites, allergens, bacteria, odours and embedded stains.', 200, 250, 'per carpet', 'home-cleaning', 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&q=80&w=800', 4.8, 210, 40),
-    ('mattress-cleaning', '3', 'Mattress Cleaning', 'Deep hygiene, allergen removal, stain treatment and deodorisation for mattresses.', 150, 200, 'per mattress', 'furniture', 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=800', 5.0, 540, 50),
-    ('sofa-cleaning', '4', 'Sofa Cleaning', 'Fabric, leather, suede and microfiber sofa cleaning with stain and odour removal.', 35, 180, 'per seat', 'furniture', 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=800', 4.7, 420, 60),
-    ('curtain-cleaning', 'curtain-cleaning', 'Curtain Cleaning', 'Professional curtain cleaning that protects fabric while removing dust, allergens and stains.', 200, null, 'per curtain', 'upholstery-cleaning', 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&q=80&w=800', 4.8, 150, 70),
-    ('office-cleaning', '7', 'Office Cleaning', 'Structured workplace cleaning, disinfection, floor care, pantry and restroom cleaning.', 35, 70, 'per hour', 'commercial', 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800', 4.9, 50, 80),
-    ('housekeeping-part-time-maid', '8', 'Housekeeping / Part-time Maid', 'Flexible household support including cleaning, laundry assistance, dishwashing and organisation.', 35, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=800', 4.9, 1200, 90),
-    ('babysitting-at-home', '11', 'Babysitting At Home', 'Reliable in-home childcare with supervision, activities, feeding and flexible schedules.', 250, null, 'per day', 'care', 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80&w=800', 4.9, 90, 100),
-    ('move-in-out-cleaning', 'move-in-out', 'Move In/Out Cleaning', 'Comprehensive cleaning for empty homes before moving in or after moving out.', 35, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 4.9, 150, 110),
-    ('party-cleaning', '13', 'Party Cleaning', 'Pre- and post-event cleaning that restores your venue quickly and professionally.', 35, null, 'per hour', 'event-services', 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800', 4.8, 80, 120),
-    ('wash-and-iron', '14', 'Wash and Iron', 'Professional laundry care, stain treatment, ironing, folding and optional delivery.', 35, null, 'per hour', 'laundry', 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=800', 4.8, 300, 130),
-    ('pet-sitting', '15', 'Pet Sitting', 'Reliable pet care including feeding, playtime, companionship and flexible schedules.', 35, null, 'per hour', 'care', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800', 4.9, 75, 140)
+    ('deep-cleaning', 'deep-clean', 'Deep Cleaning', 'Intensive top-to-bottom cleaning for homes, offices and commercial spaces.', 45, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 200, 10),
+    ('regular-cleaning', '10', 'Regular Cleaning', 'Reliable routine cleaning for homes and offices, scheduled daily, weekly or bi-weekly.', 35, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 600, 20),
+    ('floor-cleaning', '1', 'Floor Cleaning', 'Professional cleaning for tile, marble, granite, vinyl, laminate, hardwood and concrete floors.', 200, 300, 'starts from', 'flooring', 'https://images.unsplash.com/photo-1581858726788-75bc0f6a1d65?auto=format&fit=crop&q=80&w=800', 320, 30),
+    ('carpet-cleaning', '2', 'Carpet Cleaning', 'Deep sanitation that removes dust mites, allergens, bacteria, odours and embedded stains.', 200, 250, 'per carpet', 'home-cleaning', 'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&q=80&w=800', 210, 40),
+    ('mattress-cleaning', '3', 'Mattress Cleaning', 'Deep hygiene, allergen removal, stain treatment and deodorisation for mattresses.', 150, 200, 'per mattress', 'furniture', 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&q=80&w=800', 540, 50),
+    ('sofa-cleaning', '4', 'Sofa Cleaning', 'Fabric, leather, suede and microfiber sofa cleaning with stain and odour removal.', 35, 180, 'per seat', 'furniture', 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=800', 420, 60),
+    ('curtain-cleaning', 'curtain-cleaning', 'Curtain Cleaning', 'Professional curtain cleaning that protects fabric while removing dust, allergens and stains.', 200, null, 'per curtain', 'upholstery-cleaning', 'https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&q=80&w=800', 150, 70),
+    ('office-cleaning', '7', 'Office Cleaning', 'Structured workplace cleaning, disinfection, floor care, pantry and restroom cleaning.', 35, 70, 'per hour', 'commercial', 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=800', 50, 80),
+    ('housekeeping-part-time-maid', '8', 'Housekeeping / Part-time Maid', 'Flexible household support including cleaning, laundry assistance, dishwashing and organisation.', 35, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&q=80&w=800', 1200, 90),
+    ('babysitting-at-home', '11', 'Babysitting At Home', 'Reliable in-home childcare with supervision, activities, feeding and flexible schedules.', 250, null, 'per day', 'care', 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&q=80&w=800', 90, 100),
+    ('move-in-out-cleaning', 'move-in-out', 'Move In/Out Cleaning', 'Comprehensive cleaning for empty homes before moving in or after moving out.', 35, null, 'per hour', 'home-cleaning', 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 150, 110),
+    ('party-cleaning', '13', 'Party Cleaning', 'Pre- and post-event cleaning that restores your venue quickly and professionally.', 35, null, 'per hour', 'event-services', 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80&w=800', 80, 120),
+    ('wash-and-iron', '14', 'Wash and Iron', 'Professional laundry care, stain treatment, ironing, folding and optional delivery.', 35, null, 'per hour', 'laundry', 'https://images.unsplash.com/photo-1545173168-9f1947eebb7f?auto=format&fit=crop&q=80&w=800', 300, 130),
+    ('pet-sitting', '15', 'Pet Sitting', 'Reliable pet care including feeding, playtime, companionship and flexible schedules.', 35, null, 'per hour', 'care', 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&q=80&w=800', 75, 140)
 )
 insert into public.catalog_items (
   category_id, item_type, status, slug, name, short_description, description,
@@ -114,7 +114,7 @@ insert into public.catalog_items (
 )
 select
   category.id, 'service', 'published', seed.slug, seed.name, seed.description, seed.description,
-  seed.base_price, seed.compare_at_price, seed.price_unit, seed.rating, seed.total_bookings, seed.sort_order,
+  seed.base_price, seed.compare_at_price, seed.price_unit, 0, seed.total_bookings, seed.sort_order,
   jsonb_build_object('legacy_id', seed.legacy_id, 'image', seed.image_url)
 from seed
 join public.catalog_categories category on category.slug = seed.category_slug
@@ -128,22 +128,23 @@ on conflict (slug) do update set
   base_price = excluded.base_price,
   compare_at_price = excluded.compare_at_price,
   price_unit = excluded.price_unit,
-  rating = excluded.rating,
+  rating = 0,
+  review_count = 0,
   total_bookings = excluded.total_bookings,
   sort_order = excluded.sort_order,
    metadata = excluded.metadata;
 
 -- Import the offers/packages that existed in the previous frontend version.
 -- They are intentionally database-backed now; no local package fallback is used.
-with legacy_offers(slug, title, description, price, compare_at_price, image_url, category, offer_tag, rating, sold_count, sort_order) as (
+with legacy_offers(slug, title, description, price, compare_at_price, image_url, category, offer_tag, sold_count, sort_order) as (
   values
-    ('offer-welcome', 'New Customer Welcome Deal', 'Try us once with zero risk. A professional deep clean for your apartment or studio.', 99, 200, 'https://images.unsplash.com/photo-1550963295-019d8a8a61c5?auto=format&fit=crop&q=80&w=800', 'Deep Cleaning', 'Popular Gift', 5.0, 340, 10),
-    ('offer-timesaving', 'Ultimate Time-Saving Deal', 'Massive value for busy homes. Walk into a cleaner, calmer home without long-term commitment.', 299, 600, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 'Value Pack', 'Best Seller', 4.9, 512, 20),
-    ('offer-freshness', 'Total Home Freshness Boost', 'Elite-level hygiene. Eliminate bacteria and germs while restoring comfort to your home.', 699, 1200, 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800', 'Sanitization', 'Top Rated', 5.0, 189, 30),
-    ('pkg-essential', 'Essential Home Refresh Package', 'Perfect for 1-bedroom apartments. Complete control and comfort sanitized to hotel standards.', 899, 1200, 'https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?auto=format&fit=crop&q=80&w=800', 'Package', 'Exclusive', 4.8, 275, 40),
-    ('pkg-family', 'Family Comfort Deluxe Package', 'Where family comfort meets hygiene. Specialized for homes with children and pets.', 999, 1400, 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800', 'Package', 'Popular', 4.9, 410, 50),
-    ('pkg-villa', 'Villa Serenity Deep Restoration', 'Complete villa restoration. Every corner, every surface, handled with precision.', 1399, 2000, 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800', 'Villa Package', 'Villa Special', 5.0, 160, 60),
-    ('offer-villa-complete', 'Complete Inside & Outside Villa Cleaning', 'Your Villa completely renewed with two specialized teams working simultaneously.', 2500, 4000, 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=800', 'Premium Villa Package', 'VIP Deal', 5.0, 95, 70)
+    ('offer-welcome', 'New Customer Welcome Deal', 'Try us once with zero risk. A professional deep clean for your apartment or studio.', 99, 200, 'https://images.unsplash.com/photo-1550963295-019d8a8a61c5?auto=format&fit=crop&q=80&w=800', 'Deep Cleaning', 'Popular Gift', 340, 10),
+    ('offer-timesaving', 'Ultimate Time-Saving Deal', 'Massive value for busy homes. Walk into a cleaner, calmer home without long-term commitment.', 299, 600, 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=800', 'Value Pack', 'Best Seller', 512, 20),
+    ('offer-freshness', 'Total Home Freshness Boost', 'Elite-level hygiene. Eliminate bacteria and germs while restoring comfort to your home.', 699, 1200, 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=800', 'Sanitization', 'Popular', 189, 30),
+    ('pkg-essential', 'Essential Home Refresh Package', 'Perfect for 1-bedroom apartments. Complete control and comfort sanitized to hotel standards.', 899, 1200, 'https://images.unsplash.com/photo-1528740561666-dc2479dc08ab?auto=format&fit=crop&q=80&w=800', 'Package', 'Exclusive', 275, 40),
+    ('pkg-family', 'Family Comfort Deluxe Package', 'Where family comfort meets hygiene. Specialized for homes with children and pets.', 999, 1400, 'https://images.unsplash.com/photo-1556911220-e15b29be8c8f?auto=format&fit=crop&q=80&w=800', 'Package', 'Popular', 410, 50),
+    ('pkg-villa', 'Villa Serenity Deep Restoration', 'Complete villa restoration. Every corner, every surface, handled with precision.', 1399, 2000, 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=800', 'Villa Package', 'Villa Special', 160, 60),
+    ('offer-villa-complete', 'Complete Inside & Outside Villa Cleaning', 'Your Villa completely renewed with two specialized teams working simultaneously.', 2500, 4000, 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=80&w=800', 'Premium Villa Package', 'VIP Deal', 95, 70)
 )
 insert into public.deals (
   slug, title, description, image_url, status, starts_at, discount_type,
@@ -166,7 +167,6 @@ select
   jsonb_build_object(
     'category', category,
     'offer_tag', offer_tag,
-    'rating', rating,
     'sold_count', sold_count,
     'legacy_id', slug
   )

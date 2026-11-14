@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { Booking, BookingStatus } from '../types';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase, isRealtimeEnabled, isSupabaseConfigured } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
 export interface BookingFormData {
@@ -252,6 +252,14 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }, []);
 
     useEffect(() => {
+        // Bookings are user-scoped. Clear the previous account immediately so
+        // its count cannot remain visible while the next account is loading.
+        bookingsRequestIdRef.current += 1;
+        notificationsRequestIdRef.current += 1;
+        setBookings([]);
+        setNotifications([]);
+        setLoading(false);
+        setNotificationsLoading(false);
         adminStatsLoadedRef.current = false;
         adminPageCursorsRef.current = { 1: null };
         setAdminPageState(1);
@@ -272,6 +280,7 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const { data, error } = await supabase
                 .from('notifications')
                 .select('id, booking_id, title, message, kind, created_at, read_at')
+                .eq('user_id', user.id)
                 .is('deleted_at', null)
                 .order('created_at', { ascending: false })
                 .limit(30);
@@ -457,6 +466,19 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     useEffect(() => {
         if (!isSupabaseConfigured() || !user) return;
+
+        // REST polling keeps bookings and notifications current when a browser
+        // or network blocks Supabase WebSockets. Realtime can be enabled
+        // explicitly, but it is never required for core account functionality.
+        const pollId = window.setInterval(() => {
+            void fetchBookingsRef.current();
+            void refreshNotifications();
+        }, 30000);
+
+        if (!isRealtimeEnabled()) {
+            return () => window.clearInterval(pollId);
+        }
+
         const bookingChange: { event: '*'; schema: 'public'; table: 'bookings'; filter?: string } = user.role === 'admin'
             ? { event: '*', schema: 'public', table: 'bookings' }
             : { event: '*', schema: 'public', table: 'bookings', filter: `user_id=eq.${user.id}` };
@@ -464,12 +486,17 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             .channel(`customer_updates_${user.id}`)
             .on('postgres_changes', bookingChange, () => {
                 if (user.role === 'admin') adminStatsLoadedRef.current = false;
-                fetchBookingsRef.current();
-                refreshNotifications();
+                void fetchBookingsRef.current();
+                void refreshNotifications();
             })
-            .subscribe();
+            .subscribe((status, error) => {
+                if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+                    console.warn('Supabase Realtime unavailable; REST polling remains active.', error);
+                }
+            });
         return () => {
-            channel.unsubscribe();
+            window.clearInterval(pollId);
+            void supabase.removeChannel(channel);
         };
     }, [refreshNotifications, user]);
 
@@ -586,9 +613,10 @@ export const BookingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     };
 
     const markNotificationRead = async (id: string) => {
+        if (!user || user.role !== 'customer') return;
         setNotifications(items => items.map(item => item.id === id ? { ...item, readAt: item.readAt || new Date().toISOString() } : item));
         if (!isSupabaseConfigured()) return;
-        await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+        await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id).eq('user_id', user.id).is('deleted_at', null);
     };
 
     const markAllNotificationsRead = async () => {

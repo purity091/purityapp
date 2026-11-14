@@ -5,6 +5,19 @@ import { VitePWA } from 'vite-plugin-pwa'
 // https://vite.dev/config/
 export default defineConfig({
   envDir: '.private',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (/[\\/]node_modules[\\/](react|react-dom|react-router-dom)[\\/]/.test(id)) return 'react-vendor';
+          if (/[\\/]node_modules[\\/]@supabase[\\/]supabase-js[\\/]/.test(id)) return 'supabase-vendor';
+          if (/[\\/]node_modules[\\/]framer-motion[\\/]/.test(id)) return 'motion-vendor';
+          if (/[\\/]node_modules[\\/](leaflet|react-leaflet)[\\/]/.test(id)) return 'map-vendor';
+          return undefined;
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -28,6 +41,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,woff2}'],
       },

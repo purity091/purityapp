@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Lock, MapPin } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 const CITIES = ['Dubai'];
 
@@ -9,6 +10,7 @@ interface CitySelectorProps {
 }
 
 export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, dense = false }) => {
+    const { t } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +36,7 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
                 onClick={() => setIsOpen(value => !value)}
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
-                aria-label="Select service city"
+                aria-label={t('chooseCity')}
                 className={`flex items-center gap-1.5 rounded-full border border-slate-200/90 bg-slate-50/80 font-semibold text-slate-700 transition-all hover:border-slate-300 hover:bg-white hover:text-slate-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/30 ${
                     dense ? 'h-8 px-2.5 text-[11px]' : compact ? 'h-9 px-3 text-xs' : 'h-8 px-2.5 text-xs'
                 }`}
@@ -46,10 +48,10 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
             </button>
 
             {isOpen && (
-                <div role="listbox" aria-label="Service cities" className={`absolute top-full z-[60] mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/15 ${compact ? 'right-0 w-[min(20rem,calc(100vw-2rem))]' : 'left-0 w-72'}`}>
+                <div role="listbox" aria-label={t('serviceLocation')} className={`absolute top-full z-[60] mt-3 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/15 ${compact ? 'right-0 w-[min(20rem,calc(100vw-2rem))]' : 'left-0 w-72'}`}>
                     <div className="border-b border-gray-200 bg-gray-900 px-4 py-3">
-                        <p className="text-[11px] font-black uppercase text-white">Service location</p>
-                        <p className="mt-1 text-xs font-semibold text-gray-300">Choose your city</p>
+                        <p className="text-[11px] font-black uppercase text-white">{t('serviceLocation')}</p>
+                        <p className="mt-1 text-xs font-semibold text-gray-300">{t('chooseCity')}</p>
                     </div>
 
                     <div className="p-2">
@@ -71,17 +73,17 @@ export const CitySelector: React.FC<CitySelectorProps> = ({ compact = false, den
                                     <span className="flex-1">
                                         <span className="block text-xs font-extrabold">{city}</span>
                                         <span className={`block text-[11px] font-semibold ${isAvailable ? 'text-emerald-700' : 'text-gray-600'}`}>
-                                            {isAvailable ? 'Available now' : 'Coming soon'}
+                                            {isAvailable ? t('availableNow') : t('comingSoon')}
                                         </span>
                                     </span>
-                                    {isAvailable && <span className="text-[10px] font-black text-primary-800">Selected</span>}
+                                    {isAvailable && <span className="text-[10px] font-black text-primary-800">{t('selected')}</span>}
                                 </button>
                             );
                         })}
                     </div>
 
                     <div className="border-t border-gray-200 px-4 py-3 text-center">
-                        <p className="text-[11px] font-semibold leading-relaxed text-gray-600">More cities are coming soon.</p>
+                        <p className="text-[11px] font-semibold leading-relaxed text-gray-600">{t('moreCitiesSoon')}</p>
                     </div>
                 </div>
             )}

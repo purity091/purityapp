@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const COOKIE_CONSENT_KEY = 'purity_cookie_consent';
 export const COOKIE_SETTINGS_EVENT = 'purity:cookie-settings';
@@ -51,6 +52,7 @@ const loadOptionalAnalytics = () => {
 };
 
 export const CookieConsentBanner: React.FC = () => {
+    const { t } = useLanguage();
     const [consent, setConsent] = useState<CookieConsent>(() => {
         try {
             const value = localStorage.getItem(COOKIE_CONSENT_KEY);
@@ -78,12 +80,12 @@ export const CookieConsentBanner: React.FC = () => {
     if (consent !== null) return null;
 
     return (
-        <aside className="fixed inset-x-3 bottom-20 z-[80] rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl md:inset-x-auto md:bottom-4 md:left-4 md:max-w-xl" role="dialog" aria-label="Cookie preferences" dir="ltr">
-            <p className="text-sm font-black text-gray-900">We respect your privacy</p>
-            <p className="mt-1 text-xs font-medium leading-5 text-gray-600">We use necessary cookies to operate the website. Optional analytics tools are enabled only after your consent. Read our <Link to="/privacy" className="font-black text-primary-700 underline">Privacy Policy</Link> and <Link to="/cookies" className="font-black text-primary-700 underline">Cookies Policy</Link>.</p>
+        <aside className="fixed inset-x-3 bottom-20 z-[80] rounded-2xl border border-gray-200 bg-white p-4 shadow-2xl md:inset-x-auto md:bottom-4 md:left-4 md:max-w-xl" role="dialog" aria-label={t('cookiePreferences')} dir="ltr">
+            <p className="text-sm font-black text-gray-900">{t('privacyRespect')}</p>
+            <p className="mt-1 text-xs font-medium leading-5 text-gray-600">{t('cookieDescription')} <Link to="/privacy" className="font-black text-primary-700 underline">{t('privacyPolicy')}</Link> {t('and')} <Link to="/cookies" className="font-black text-primary-700 underline">{t('cookies')}</Link>.</p>
             <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" onClick={() => saveConsent('accepted')} className="rounded-lg bg-primary-700 px-3 py-2 text-xs font-black text-white hover:bg-primary-800">Allow analytics</button>
-                <button type="button" onClick={() => saveConsent('rejected')} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-black text-gray-700 hover:bg-gray-50">Necessary only</button>
+                <button type="button" onClick={() => saveConsent('accepted')} className="rounded-lg bg-primary-700 px-3 py-2 text-xs font-black text-white hover:bg-primary-800">{t('allowAnalytics')}</button>
+                <button type="button" onClick={() => saveConsent('rejected')} className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-black text-gray-700 hover:bg-gray-50">{t('necessaryOnly')}</button>
             </div>
         </aside>
     );

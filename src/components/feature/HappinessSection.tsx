@@ -3,16 +3,18 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Award, Heart, ShieldCheck, Star, UserCheck, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const HappinessSection: React.FC = () => {
     const navigate = useNavigate();
+    const { t } = useLanguage();
     const commitmentPoints = [
-        { icon: <Star size={21} className="text-amber-600" fill="currentColor" />, title: '5-Star Elite Rating', desc: 'Top-rated cleaning leadership in Dubai.', bg: 'bg-amber-50' },
-        { icon: <Award size={21} className="text-indigo-700" />, title: 'Full Commitment', desc: 'Dedicated expertise for ultimate home comfort.', bg: 'bg-indigo-50' },
-        { icon: <ShieldCheck size={21} className="text-emerald-700" />, title: 'Satisfaction Guarantee', desc: 'Complete re-clean if anything is not 100% perfect.', bg: 'bg-emerald-50' },
-        { icon: <ShieldCheck size={21} className="text-rose-700" />, title: 'Fully Insured', desc: 'Your home is protected at all times.', bg: 'bg-rose-50' },
-        { icon: <UserCheck size={21} className="text-blue-700" />, title: 'Background-Checked Pros', desc: 'Verified, trained, and hotel-grade staff.', bg: 'bg-blue-50' },
-        { icon: <Zap size={21} className="text-amber-700" fill="currentColor" />, title: 'Unmatched Quality', desc: 'Consistent excellence for every visit.', bg: 'bg-amber-50' },
+        { icon: <Star size={21} className="text-amber-600" fill="currentColor" />, title: t('fiveStarElite'), desc: t('fiveStarEliteDesc'), bg: 'bg-amber-50' },
+        { icon: <Award size={21} className="text-indigo-700" />, title: t('fullCommitment'), desc: t('fullCommitmentDesc'), bg: 'bg-indigo-50' },
+        { icon: <ShieldCheck size={21} className="text-emerald-700" />, title: t('satisfactionGuarantee'), desc: t('satisfactionDesc'), bg: 'bg-emerald-50' },
+        { icon: <ShieldCheck size={21} className="text-rose-700" />, title: t('fullyInsured'), desc: t('fullyInsuredDesc'), bg: 'bg-rose-50' },
+        { icon: <UserCheck size={21} className="text-blue-700" />, title: t('backgroundPros'), desc: t('backgroundProsDesc'), bg: 'bg-blue-50' },
+        { icon: <Zap size={21} className="text-amber-700" fill="currentColor" />, title: t('unmatchedQuality'), desc: t('unmatchedQualityDesc'), bg: 'bg-amber-50' },
     ];
 
     const scrollTo = (id: string) => {
@@ -37,15 +39,15 @@ export const HappinessSection: React.FC = () => {
                         className="mb-3 inline-flex items-center gap-1.5 rounded-md bg-rose-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-rose-800 md:mb-5 md:gap-2 md:px-3 md:py-1 md:text-[11px]"
                     >
                         <Heart size={13} className="text-rose-700" fill="currentColor" />
-                        Our commitment
+                        {t('commitment')}
                     </motion.div>
 
                     <h2 className="max-w-lg text-3xl font-black leading-tight text-gray-950 sm:text-4xl">
-                        Your Happiness Is
-                        <span className="block text-primary-700">Our First Priority.</span>
+                        {t('happinessTitle')}
+                        <span className="block text-primary-700">{t('happinessPriority')}</span>
                     </h2>
                     <p className="mt-3 max-w-lg text-[13px] font-semibold leading-6 text-gray-700 md:mt-4 md:text-base md:leading-7">
-                        We do not just clean spaces — we deliver peace of mind, hotel-grade hygiene, and absolute satisfaction for your home.
+                        {t('happinessDescription')}
                     </p>
 
                     <div className="mt-5 max-w-sm md:mt-7">
@@ -54,11 +56,11 @@ export const HappinessSection: React.FC = () => {
                             onClick={() => scrollTo('offers')}
                             className="group flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-black focus:outline-none focus-visible:ring-4 focus-visible:ring-gray-900/20 md:rounded-xl md:px-6 md:py-3.5 md:text-sm"
                         >
-                            Book my experience
+                            {t('bookExperience')}
                             <Zap size={17} className="text-amber-400 transition-transform group-hover:scale-110" fill="currentColor" />
                         </button>
                         <p className="mt-2 text-center text-[10px] font-bold text-gray-600 md:mt-3 md:text-[11px]">
-                            Trusted by 50,000+ happy homes in Dubai
+                            {t('trustedHomes')}
                         </p>
                     </div>
                 </div>

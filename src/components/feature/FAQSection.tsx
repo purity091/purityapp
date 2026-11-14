@@ -2,17 +2,16 @@
 import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, HelpCircle } from 'lucide-react';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const FAQSection: React.FC = () => {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
+    const { t } = useLanguage();
 
     const faqs = [
-        { question: 'What is the nationality of the cleaners?', answer: 'Our elite cleaning specialists are primarily from the Philippines, rigorously selected and trained for meticulous attention to detail.' },
-        { question: 'Will I get the same cleaner every time?', answer: 'Consistency matters. We prioritize assigning the same specialist to your home for recurring bookings to build familiarity.' },
-        { question: 'Does the service include laundry and ironing?', answer: 'Standard appointments focus on deep surface sanitization. Professional laundry and ironing can easily be added upon request.' },
-        { question: 'Are cleaning equipment and materials included?', answer: 'By default, we utilize your preferred home materials. If you prefer a completely hands-off experience, we bring top-tier equipment upon request.' },
-        { question: 'What is the minimum service duration?', answer: 'To ensure the highest hospitality standards, our minimum service duration is 3 hours per booking.' },
-        { question: 'Which areas in Dubai do you cover?', answer: 'We cover all major residential neighborhoods in Dubai, including Downtown, Marina, Palm Jumeirah, Business Bay, Jumeirah, and Villa communities.' },
+        { question: t('faqNationality'), answer: t('faqNationalityAnswer') }, { question: t('faqSameCleaner'), answer: t('faqSameCleanerAnswer') },
+        { question: t('faqLaundry'), answer: t('faqLaundryAnswer') }, { question: t('faqMaterials'), answer: t('faqMaterialsAnswer') },
+        { question: t('faqDuration'), answer: t('faqDurationAnswer') }, { question: t('faqAreas'), answer: t('faqAreasAnswer') },
     ];
 
     return (
@@ -21,13 +20,13 @@ export const FAQSection: React.FC = () => {
                 <div className="self-start lg:col-span-4 lg:pt-2">
                     <div className="inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2.5 py-0.5 text-[10px] font-black uppercase text-gray-700 md:gap-2 md:px-3 md:py-1 md:text-[11px]">
                         <HelpCircle size={13} className="text-primary-700" />
-                        Clear & honest
+                        {t('clearHonest')}
                     </div>
                     <h2 className="mt-3 max-w-md text-2xl font-black leading-tight text-gray-950 sm:text-4xl md:mt-5">
-                        Answers before you book.
+                        {t('answersBeforeBook')}
                     </h2>
                     <p className="mt-3 max-w-md text-[13px] font-semibold leading-6 text-gray-700 md:mt-4 md:text-base md:leading-7">
-                        Everything you need to know about our home cleaning services in Dubai.
+                        {t('faqDescription')}
                     </p>
                 </div>
 

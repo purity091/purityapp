@@ -343,6 +343,22 @@ where email = 'admin@example.com';</pre></div>
         <div class="warning">الواجهة الحالية تستخدم الكتالوج المحلي كـ fallback إذا فشل استدعاء قاعدة البيانات. تطبيق الجوال يجب أن يتعامل مع response فارغ أو مؤقتًا يقرأ الكتالوج من DB فقط بعد التأكد من استيراد البيانات.</div>
       </section>
 
+      <section id="localization" class="section searchable">
+        <h2>8.4 Multilingual catalog</h2>
+        <p>The current web client detects <code class="inline">fr</code> and <code class="inline">hi</code>, while English is the fallback. Catalog identity, prices, images, availability and booking references are shared; only customer-facing text is localized.</p>
+        <table><thead><tr><th>Table</th><th>Purpose</th><th>Required fields</th></tr></thead><tbody>
+          <tr><td><code>catalog_item_translations</code></td><td>Names, descriptions, badges and translated service/package metadata.</td><td><code>item_id</code>, <code>language_code</code>, <code>name</code></td></tr>
+          <tr><td><code>deal_translations</code></td><td>Offer titles, descriptions, categories and badges.</td><td><code>deal_id</code>, <code>language_code</code>, <code>title</code></td></tr>
+          <tr><td><code>catalog_category_translations</code></td><td>Localized catalog category names.</td><td><code>category_id</code>, <code>language_code</code>, <code>name</code></td></tr>
+        </tbody></table>
+        <p>For a mobile client, request both the selected language and English, for example:</p>
+        <div class="code-wrap"><pre>GET /rest/v1/catalog_item_translations?select=item_id,language_code,name,description,metadata&amp;language_code=in.(fr,en)&amp;deleted_at=is.null
+GET /rest/v1/deal_translations?select=deal_id,language_code,title,description,metadata&amp;language_code=in.(fr,en)&amp;deleted_at=is.null
+GET /rest/v1/catalog_category_translations?select=category_id,language_code,name,description&amp;language_code=in.(fr,en)&amp;deleted_at=is.null</pre></div>
+        <p>Merge translations by ID and prefer the requested language. If it is missing, use the English row, then the base English columns. Translation rows are protected by RLS and direct hard delete is rejected; an empty/retired translation must be retained with <code class="inline">deleted_at</code>.</p>
+        <div class="success"><strong>Migration order:</strong> run <code class="inline">supabase_catalog.sql</code>, then <code class="inline">supabase_soft_delete.sql</code>, then <code class="inline">supabase_catalog_seed.sql</code>, and finally <code class="inline">supabase_multilingual_catalog.sql</code>. The final migration automatically backfills English rows. To publish the prepared translations, run <code class="inline">supabase_catalog_translations_fr_seed.sql</code> and/or <code class="inline">supabase_catalog_translations_hi_seed.sql</code>. Both files are safe to run repeatedly and match rows by stable slug.</div>
+      </section>
+
       <section id="rpc" class="section searchable">
         <h2>9. RPC والعمليات الذرية</h2>
         <h3>9.1 إحصاءات الحجوزات - admin فقط</h3>

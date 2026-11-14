@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Smartphone, QrCode, Sparkles, ChevronDown, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguage } from '../../context/LanguageContext';
 
 const getDownloadUrl = () => {
     const configuredUrl = import.meta.env.VITE_APP_DOWNLOAD_URL;
@@ -22,6 +23,7 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
     onToggle,
     onClose,
 }) => {
+    const { t } = useLanguage();
     const [internalIsOpen, setInternalIsOpen] = useState(false);
     const isControlled = controlledIsOpen !== undefined;
     const isOpen = isControlled ? controlledIsOpen : internalIsOpen;
@@ -52,8 +54,8 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                 onClick={toggleOpen}
                 aria-haspopup="menu"
                 aria-expanded={isOpen}
-                aria-label="Purity mobile app — coming soon"
-                title="Purity mobile app — coming soon"
+                aria-label={`${t('mobileApp')} — ${t('comingSoon')}`}
+                title={`${t('mobileApp')} — ${t('comingSoon')}`}
                 className={compact
                     ? `relative flex h-8 w-8 items-center justify-center rounded-full border transition-all ${
                         isOpen
@@ -69,9 +71,9 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                 <Smartphone size={compact ? 14 : 15} className={isOpen ? (compact ? 'text-white' : 'text-primary-700') : 'text-slate-500'} />
                 {!compact && (
                     <>
-                        <span>App</span>
+                        <span>{t('app')}</span>
                         <span className="rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-black text-amber-900 border border-amber-200 leading-none">
-                            Soon
+                            {t('soon')}
                         </span>
                         <ChevronDown size={12} strokeWidth={2.5} className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                     </>
@@ -97,17 +99,17 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                                         <Smartphone size={18} />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-black text-slate-950 leading-tight">Purity Mobile App</h4>
-                                        <p className="text-[11px] font-semibold text-slate-500">iOS &amp; Android</p>
+                                        <h4 className="text-sm font-black text-slate-950 leading-tight">{t('mobileApp')}</h4>
+                                        <p className="text-[11px] font-semibold text-slate-500">{t('iosAndroid')}</p>
                                     </div>
                                 </div>
                                 <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-900 shadow-2xs">
-                                    <Sparkles size={11} className="text-amber-700" /> Coming soon
+                                    <Sparkles size={11} className="text-amber-700" /> {t('comingSoon')}
                                 </span>
                             </div>
 
                             <p className="mt-3 text-xs leading-5 text-slate-600">
-                                The official Purity mobile app is currently under final testing. Fast bookings, live tracking &amp; app-exclusive discounts are coming very soon!
+                                {t('appDescription')}
                             </p>
                         </div>
 
@@ -123,10 +125,10 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                                 />
                                 <div className="min-w-0 flex-1">
                                     <p className="text-xs font-bold text-slate-900 flex items-center gap-1">
-                                        <QrCode size={13} className="text-primary-700" /> Scan QR Code
+                                        <QrCode size={13} className="text-primary-700" /> {t('scanQr')}
                                     </p>
                                     <p className="mt-1 text-[11px] text-slate-500 leading-4">
-                                        Point your phone camera to bookmark or get notified directly on launch.
+                                        {t('phoneCamera')}
                                     </p>
                                 </div>
                             </div>
@@ -139,7 +141,7 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                                     </svg>
                                     <div className="text-left">
                                         <span className="block text-[8px] uppercase font-bold text-slate-400 leading-none">App Store</span>
-                                        <span className="block text-[10px] font-black text-amber-800 leading-tight">Coming soon</span>
+                                        <span className="block text-[10px] font-black text-amber-800 leading-tight">{t('comingSoon')}</span>
                                     </div>
                                 </div>
 
@@ -152,7 +154,7 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                                     </svg>
                                     <div className="text-left">
                                         <span className="block text-[8px] uppercase font-bold text-slate-400 leading-none">Google Play</span>
-                                        <span className="block text-[10px] font-black text-amber-800 leading-tight">Coming soon</span>
+                                        <span className="block text-[10px] font-black text-amber-800 leading-tight">{t('comingSoon')}</span>
                                     </div>
                                 </div>
                             </div>
@@ -167,7 +169,7 @@ export const AppDownloadButton: React.FC<AppDownloadButtonProps> = ({
                                 onClick={closeDropdown}
                                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-700 px-3 py-2.5 text-xs font-bold text-white shadow-2xs transition hover:bg-primary-800 active:scale-[0.99]"
                             >
-                                <span>Notify me on launch (قريباً)</span>
+                                <span>{t('notifyLaunch')}</span>
                                 <ArrowRight size={13} />
                             </a>
                         </div>

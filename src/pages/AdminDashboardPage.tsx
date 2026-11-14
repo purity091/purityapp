@@ -39,6 +39,7 @@ import {
     UserRound,
     UsersRound,
     X,
+    Languages,
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
@@ -71,6 +72,7 @@ const adminTabs = [
     { label: 'Overview', icon: LayoutDashboard, to: '/admin/overview', soon: false },
     { label: 'Services', icon: BriefcaseBusiness, to: '/admin/catalog', soon: false },
     { label: 'Offers & deals', icon: Tag, to: '/admin/deals', soon: false },
+    { label: 'Translations', icon: Languages, to: '/admin/translations', soon: false },
     { label: 'Customers', icon: UsersRound, to: '/admin/customers', soon: false },
 ] as const;
 

@@ -258,9 +258,3 @@ All pet sitters are experienced with animals, trained in safety protocols, and c
         icon: 'heart'
     }
 ];
-
-export const clientReviews = [
-    { id: 1, name: "Mohammed Al-Otaibi", comment: "Excellent and fast service, very professional cleaning team.", rating: 5 },
-    { id: 2, name: "Sarah Al-Ahmed", comment: "Cleaning was flawless, and the dealing was classy. Highly recommend them.", rating: 5 },
-    { id: 3, name: "Khalid Al-Dossari", comment: "Reasonable prices for high quality. Thanks Purity.", rating: 4 },
-];

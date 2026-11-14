@@ -21,11 +21,24 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
     const appShell = 'mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8';
     const routeState = (location.state || {}) as { openAuth?: boolean; from?: string; authMode?: 'login' | 'signup' };
     const authRequested = Boolean(routeState.openAuth);
-    const [isAuthOpen, setIsAuthOpen] = useState(authRequested || passwordRecovery);
+    const requestedAuthMode = routeState.authMode || 'login';
+    const requestedDestination = routeState.from || location.pathname;
+    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+    const [authDestination, setAuthDestination] = useState(location.pathname);
 
     useEffect(() => {
-        setIsAuthOpen(authRequested || passwordRecovery);
-    }, [authRequested, passwordRecovery]);
+        // Route state is only the request to open the modal. Do not mirror it
+        // back to local state, because another navigation can clear route state
+        // while the user is still interacting with the form.
+        if (authRequested) {
+            setAuthMode(requestedAuthMode);
+            setAuthDestination(requestedDestination);
+            setIsAuthOpen(true);
+        } else if (passwordRecovery) {
+            setIsAuthOpen(true);
+        }
+    }, [authRequested, passwordRecovery, requestedAuthMode, requestedDestination]);
 
     const closeAuth = () => {
         setIsAuthOpen(false);
@@ -65,8 +78,8 @@ export const Layout: React.FC<LayoutProps> = ({ children, hideFooter = false }) 
             <CustomerAuthModal
                 isOpen={isAuthOpen}
                 onClose={closeAuth}
-                destination={routeState.from || location.pathname}
-                initialMode={passwordRecovery ? 'reset' : (routeState.authMode || 'login')}
+                destination={authDestination}
+                initialMode={passwordRecovery ? 'reset' : authMode}
             />
         </div>
     );

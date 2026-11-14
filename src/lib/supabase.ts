@@ -6,6 +6,11 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-k
 // A valid Supabase URL and key are enough to enable the data source. The
 // explicit flag can still disable it for a deliberate frontend-only build.
 const supabaseEnabled = import.meta.env.VITE_USE_SUPABASE !== 'false';
+// Realtime is optional. Some browsers, corporate networks and privacy
+// extensions block WebSockets even when the Supabase REST/Auth endpoints work.
+// The app uses REST polling as the reliable fallback unless Realtime is
+// explicitly enabled for the deployment.
+const realtimeEnabled = import.meta.env.VITE_ENABLE_REALTIME === 'true';
 
 // تحذير في Console إذا لم تكن القيم موجودة
 if (supabaseEnabled && supabaseUrl === 'https://placeholder.supabase.co') {
@@ -32,3 +37,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     },
 });
 export const isSupabaseConfigured = () => isConfigured;
+export const isRealtimeEnabled = () => isConfigured && realtimeEnabled;

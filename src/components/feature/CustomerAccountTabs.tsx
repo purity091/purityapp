@@ -1,20 +1,21 @@
 import React from 'react';
 import { Bell, CalendarDays, Heart, LayoutDashboard, UserRound } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-
-const tabs = [
-    { to: '/dashboard', label: 'Dashboard', detail: 'Customer dashboard', icon: LayoutDashboard },
-    { to: '/bookings', label: 'My bookings', detail: 'Review history', icon: CalendarDays },
-    { to: '/profile', label: 'My profile', detail: 'Manage account', icon: UserRound },
-    { to: '/notifications', label: 'Notifications', detail: 'Stay updated', icon: Bell },
-    { to: '/wishlist', label: 'Wishlist', detail: 'Saved services', icon: Heart },
-];
+import { useLanguage } from '../../context/LanguageContext';
 
 export const CustomerAccountTabs: React.FC = () => {
     const location = useLocation();
+    const { t } = useLanguage();
+    const tabs = [
+        { to: '/dashboard', label: t('dashboard'), detail: t('customerDashboard'), icon: LayoutDashboard },
+        { to: '/bookings', label: t('myBookings'), detail: t('reviewHistory'), icon: CalendarDays },
+        { to: '/profile', label: t('myProfile'), detail: t('manageAccount'), icon: UserRound },
+        { to: '/notifications', label: t('notifications'), detail: t('stayUpdated'), icon: Bell },
+        { to: '/wishlist', label: t('wishlist'), detail: t('savedServices'), icon: Heart },
+    ];
 
     return (
-        <nav aria-label="Customer account pages" className="mb-5 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm md:mb-7 md:p-2">
+        <nav aria-label={t('account')} className="mb-5 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm md:mb-7 md:p-2">
             <div className="grid grid-cols-2 gap-1 md:grid-cols-5">
                 {tabs.map(({ to, label, detail, icon: Icon }) => {
                     const active = location.pathname === to;

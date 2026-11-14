@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useBookings } from '../../context/BookingContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export const MobileNav: React.FC = () => {
     const location = useLocation();
@@ -12,6 +13,7 @@ export const MobileNav: React.FC = () => {
     const { user } = useAuth();
     const { wishlistIds } = useWishlist();
     const { bookings } = useBookings();
+    const { t } = useLanguage();
     const [activeSection, setActiveSection] = useState(() => location.hash.replace('#', ''));
     const previousPathRef = useRef(location.pathname);
     const sectionNavigationRef = useRef(false);
@@ -63,7 +65,7 @@ export const MobileNav: React.FC = () => {
                 <NavItem
                     to="/"
                     icon={<Home size={20} strokeWidth={isActive('/') && !activeSection ? 2.5 : 1.75} />}
-                    label="Home"
+                    label={t('home')}
                     active={isActive('/') && !activeSection}
                     onClick={goHome}
                 />
@@ -72,7 +74,7 @@ export const MobileNav: React.FC = () => {
                 <NavItem
                     to="/"
                     icon={<LayoutGrid size={20} strokeWidth={location.pathname === '/' && activeSection === 'services' ? 2.5 : 1.75} />}
-                    label="Services"
+                    label={t('services')}
                     active={location.pathname === '/' && activeSection === 'services'}
                     onClick={() => goToSection('services')}
                 />
@@ -90,7 +92,7 @@ export const MobileNav: React.FC = () => {
                             )}
                         </span>
                     }
-                    label="Bookings"
+                    label={t('bookings')}
                     active={isActive('/bookings')}
                 />
 
@@ -107,7 +109,7 @@ export const MobileNav: React.FC = () => {
                             )}
                         </span>
                     }
-                    label="Wishlist"
+                    label={t('wishlist')}
                     active={isActive('/wishlist')}
                 />
 
@@ -130,7 +132,7 @@ export const MobileNav: React.FC = () => {
                     <NavItem
                         to={location.pathname}
                         icon={<UserRound size={20} strokeWidth={1.75} />}
-                        label="Sign in"
+                        label={t('signIn')}
                         active={false}
                         onClick={() => navigate(location.pathname, { state: { openAuth: true, from: location.pathname } })}
                     />

@@ -11,6 +11,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { getPricePresentation, getPriceUnitLabel } from '../../lib/pricing';
 import { LocationPicker } from './LocationPicker';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface BookingModalProps {
     isOpen: boolean;
@@ -18,23 +19,13 @@ interface BookingModalProps {
     service: Service | null;
 }
 
-const HOURLY_SERVICE_NAMES = [
-    'Housekeeping / Part-time Maid',
-    'Deep Cleaning',
-    'Regular Cleaning',
-    'Move In/Out Cleaning',
-    'Party Cleaning',
-    'Wash and Iron',
-    'Pet Sitting',
+const HOURLY_SERVICE_SLUGS = [
+    'housekeeping-part-time-maid', 'deep-cleaning', 'regular-cleaning', 'move-in-out-cleaning',
+    'party-cleaning', 'wash-and-iron', 'pet-sitting',
 ];
 
-const MATERIAL_SERVICE_NAMES = [
-    'Deep Cleaning',
-    'Regular Cleaning',
-    'Move In/Out Cleaning',
-    'Party Cleaning',
-    'Wash and Iron',
-    'Pet Sitting',
+const MATERIAL_SERVICE_SLUGS = [
+    'deep-cleaning', 'regular-cleaning', 'move-in-out-cleaning', 'party-cleaning', 'wash-and-iron', 'pet-sitting',
 ];
 
 const MAP_SELECTED_AREA = 'Map selected';
@@ -46,24 +37,24 @@ const randomViewerCount = () => Math.floor(Math.random() * (MAX_VIEWER_COUNT - M
 const calculateBookingTotal = (service: Service, formData: BookingFormData) => {
     let total = service.price;
 
-    if (HOURLY_SERVICE_NAMES.includes(service.name)) {
+    if (HOURLY_SERVICE_SLUGS.includes(service.slug || '')) {
         total = service.price * formData.hours * formData.numberOfWorkers;
-    } else if (service.name === 'Babysitting At Home') {
+    } else if (service.slug === 'babysitting-at-home') {
         total = service.price * formData.numberOfWorkers;
-    } else if (service.name === 'Floor Cleaning') {
+    } else if (service.slug === 'floor-cleaning') {
         total = formData.numberOfRooms === 1 ? 200 : (formData.numberOfRooms === 2 ? 300 : formData.numberOfRooms * 150);
-    } else if (service.name === 'Carpet Cleaning') {
+    } else if (service.slug === 'carpet-cleaning') {
         total = 200 * formData.numberOfCarpets;
-    } else if (service.name === 'Mattress Cleaning') {
+    } else if (service.slug === 'mattress-cleaning') {
         total = (150 * formData.numberOfSingleMattresses) + (200 * formData.numberOfLargeMattresses);
         if (total === 0) total = 150;
-    } else if (service.name === 'Sofa Cleaning') {
+    } else if (service.slug === 'sofa-cleaning') {
         total = 35 * formData.numberOfSofaSeats;
-    } else if (service.name === 'Curtain Cleaning') {
+    } else if (service.slug === 'curtain-cleaning') {
         total = 200 * formData.numberOfCurtains;
     }
 
-    if (MATERIAL_SERVICE_NAMES.includes(service.name) && formData.includeChemicals) {
+    if (MATERIAL_SERVICE_SLUGS.includes(service.slug || '') && formData.includeChemicals) {
         total += 30;
     }
 
@@ -74,6 +65,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
     const { addBooking } = useBookings();
     const { user } = useAuth();
     const { wishlistIds, toggleWishlist } = useWishlist();
+    const { language, t } = useLanguage();
     const navigate = useNavigate();
     const [formData, setFormData] = useState<BookingFormData>({
         customerName: '',
@@ -170,23 +162,23 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
 
         const normalizedPhone = normalizePhone(formData.phoneNumber);
         if (!formData.customerName.trim()) {
-            setFormError('Please enter your full name.');
+            setFormError(t('errorFullName'));
             return;
         }
         if (!/^(05\d{8}|\+9715\d{8})$/.test(normalizedPhone)) {
-            setFormError('Please enter a valid UAE mobile number, for example 05XXXXXXXX.');
+            setFormError(t('errorPhone'));
             return;
         }
         if (!formData.address.trim() || formData.latitude === null || formData.longitude === null || !formData.date || !formData.time) {
-            setFormError('Please complete your service address, map location, date, and time before booking.');
+            setFormError(t('errorBookingFields'));
             return;
         }
         if (formData.date < todayStr) {
-            setFormError('Please select today or a future date for your appointment.');
+            setFormError(t('errorDate'));
             return;
         }
         if (!acceptedTerms) {
-            setFormError('Please accept the Terms of Use and Privacy Policy before booking.');
+            setFormError(t('errorTerms'));
             return;
         }
 
@@ -214,18 +206,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             }
             bookingRequestIdRef.current = null;
             setConfirmedBookingPrice(saveResult.booking?.totalPrice ?? calculatedPrice);
-            setSaveNotice(saveResult.synced ? '' : 'Your booking is saved only on this device. Please complete WhatsApp confirmation so our team receives it.');
+            setSaveNotice(saveResult.synced ? '' : t('bookingSavedDevice'));
             setShowSuccess(true);
         } catch {
-            setFormError('We could not save your booking. Please try again.');
+            setFormError(t('errorSaveBooking'));
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleWhatsappRedirect = () => {
-        const isHourly = HOURLY_SERVICE_NAMES.includes(service.name);
-        const isDaily = service.name === 'Babysitting At Home';
+        const isHourly = HOURLY_SERVICE_SLUGS.includes(service.slug || '');
+        const isDaily = service.slug === 'babysitting-at-home';
         const calculatedPrice = confirmedBookingPrice ?? calculateBookingTotal(service, formData);
 
         const messageLines = [
@@ -243,20 +235,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             messageLines.push(`Workers: ${formData.numberOfWorkers}`);
         } else if (isDaily) {
             messageLines.push(`Workers: ${formData.numberOfWorkers}`);
-        } else if (service.name === 'Floor Cleaning') {
+        } else if (service.slug === 'floor-cleaning') {
             messageLines.push(`Rooms: ${formData.numberOfRooms}`);
-        } else if (service.name === 'Carpet Cleaning') {
+        } else if (service.slug === 'carpet-cleaning') {
             messageLines.push(`Carpets: ${formData.numberOfCarpets}`);
-        } else if (service.name === 'Mattress Cleaning') {
+        } else if (service.slug === 'mattress-cleaning') {
             messageLines.push(`Single Mattresses: ${formData.numberOfSingleMattresses}`);
             messageLines.push(`Large Mattresses: ${formData.numberOfLargeMattresses}`);
-        } else if (service.name === 'Sofa Cleaning') {
+        } else if (service.slug === 'sofa-cleaning') {
             messageLines.push(`Sofa Seats: ${formData.numberOfSofaSeats}`);
-        } else if (service.name === 'Curtain Cleaning') {
+        } else if (service.slug === 'curtain-cleaning') {
             messageLines.push(`Curtains: ${formData.numberOfCurtains}`);
         }
 
-        if (MATERIAL_SERVICE_NAMES.includes(service.name)) {
+        if (MATERIAL_SERVICE_SLUGS.includes(service.slug || '')) {
             messageLines.push(`Materials: ${formData.includeChemicals ? 'Yes (+30 AED)' : 'No'}`);
         }
 
@@ -284,9 +276,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
             }
             if (navigator.clipboard) {
                 await navigator.clipboard.writeText(shareText);
-                setShareNotice('Service details copied.');
+                setShareNotice(t('copied'));
             } else {
-                setShareNotice('Sharing is not available on this browser.');
+                setShareNotice(t('sharingUnavailable'));
             }
             window.setTimeout(() => setShareNotice(''), 2500);
         } catch {
@@ -297,10 +289,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
     const finalTotalPrice = calculateBookingTotal(service, formData);
     const isWishlisted = wishlistIds.includes(service.id);
     const { originalPrice: originalPriceDisplay, discount: discountPercentage } = getPricePresentation(service);
-    const priceUnit = getPriceUnitLabel(service);
+    const priceUnit = getPriceUnitLabel(service, language);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={showSuccess ? "Success" : service.name} isDismissible={false}>
+        <Modal isOpen={isOpen} onClose={onClose} title={showSuccess ? t('success') : service.name} isDismissible={false}>
             <>
                 {showSuccess ? (
                     <div className="animate-fade-in space-y-4 py-3"
@@ -311,8 +303,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                 <CheckCircle2 size={34} className="text-white" strokeWidth={2.5} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-black text-gray-900">Booking Received!</h3>
-                                <p className="text-xs text-gray-500 font-semibold mt-0.5">One last step to confirm your appointment →</p>
+                                <h3 className="text-xl font-black text-gray-900">{t('bookingReceived')}</h3>
+                                <p className="text-xs text-gray-500 font-semibold mt-0.5">{t('lastStep')} →</p>
                                 {saveNotice && <p className="mt-2 max-w-xs rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-[10px] font-semibold leading-4 text-amber-800">{saveNotice}</p>}
                             </div>
                         </div>
@@ -325,8 +317,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     <CheckCircle2 size={22} strokeWidth={2.5} />
                                 </div>
                                 <div>
-                                    <span className="text-sm font-black text-emerald-900 block">Done ✓</span>
-                                    <span className="text-[11px] text-emerald-800 font-semibold leading-snug block mt-0.5">Your booking details<br/>have been saved</span>
+                                    <span className="text-sm font-black text-emerald-900 block">{t('done')} ✓</span>
+                                    <span className="text-[11px] text-emerald-800 font-semibold leading-snug block mt-0.5">{t('bookingSaved')}</span>
                                 </div>
                             </div>
 
@@ -340,8 +332,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
                                 </div>
                                 <div>
-                                    <span className="text-sm font-black text-amber-900 block">Action Required</span>
-                                    <span className="text-[11px] text-amber-800 font-semibold leading-snug block mt-0.5">Tap below to open WhatsApp<br/>& finalize your booking</span>
+                                    <span className="text-sm font-black text-amber-900 block">{t('actionRequired')}</span>
+                                    <span className="text-[11px] text-amber-800 font-semibold leading-snug block mt-0.5">{t('tapWhatsapp')}</span>
                                 </div>
                             </div>
                         </div>
@@ -352,10 +344,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                             className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black shadow-lg shadow-emerald-600/25 py-4 text-sm rounded-2xl flex items-center justify-center gap-2.5"
                         >
                             <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white flex-none" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                            Open WhatsApp to Confirm Booking
+                            {t('openWhatsapp')}
                         </Button>
                         <p className="text-center text-[10px] text-gray-500 font-semibold">
-                            Your booking is not final until confirmed via WhatsApp.
+                            {t('bookingNotFinal')}
                         </p>
                     </div>
                 ) : (
@@ -389,7 +381,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                 {/* Popular Gift Badge */}
                                 <div className="flex items-center gap-1.5 bg-purple-50 text-purple-800 border border-purple-200/80 px-2.5 py-0.5 rounded-full w-fit text-[11px] font-extrabold">
                                     <Gift size={12} />
-                                    <span>Popular Verified Service</span>
+                                    <span>{t('popularDeal')}</span>
                                 </div>
                             </div>
 
@@ -400,7 +392,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     <button
                                         type="button"
                                         onClick={handleWishlist}
-                                        aria-label={isWishlisted ? 'Remove service from wishlist' : 'Add service to wishlist'}
+                                        aria-label={isWishlisted ? t('removeFromWishlist') : t('addToWishlist')}
                                         title={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
                                         className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-rose-600 shadow-sm transition-all"
                                     >
@@ -409,8 +401,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     <button
                                         type="button"
                                         onClick={handleShare}
-                                        aria-label="Share service"
-                                        title="Share service"
+                                        aria-label={t('shareService')}
+                                        title={t('shareService')}
                                         className="w-7 h-7 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-primary-600 shadow-sm transition-all"
                                     >
                                         <Share2 size={14} />
@@ -430,28 +422,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     onClick={() => setActiveDetailTab('about')}
                                     className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'about' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
                                 >
-                                    About
+                                    {t('about')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab('needtoknow')}
                                     className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'needtoknow' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
                                 >
-                                    Need To Know Info
+                                    {t('needToKnow')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab('redeem')}
                                     className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'redeem' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
                                 >
-                                    Where To Redeem
+                                    {t('whereToRedeem')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setActiveDetailTab('reviews')}
                                     className={`pb-2 transition-colors border-b-2 ${activeDetailTab === 'reviews' ? 'border-primary-600 text-gray-900 font-black' : 'border-transparent text-gray-700 hover:text-gray-900'}`}
                                 >
-                                    Reviews
+                                    {t('reviews')}
                                 </button>
                             </div>
 
@@ -463,13 +455,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                             {service.description}
                                         </p>
                                         <div className="space-y-2 pt-1">
-                                            <h4 className="font-extrabold text-gray-900 text-xs">What We Offer:</h4>
+                                            <h4 className="font-extrabold text-gray-900 text-xs">{t('whatWeOffer')}:</h4>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                 {[
-                                                    "Professional Vetted Staff",
-                                                    "Hotel Standard Cleaning",
-                                                    "Eco-Friendly Materials",
-                                                    "Flexible Time Slots"
+                                                    t('professionalVettedStaff'),
+                                                    t('hotelStandardCleaning'),
+                                                    t('ecoFriendlyMaterials'),
+                                                    t('flexibleTimeSlots')
                                                 ].map((item, idx) => (
                                                     <div key={idx} className="flex items-center gap-2 bg-gray-50 border border-gray-200/80 p-2 rounded-xl">
                                                         <CheckCircle2 size={14} className="text-emerald-600 flex-none" />
@@ -483,28 +475,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
 
                                 {activeDetailTab === 'needtoknow' && (
                                     <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-gray-800">
-                                        <p className="font-bold text-gray-900">• Please ensure access to electricity and clean water on site.</p>
-                                        <p className="font-bold text-gray-900">• Free cancellation up to 2 hours prior to scheduled appointment time.</p>
-                                        <p className="font-bold text-gray-900">• All cleaners undergo daily health and safety screening.</p>
+                                        <p className="font-bold text-gray-900">• {t('electricityWater')}</p>
+                                        <p className="font-bold text-gray-900">• {t('freeCancellation')}</p>
+                                        <p className="font-bold text-gray-900">• {t('healthSafety')}</p>
                                     </div>
                                 )}
 
                                 {activeDetailTab === 'redeem' && (
                                     <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200 text-gray-800">
-                                        <span className="font-extrabold text-gray-900 block">All Dubai Neighborhoods:</span>
+                                        <span className="font-extrabold text-gray-900 block">{t('allDubaiNeighborhoods')}:</span>
                                         <p className="text-gray-700">Downtown Dubai, Dubai Marina, JBR, Palm Jumeirah, Business Bay, JLT, Arabian Ranches, Mirdif, and more.</p>
                                     </div>
                                 )}
 
                                 {activeDetailTab === 'reviews' && (
                                     <div className="space-y-2 bg-gray-50 p-3.5 rounded-xl border border-gray-200">
-                                        <div className="flex items-center gap-2">
+                                        {service.reviewCount ? <div className="flex items-center gap-2">
                                             <div className="flex text-amber-500">
-                                                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
+                                                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.round(service.rating) ? 'currentColor' : 'none'} className={i < Math.round(service.rating) ? 'text-amber-500' : 'text-gray-300'} />)}
                                             </div>
-                                            <span className="font-black text-gray-900">4.9 out of 5</span>
-                                            <span className="text-gray-700 font-bold">(Based on 120+ verified bookings)</span>
-                                        </div>
+                                            <span className="font-black text-gray-900">{service.rating.toFixed(1)} / 5.0</span>
+                                            <span className="text-gray-700 font-bold">({service.reviewCount} {language === 'fr' ? 'avis vérifiés' : language === 'hi' ? 'सत्यापित समीक्षाएं' : 'verified reviews'})</span>
+                                        </div> : <p className="text-sm font-bold text-gray-600">{language === 'fr' ? 'Aucun avis vérifié pour le moment.' : language === 'hi' ? 'अभी कोई सत्यापित समीक्षा नहीं है।' : 'No verified reviews for this service yet.'}</p>}
                                     </div>
                                 )}
                             </div>
@@ -517,7 +509,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <span className="block text-xs font-black leading-tight text-slate-950">{service.name}</span>
-                                        <span className="mt-0.5 block text-[10px] font-semibold text-slate-600">Instant Online Booking</span>
+                                        <span className="mt-0.5 block text-[10px] font-semibold text-slate-600">{t('instantOnlineBooking')}</span>
                                     </div>
                                     {/* Pricing Stack */}
                                     <div className="text-right">
@@ -531,8 +523,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                 </div>
 
                                 <div className="flex items-center justify-between border-t border-primary-100 pt-2 text-[10px] font-semibold text-slate-700">
-                                    <span>120+ bought</span>
-                                    <span className="text-emerald-700 font-extrabold">Instant Confirmation</span>
+                                    <span>120+ {t('bought')}</span>
+                                    <span className="text-emerald-700 font-extrabold">{t('instantConfirmation')}</span>
                                 </div>
                             </div>
 
@@ -540,9 +532,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                             <form onSubmit={handleSubmit} className="space-y-2 rounded-xl border border-gray-200 bg-white p-2.5 shadow-sm md:space-y-3 md:rounded-2xl md:p-4">
                                 <div className="border-b border-gray-100 pb-2 flex items-center justify-between">
                                     <h4 className="flex items-center gap-1.5 text-[11px] font-black uppercase text-gray-900 md:text-xs">
-                                        <Calendar size={13} className="text-primary-600 md:h-3.5 md:w-3.5" /> Enter Booking Details
+                                        <Calendar size={13} className="text-primary-600 md:h-3.5 md:w-3.5" /> {t('enterBookingDetails')}
                                     </h4>
-                                    <span className="text-[10px] font-bold text-gray-500">Step 1 of 1</span>
+                                    <span className="text-[10px] font-bold text-gray-500">{t('stepOf')}</span>
                                 </div>
                                 {formError && (
                                     <p role="alert" className="rounded-lg border border-red-200 bg-red-50 px-2.5 py-2 text-[11px] font-semibold leading-4 text-red-700">
@@ -554,14 +546,14 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     {/* Row 1: Contact (Name & Phone) */}
                                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                         <Input
-                                            label="Full Name"
+                                            label={t('fullName')}
                                             placeholder="John Doe"
                                             value={formData.customerName}
                                             onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                                             required
                                         />
                                         <Input
-                                            label="Phone Number"
+                                            label={t('phoneNumber')}
                                             placeholder="05XXXXXXXX"
                                             type="tel"
                                             value={formData.phoneNumber}
@@ -572,8 +564,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     </div>
 
                                     <Input
-                                        label="Service Address"
-                                        placeholder="Building, villa, apartment, street..."
+                                        label={t('serviceAddress')}
+                                        placeholder={t('serviceAddressPlaceholder')}
                                         value={formData.address}
                                         onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                         required
@@ -588,7 +580,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     {/* Row 3: Date & Time */}
                                     <div className="grid grid-cols-2 gap-2">
                                         <Input
-                                            label="Date"
+                                            label={t('date')}
                                             type="date"
                                             min={todayStr}
                                             value={formData.date}
@@ -596,11 +588,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                             required
                                         />
                                         <Select
-                                            label="Time"
+                                            label={t('time')}
                                             value={formData.time}
                                             onChange={(e) => setFormData({ ...formData, time: e.target.value })}
                                             options={[
-                                                { value: '', label: 'Select Slot' },
+                                                { value: '', label: t('selectSlot') },
                                                 ...TIME_SLOTS.map(t => ({ value: t, label: t }))
                                             ]}
                                             required
@@ -608,13 +600,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     </div>
 
                                     {/* Options: Duration & Staff count */}
-                                    {(['Housekeeping / Part-time Maid', 'Babysitting At Home', 'Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name)) && (
+                                    {([...HOURLY_SERVICE_SLUGS, 'babysitting-at-home'].includes(service.slug || '')) && (
                                         <div className="space-y-2 pt-1 border-t border-gray-100">
-                                            {service.name !== 'Babysitting At Home' && (
+                                            {service.slug !== 'babysitting-at-home' && (
                                                 <div className="space-y-1">
                                                     <div className="flex justify-between items-center text-xs font-bold text-gray-900">
-                                                        <span>Duration</span>
-                                                        <span className="text-primary-700 bg-primary-50 border border-primary-200 px-2 py-0.5 rounded-full text-[11px]">{formData.hours} Hours</span>
+                                                        <span>{t('duration')}</span>
+                                                        <span className="text-primary-700 bg-primary-50 border border-primary-200 px-2 py-0.5 rounded-full text-[11px]">{formData.hours} {t('hours')}</span>
                                                     </div>
                                                     <div className="flex gap-1.5">
                                                         {[3, 4, 5, 6].map(num => (
@@ -636,7 +628,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                             )}
 
                                             <div className="space-y-1">
-                                                <span className="text-xs font-bold text-gray-900 block">Staff Count</span>
+                                                <span className="text-xs font-bold text-gray-900 block">{t('staffCount')}</span>
                                                 <div className="flex gap-1.5">
                                                     {[1, 2, 3].map(num => (
                                                         <button
@@ -658,9 +650,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     )}
 
                                     {/* Chemical materials option */}
-                                    {['Deep Cleaning', 'Regular Cleaning', 'Move In/Out Cleaning', 'Party Cleaning', 'Wash and Iron', 'Pet Sitting'].includes(service.name) && (
+                                    {MATERIAL_SERVICE_SLUGS.includes(service.slug || '') && (
                                         <div className="flex gap-2 pt-1">
-                                            {[{ val: false, lbl: 'I have materials' }, { val: true, lbl: 'Include materials (+30 AED)' }].map((opt) => (
+                                            {[{ val: false, lbl: t('iHaveMaterials') }, { val: true, lbl: t('includeMaterials') }].map((opt) => (
                                                 <button
                                                     key={String(opt.val)}
                                                     type="button"
@@ -678,28 +670,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                     )}
 
                                     <TextArea
-                                        label="Notes (optional)"
-                                        placeholder="Add access instructions or special requests..."
+                                        label={t('notesOptional')}
+                                        placeholder={t('notesPlaceholder')}
                                         value={formData.notes}
                                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                                         rows={3}
                                     />
 
                                     <div className="flex items-center justify-between rounded-xl bg-primary-50 border border-primary-100 px-3 py-2.5">
-                                        <span className="text-xs font-bold text-gray-700">Estimated total</span>
+                                        <span className="text-xs font-bold text-gray-700">{t('estimatedTotal')}</span>
                                         <strong className="text-base font-black text-primary-700">{finalTotalPrice.toFixed(2)} AED</strong>
                                     </div>
 
                                     <label className="flex items-start gap-2 text-[11px] font-medium leading-5 text-gray-600">
                                         <input type="checkbox" checked={acceptedTerms} onChange={event => setAcceptedTerms(event.target.checked)} className="mt-1 h-4 w-4 accent-primary-700" required />
-                                        <span>I agree to the <Link to="/terms" target="_blank" className="font-black text-primary-700 underline">Terms of Use</Link> and <Link to="/privacy" target="_blank" className="font-black text-primary-700 underline">Privacy Policy</Link>.</span>
+                                        <span>{t('agreeTo')} <Link to="/terms" target="_blank" className="font-black text-primary-700 underline">{t('terms')}</Link> {t('and')} <Link to="/privacy" target="_blank" className="font-black text-primary-700 underline">{t('privacy')}</Link>.</span>
                                     </label>
 
                                     {/* Urgency Counter & Submit Button */}
                                     <div className="pt-2 space-y-2 border-t border-gray-100">
                                         <div className="flex items-center justify-center gap-1.5 bg-amber-50/80 text-amber-900 border border-amber-200/80 py-1.5 px-3 rounded-xl text-[11px] font-black text-center shadow-2xs">
                                             <Eye size={13} className="text-amber-600 flex-none" />
-                                            <span>Over {viewerCount} viewed today, so act now!</span>
+                                            <span>{t('overViewed').replace('viewed', `${viewerCount} viewed`)}</span>
                                         </div>
 
                                         <Button
@@ -707,7 +699,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, ser
                                             className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-black text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 md:py-3.5"
                                             disabled={isSubmitting}
                                         >
-                                            {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : "Confirm & Book Now"}
+                                            {isSubmitting ? <Loader2 className="animate-spin mx-auto" /> : t('confirmBookNow')}
                                         </Button>
                                     </div>
                                 </div>
